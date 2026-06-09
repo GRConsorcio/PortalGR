@@ -5,39 +5,41 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>GR Portal — GR Consórcio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  --bg:#08080D;
-  --s1:#0F0F18;
-  --s2:#14141F;
-  --s3:#1C1C2A;
-  --border:#1F1F2E;
-  --border2:#2A2A3E;
+  --bg:#07070C;
+  --s1:#0C0C14;
+  --s2:#111119;
+  --s3:#181824;
+  --border:#1E1E2C;
+  --border2:#28283A;
   --gold:#C9A84C;
-  --gold2:#E8C97A;
-  --gold-dim:#6B5520;
-  --gold-glow:rgba(201,168,76,0.08);
-  --violet:#7C6FCD;
+  --gold2:#E2C46A;
+  --gold-dim:#5C4A1E;
+  --gold-glow:rgba(201,168,76,0.06);
+  --gold-line:rgba(201,168,76,0.15);
+  --violet:#7B6FCC;
   --violet2:#A99EE8;
-  --green:#2D9B6F;
-  --green2:#4ECCA3;
-  --red:#E55;
-  --text:#EEEEF5;
-  --muted:#3A3A55;
-  --muted2:#7A7A9A;
-  --bronze:#CD7F32;
-  --silver:#B0B0C0;
-  --diamond:#7DD3FC;
-  --elite:#E040FB;
-  --font-d:'Syne',sans-serif;
-  --font-b:'Inter',sans-serif;
-  --sidebar-w:240px;
-  --topbar-h:56px;
+  --green:#2A9467;
+  --green2:#3EC99A;
+  --red:#D94F4F;
+  --text:#E8E8F0;
+  --muted:#2E2E42;
+  --muted2:#6B6B88;
+  --bronze:#C8762A;
+  --silver:#A8A8BC;
+  --diamond:#6EC6F0;
+  --elite:#D040F0;
+  --font-d:'Barlow Condensed',sans-serif;
+  --font-b:'DM Sans',sans-serif;
+  --sidebar-w:236px;
+  --topbar-h:52px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:14px}
 
 /* ── AUTH ── */
 #auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px}
@@ -112,18 +114,20 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .page.on{display:block}
 
 /* ── CARDS / PANELS ── */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);margin-bottom:1px}
-.kpi-card{background:var(--s2);padding:20px 22px}
-.kpi-label{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted2);margin-bottom:8px;font-family:var(--font-b)}
-.kpi-val{font-family:var(--font-d);font-size:28px;font-weight:800;line-height:1;letter-spacing:-1px}
-.kpi-sub{font-size:11px;color:var(--muted2);margin-top:6px}
-.kpi-delta{font-size:10px;font-weight:600;margin-top:4px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);margin-bottom:20px}
+.kpi-card{background:var(--s2);padding:22px 24px;position:relative;overflow:hidden}
+.kpi-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--gold-line),transparent)}
+.kpi-label{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--muted2);margin-bottom:10px;font-family:var(--font-b);font-weight:500}
+.kpi-val{font-family:var(--font-d);font-size:42px;font-weight:700;line-height:1;letter-spacing:-0.5px;color:var(--text)}
+.kpi-val.gold{color:var(--gold2)}
+.kpi-sub{font-size:11px;color:var(--muted2);margin-top:8px;font-family:var(--font-b)}
+.kpi-delta{font-size:10px;font-weight:600;margin-top:5px;font-family:var(--font-b)}
 .kpi-delta.up{color:var(--green2)}
 .kpi-delta.dn{color:var(--red)}
 
 .panel{background:var(--s2);border:1px solid var(--border);margin-bottom:16px}
-.panel-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.panel-title{font-family:var(--font-d);font-size:14px;font-weight:700;letter-spacing:-0.2px}
+.panel-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-family:var(--font-d);font-size:16px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase}
 .panel-body{padding:20px}
 
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -268,10 +272,10 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .sf-anon{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted2);margin-bottom:20px;cursor:pointer;user-select:none}
 .sf-checkbox{width:14px;height:14px;border:1px solid var(--border2);background:var(--s3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .sf-checkbox.on{background:var(--gold);border-color:var(--gold)}
-.btn-primary{background:var(--gold);color:#08080D;border:none;padding:11px 24px;font-family:var(--font-d);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background .15s}
+.btn-primary{background:var(--gold);color:#07070C;border:none;padding:9px 20px;font-family:var(--font-b);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:background .12s}
 .btn-primary:hover{background:var(--gold2)}
-.btn-outline{background:transparent;color:var(--gold);border:1px solid var(--gold-dim);padding:9px 20px;font-family:var(--font-d);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .15s}
-.btn-outline:hover{border-color:var(--gold);color:var(--gold2)}
+.btn-outline{background:transparent;color:var(--muted2);border:1px solid var(--border2);padding:8px 18px;font-family:var(--font-b);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .12s}
+.btn-outline:hover{border-color:var(--gold-dim);color:var(--text)}
 
 /* Hall da Fama */
 .hall-hero{background:var(--s2);border:1px solid var(--border);padding:28px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden}
@@ -307,30 +311,30 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 
 /* Toast */
 .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast{background:var(--s2);border:1px solid var(--border2);padding:12px 16px;font-size:12px;font-family:var(--font-b);animation:toastIn .2s ease;pointer-events:none;max-width:280px}
-.toast.ok{border-left:2px solid var(--green2)}
-.toast.err{border-left:2px solid var(--red)}
-@keyframes toastIn{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
+.toast{background:var(--s1);border:1px solid var(--border2);padding:11px 16px;font-size:12px;font-family:var(--font-b);animation:toastIn .18s ease;pointer-events:none;max-width:300px;line-height:1.4}
+.toast.ok{border-left:2px solid var(--green2);color:var(--text)}
+.toast.err{border-left:2px solid var(--red);color:var(--text)}
+@keyframes toastIn{from{transform:translateX(16px);opacity:0}to{transform:none;opacity:1}}
 
 /* Empty states */
-.empty{text-align:center;padding:48px 20px;color:var(--muted2)}
-.empty-line{width:24px;height:1px;background:var(--border2);margin:0 auto 16px}
-.empty-text{font-size:12px;letter-spacing:1px}
+.empty{text-align:center;padding:40px 20px;color:var(--muted2)}
+.empty-line{width:20px;height:1px;background:var(--border2);margin:0 auto 14px}
+.empty-text{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-family:var(--font-b)}
 
 /* Table */
-.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
-.tbl th{text-align:left;padding:10px 12px;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted2);border-bottom:1px solid var(--border);font-family:var(--font-b)}
-.tbl td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;font-family:var(--font-b)}
+.tbl th{text-align:left;padding:9px 14px;font-size:8px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted2);border-bottom:1px solid var(--border);font-family:var(--font-b);background:var(--s1)}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text)}
 .tbl tr:last-child td{border-bottom:none}
-.tbl tr:hover td{background:rgba(255,255,255,0.01)}
+.tbl tr:hover td{background:rgba(255,255,255,0.015)}
 
 /* Scrollbar */
-::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar{width:3px;height:3px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border2)}
+::-webkit-scrollbar-thumb{background:var(--muted)}
 
 /* Tag/badge */
-.tag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px}
+.tag{display:inline-block;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 7px;font-family:var(--font-b)}
 
 /* Modal */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center}
@@ -340,15 +344,20 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted2);cursor:pointer;font-size:16px;transition:color .15s}
 .modal-close:hover{color:var(--text)}
 
-@media(max-width:900px){
+@media(max-width:960px){
   :root{--sidebar-w:0px}
   .sidebar{display:none}
   .main{margin-left:0}
   .kpi-grid{grid-template-columns:1fr 1fr}
-  .levels-grid,.hall-grid{grid-template-columns:1fr}
+  .levels-grid,.hall-grid{grid-template-columns:1fr 1fr}
   .grid-2,.grid-3,.acad-grid,.benef-grid{grid-template-columns:1fr}
   .news-grid{grid-template-columns:1fr}
   .progress-hero{grid-template-columns:1fr}
+  .content{padding:16px}
+}
+@media(max-width:520px){
+  .kpi-grid{grid-template-columns:1fr}
+  .levels-grid,.hall-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -883,7 +892,18 @@ async function doAuth(){
   const email=v('a-email'),pass=v('a-pass');
   if(!email||!pass){el('a-err').textContent='Preencha e-mail e senha';return;}
   const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error){el('a-err').textContent=error.message;return;}
+  if(error){
+    if(error.message?.includes('Email not confirmed')){
+      el('a-err').innerHTML='Confirme seu e-mail ou desative a confirmação no Supabase.<br><span style="font-size:10px;color:var(--muted2)">Authentication → Providers → Email → desligar "Confirm email"</span>';
+    } else if(error.message?.includes('Invalid login')||error.message?.includes('invalid_credentials')){
+      el('a-err').textContent='E-mail ou senha incorretos.';
+    } else if(error.status===429){
+      el('a-err').textContent='Muitas tentativas. Aguarde alguns minutos.';
+    } else {
+      el('a-err').textContent=error.message;
+    }
+    return;
+  }
 }
 async function doRegister(){
   const name=v('r-name'),email=v('r-email'),pass=v('r-pass');
@@ -895,9 +915,12 @@ async function doRegister(){
   const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name}}});
   if(btn){btn.textContent='Criar conta';btn.disabled=false;}
   if(error){
-    // 500 = trigger falhando porque tabelas ainda não existem
-    if(error.status===500||error.message?.includes('Database error')){
+    if(error.status===429||error.message?.includes('rate limit')||error.message?.includes('email rate')){
+      el('a-err').innerHTML='Limite de tentativas atingido.<br><span style="font-size:10px;color:var(--muted2)">Aguarde alguns minutos ou desative "Confirm email" no Supabase → Authentication → Providers → Email</span>';
+    } else if(error.status===500||error.message?.includes('Database error')){
       el('a-err').innerHTML='Execute o SQL no Supabase primeiro.<br><span style="font-size:10px;color:var(--muted2)">Dashboard → SQL Editor → cole o arquivo gr-portal-SQL.sql</span>';
+    } else if(error.message?.includes('already registered')||error.message?.includes('User already registered')){
+      el('a-err').innerHTML='E-mail já cadastrado. <span style="cursor:pointer;color:var(--gold);text-decoration:underline" onclick="switchAuthTab(\'login\',document.querySelector(\'.auth-tab\'))">Clique aqui para entrar</span>';
     } else {
       el('a-err').textContent=error.message;
     }
@@ -905,7 +928,9 @@ async function doRegister(){
   }
   if(data?.user){
     // Tenta criar perfil manualmente (caso trigger não exista ainda)
-    await sb.from('portal_users').upsert({user_id:data.user.id,nome:name},{onConflict:'user_id'}).catch(()=>{});
+    try{
+      await sb.from('portal_users').upsert({user_id:data.user.id,nome:name},{onConflict:'user_id'});
+    } catch(e){ console.warn('Profile upsert:',e.message); }
     toast('Conta criada com sucesso!','ok');
     // Auto login
     const {error:loginErr}=await sb.auth.signInWithPassword({email,password:pass});
@@ -1014,7 +1039,7 @@ function renderDashboard(){
 
   el('kpi-cotas').textContent=cotas;
   el('kpi-meta').textContent=metaCotas+' cotas';
-  el('kpi-volume').textContent=fmtBRL(volume);
+  el('kpi-volume').textContent=fmtBRL(volume);el('kpi-volume').style.color='var(--gold2)';
   const comMes=allComissoes.filter(c=>c.referencia===mesAtual);
   el('kpi-comissao').textContent=fmtBRL(comMes.reduce((s,c)=>s+(parseFloat(c.valor)||0),0));
   el('kpi-rank').textContent='–';
