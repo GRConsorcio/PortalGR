@@ -1152,7 +1152,14 @@ async function doRegister(){
   }
   toast('Verifique seu e-mail para confirmar o cadastro.','ok');
 }
-async function doLogout(){await sb.auth.signOut();location.reload();}
+async function doLogout(){
+  try{
+    await sb.auth.signOut({scope:'local'});
+  } catch(e){ console.warn('Logout error:',e); }
+  // Clear any cache
+  try{ sessionStorage.clear(); }catch(e){}
+  location.href = location.href.split('?')[0];
+}
 
 /* ═══ INIT ═══ */
 sb.auth.onAuthStateChange(async(ev,session)=>{
@@ -1169,6 +1176,7 @@ async function initApp(user){
   el('su-av').textContent=(dn[0]||'?').toUpperCase();
   el('auth-screen').style.display='none';
   await loadAll();
+  console.log('initApp: cargo=', CUP?.cargo, '| isAdmin=', isAdmin(), '| isAdminOrCoordOrSup=', isAdminOrCoordOrSup());
   renderSidebar();
   renderNav();
   renderDashboard();
