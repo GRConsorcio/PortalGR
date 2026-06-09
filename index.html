@@ -344,6 +344,44 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted2);cursor:pointer;font-size:16px;transition:color .15s}
 .modal-close:hover{color:var(--text)}
 
+/* ══ ADMIN PANEL CSS ══ */
+.adm-page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.adm-page-title{font-family:var(--font-d);font-size:20px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.adm-table-wrap{background:var(--s2);border:1px solid var(--border)}
+.adm-form{background:var(--s2);border:1px solid var(--border);padding:24px;margin-bottom:16px}
+.adm-form-title{font-family:var(--font-d);font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:18px;color:var(--gold2)}
+.adm-field{margin-bottom:14px}
+.adm-label{font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted2);display:block;margin-bottom:6px;font-family:var(--font-b)}
+.adm-input{width:100%;background:var(--s3);border:1px solid var(--border2);color:var(--text);padding:10px 13px;font-size:13px;font-family:var(--font-b);outline:none;transition:border-color .15s}
+.adm-input:focus{border-color:var(--gold-dim)}
+.adm-input::placeholder{color:var(--muted2)}
+.adm-select{width:100%;background:var(--s3);border:1px solid var(--border2);color:var(--text);padding:10px 13px;font-size:13px;font-family:var(--font-b);outline:none;appearance:none;cursor:pointer}
+.adm-textarea{width:100%;background:var(--s3);border:1px solid var(--border2);color:var(--text);padding:10px 13px;font-size:13px;font-family:var(--font-b);outline:none;resize:vertical;min-height:80px;transition:border-color .15s}
+.adm-textarea:focus{border-color:var(--gold-dim)}
+.adm-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.adm-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.adm-row{display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid var(--border);gap:12px;font-size:12.5px;font-family:var(--font-b)}
+.adm-row:last-child{border-bottom:none}
+.adm-row:hover{background:rgba(255,255,255,0.015)}
+.adm-row-main{flex:1;min-width:0}
+.adm-row-title{font-weight:600;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-row-sub{font-size:11px;color:var(--muted2)}
+.adm-actions{display:flex;gap:6px;flex-shrink:0}
+.btn-edit{background:transparent;border:1px solid var(--border2);color:var(--muted2);padding:5px 10px;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:var(--font-b);transition:all .12s}
+.btn-edit:hover{border-color:var(--gold-dim);color:var(--gold2)}
+.btn-del{background:transparent;border:1px solid transparent;color:var(--muted);padding:5px 8px;font-size:10px;cursor:pointer;transition:all .12s}
+.btn-del:hover{color:var(--red);border-color:rgba(217,79,79,0.3)}
+.adm-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px}
+.adm-tab{padding:9px 16px;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;color:var(--muted2);transition:all .13s;font-family:var(--font-b)}
+.adm-tab.on{color:var(--gold);border-bottom-color:var(--gold)}
+.adm-stat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+.adm-stat-row:last-child{border-bottom:none}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.status-dot.green{background:var(--green2)}
+.status-dot.gold{background:var(--gold)}
+.status-dot.red{background:var(--red)}
+.status-dot.muted{background:var(--muted2)}
+
 @media(max-width:960px){
   :root{--sidebar-w:0px}
   .sidebar{display:none}
@@ -485,6 +523,61 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
       <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="1" width="12" height="16" rx="1"/><line x1="6" y1="6" x2="12" y2="6"/><line x1="6" y1="9" x2="12" y2="9"/><line x1="6" y1="12" x2="10" y2="12"/></svg>
       Regras GR
     </div>
+
+    <!-- ADMIN / COORD / SUP NAV -->
+    <div id="nav-admin-section" style="display:none">
+      <div class="nav-sect" style="color:var(--gold-dim);margin-top:4px">Gestão</div>
+      <div id="nav-admin-items">
+        <div class="nav-item coord-only" data-page="adm-metas" onclick="nav('adm-metas')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="9" r="7"/><circle cx="9" cy="9" r="3"/><line x1="9" y1="1" x2="9" y2="3"/></svg>
+          Metas
+        </div>
+        <div class="nav-item admin-only" data-page="adm-campanhas" onclick="nav('adm-campanhas')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2L4 7H2a1 1 0 00-1 1v2a1 1 0 001 1h2l10 5V2z"/></svg>
+          Campanhas
+        </div>
+        <div class="nav-item admin-only" data-page="adm-comissoes" onclick="nav('adm-comissoes')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="16" height="11" rx="1"/><line x1="1" y1="8" x2="17" y2="8"/></svg>
+          Comissões
+        </div>
+        <div class="nav-item admin-only" data-page="adm-academy" onclick="nav('adm-academy')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 1L1 5l8 4 8-4-8-4z"/><path d="M5 7v5a4 4 0 008 0V7"/></svg>
+          Academy
+        </div>
+        <div class="nav-item admin-only" data-page="adm-news" onclick="nav('adm-news')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="16" height="13" rx="1"/><line x1="1" y1="7" x2="17" y2="7"/></svg>
+          GR News
+        </div>
+        <div class="nav-item admin-only" data-page="adm-avisos" onclick="nav('adm-avisos')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 1a7 7 0 017 7c0 4-3 6-5 7H7c-2-1-5-3-5-7a7 7 0 017-7z"/></svg>
+          Avisos
+        </div>
+        <div class="nav-item admin-only" data-page="adm-copa" onclick="nav('adm-copa')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 2h8v6a4 4 0 01-8 0V2z"/></svg>
+          Copa GR
+        </div>
+        <div class="nav-item admin-only" data-page="adm-beneficios" onclick="nav('adm-beneficios')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 2c0 0-7 3.5-7 8a7 7 0 0014 0c0-4.5-7-8-7-8z"/></svg>
+          Benefícios
+        </div>
+        <div class="nav-item admin-only" data-page="adm-hallfama" onclick="nav('adm-hallfama')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="9,1 11,7 17,7 12,11 14,17 9,13 4,17 6,11 1,7 7,7"/></svg>
+          Hall da Fama
+        </div>
+        <div class="nav-item admin-only" data-page="adm-regras" onclick="nav('adm-regras')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="1" width="12" height="16" rx="1"/><line x1="6" y1="6" x2="12" y2="6"/></svg>
+          Regras
+        </div>
+        <div class="nav-item coord-only" data-page="adm-usuarios" onclick="nav('adm-usuarios')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="6" r="4"/><path d="M2 17c0-4 3-7 7-7s7 3 7 7"/></svg>
+          Usuários
+        </div>
+        <div class="nav-item admin-only" data-page="adm-sugestoes" onclick="nav('adm-sugestoes')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 1a7 7 0 017 7c0 4-3 6-5 7H7c-2-1-5-3-5-7a7 7 0 017-7z"/><line x1="9" y1="10" x2="9" y2="13"/></svg>
+          Sugestões
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="sidebar-user">
@@ -504,6 +597,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
   <div class="topbar">
     <div class="topbar-title" id="topbar-title">Dashboard</div>
     <div class="topbar-right">
+      <span id="topbar-role-badge" style="display:none;font-size:8px;font-weight:700;letter-spacing:2px;font-family:var(--font-b);padding:3px 8px;border:1px solid currentColor;opacity:0.7"></span>
       <button class="notif-btn" id="notif-btn">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1a5 5 0 015 5v3l1.5 2H1.5L3 9V6a5 5 0 015-5z"/><path d="M6 13a2 2 0 004 0"/></svg>
         <div class="notif-dot" id="notif-dot" style="display:none"></div>
@@ -804,8 +898,128 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
       </div>
     </div>
 
+
+    <!-- ══ ADM: CAMPANHAS ══ -->
+    <div class="page" id="page-adm-campanhas">
+      <div class="adm-page-head">
+        <div class="adm-page-title">Campanhas</div>
+        <button class="btn-primary" onclick="openAdmModal('campanha')">+ Nova campanha</button>
+      </div>
+      <div class="adm-table-wrap" id="adm-camp-list"></div>
+    </div>
+
+    <!-- ══ ADM: METAS ══ -->
+    <div class="page" id="page-adm-metas">
+      <div class="adm-page-head">
+        <div class="adm-page-title">Metas</div>
+        <button class="btn-primary" onclick="openAdmModal('meta')">+ Nova meta</button>
+      </div>
+      <div class="adm-table-wrap" id="adm-meta-list"></div>
+    </div>
+
+    <!-- ══ ADM: COMISSÕES ══ -->
+    <div class="page" id="page-adm-comissoes">
+      <div class="adm-page-head">
+        <div class="adm-page-title">Comissões</div>
+        <button class="btn-primary" onclick="openAdmModal('comissao')">+ Lançar comissão</button>
+      </div>
+      <div class="adm-table-wrap" id="adm-com-list"></div>
+    </div>
+
+    <!-- ══ ADM: ACADEMY ══ -->
+    <div class="page" id="page-adm-academy">
+      <div class="adm-page-head">
+        <div class="adm-page-title">GR Academy</div>
+        <button class="btn-primary" onclick="openAdmModal('academy')">+ Novo conteúdo</button>
+      </div>
+      <div class="adm-table-wrap" id="adm-acad-list"></div>
+    </div>
+
+    <!-- ══ ADM: NEWS ══ -->
+    <div class="page" id="page-adm-news">
+      <div class="adm-page-head">
+        <div class="adm-page-title">GR News</div>
+        <button class="btn-primary" onclick="openAdmModal('news')">+ Nova notícia</button>
+      </div>
+      <div class="adm-table-wrap" id="adm-news-list"></div>
+    </div>
+
+    <!-- ══ ADM: AVISOS ══ -->
+    <div class="page" id="page-adm-avisos">
+      <div class="adm-page-head">
+        <div class="adm-page-title">Avisos</div>
+        <button class="btn-primary" onclick="openAdmModal('aviso')">+ Novo aviso</button>
+      </div>
+      <div class="adm-table-wrap" id="adm-aviso-list"></div>
+    </div>
+
+    <!-- ══ ADM: COPA ══ -->
+    <div class="page" id="page-adm-copa">
+      <div class="adm-page-head">
+        <div class="adm-page-title">Copa GR</div>
+        <button class="btn-primary" onclick="openAdmModal('copa-equipe')">+ Nova equipe</button>
+      </div>
+      <div class="adm-table-wrap" id="adm-copa-list"></div>
+    </div>
+
+    <!-- ══ ADM: BENEFÍCIOS ══ -->
+    <div class="page" id="page-adm-beneficios">
+      <div class="adm-page-head">
+        <div class="adm-page-title">Benefícios</div>
+        <button class="btn-primary" onclick="openAdmModal('beneficio')">+ Novo benefício</button>
+      </div>
+      <div class="adm-table-wrap" id="adm-benef-list"></div>
+    </div>
+
+    <!-- ══ ADM: HALL DA FAMA ══ -->
+    <div class="page" id="page-adm-hallfama">
+      <div class="adm-page-head">
+        <div class="adm-page-title">Hall da Fama</div>
+        <button class="btn-primary" onclick="openAdmModal('hallfama')">+ Adicionar homenagem</button>
+      </div>
+      <div class="adm-table-wrap" id="adm-hall-list"></div>
+    </div>
+
+    <!-- ══ ADM: REGRAS ══ -->
+    <div class="page" id="page-adm-regras">
+      <div class="adm-page-head">
+        <div class="adm-page-title">Regras GR</div>
+        <button class="btn-primary" onclick="openAdmModal('regra')">+ Nova regra</button>
+      </div>
+      <div class="adm-table-wrap" id="adm-regra-list"></div>
+    </div>
+
+    <!-- ══ ADM: USUÁRIOS ══ -->
+    <div class="page" id="page-adm-usuarios">
+      <div class="adm-page-head">
+        <div class="adm-page-title">Usuários</div>
+      </div>
+      <div class="adm-table-wrap" id="adm-user-list"></div>
+    </div>
+
+    <!-- ══ ADM: SUGESTÕES ══ -->
+    <div class="page" id="page-adm-sugestoes">
+      <div class="adm-page-head">
+        <div class="adm-page-title">Caixinha de Sugestões</div>
+      </div>
+      <div class="adm-table-wrap" id="adm-sug-list"></div>
+    </div>
+
   </div><!-- /content -->
 </div><!-- /main -->
+
+<!-- ══ ADM MODAL ══ -->
+<div class="modal-bg" id="modal-adm">
+  <div class="modal" style="width:560px">
+    <div class="modal-title" id="adm-modal-title">Editar</div>
+    <button class="modal-close" onclick="closeAdmModal()">✕</button>
+    <div id="adm-modal-body"></div>
+    <div style="display:flex;gap:10px;margin-top:24px;justify-content:flex-end">
+      <button class="btn-outline" onclick="closeAdmModal()">Cancelar</button>
+      <button class="btn-primary" id="adm-modal-save" onclick="saveAdmModal()">Salvar</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast-wrap" id="toast-wrap"></div>
 
@@ -955,9 +1169,10 @@ async function initApp(user){
   el('su-av').textContent=(dn[0]||'?').toUpperCase();
   el('auth-screen').style.display='none';
   await loadAll();
+  renderSidebar();
+  renderNav();
   renderDashboard();
   renderNiveis();
-  renderSidebar();
 }
 
 async function loadAll(){
@@ -1012,6 +1227,46 @@ function nav(page){
   _currentPage=page;
   const renderers={dashboard:renderDashboard,niveis:renderNiveis,performance:renderPerformance,destaques:renderDestaques,copa:renderCopa,campanhas:()=>renderCampanhas('ativa'),comissoes:renderComissoes,beneficios:renderBeneficios,academy:()=>renderAcademy('todos'),news:renderNews,sugestoes:renderSugestoes,hallfama:renderHallFama,regras:renderRegras,carreira:renderCarreira};
   renderers[page]?.();
+}
+
+/* ═══ ROLE HELPERS ═══ */
+function isAdmin(){ return ['admin','administrador'].includes((CUP?.cargo||'').toLowerCase()); }
+function isCoord(){ return ['coordenador','coordinador'].includes((CUP?.cargo||'').toLowerCase()); }
+function isSup(){ return ['supervisor'].includes((CUP?.cargo||'').toLowerCase()); }
+function isAdminOrCoord(){ return isAdmin()||isCoord(); }
+function isAdminOrCoordOrSup(){ return isAdmin()||isCoord()||isSup(); }
+function canManage(){ return isAdmin(); }
+function canViewAll(){ return isAdminOrCoordOrSup(); }
+
+function renderNav(){
+  // Show/hide admin nav section
+  const adminSection = el('nav-admin-section');
+  const adminItems = el('nav-admin-items');
+  if(adminSection && adminItems){
+    if(isAdminOrCoordOrSup()){
+      adminSection.style.display='block';
+      adminItems.style.display='block';
+      // Coord/Sup see limited admin items
+      document.querySelectorAll('.admin-only').forEach(el2=>{
+        el2.style.display = isAdmin() ? 'flex' : 'none';
+      });
+      document.querySelectorAll('.coord-only').forEach(el2=>{
+        el2.style.display = isAdminOrCoord() ? 'flex' : 'none';
+      });
+    } else {
+      adminSection.style.display='none';
+    }
+  }
+  // Add admin badge to topbar if admin
+  const badge = el('topbar-role-badge');
+  if(badge){
+    const cargo = CUP?.cargo||'Vendedor';
+    const colors = {admin:'var(--gold)',coordenador:'var(--violet2)',supervisor:'var(--green2)'};
+    const key = cargo.toLowerCase();
+    badge.textContent = cargo.toUpperCase();
+    badge.style.color = colors[key]||'var(--muted2)';
+    badge.style.display = isAdminOrCoordOrSup() ? 'block' : 'none';
+  }
 }
 
 /* ═══ SIDEBAR LEVEL ═══ */
@@ -1382,3 +1637,465 @@ function renderCarreira(){
 </script>
 </body>
 </html>
+<script>
+/* ═══════════════════════════════════════════════
+   GR PORTAL — ADMIN / COORD / SUP JS
+═══════════════════════════════════════════════ */
+
+/* ── NAV extension for admin pages ── */
+const ADM_PAGE_TITLES = {
+  'adm-campanhas':'Campanhas','adm-metas':'Metas','adm-comissoes':'Comissões',
+  'adm-academy':'GR Academy','adm-news':'GR News','adm-avisos':'Avisos',
+  'adm-copa':'Copa GR','adm-beneficios':'Benefícios','adm-hallfama':'Hall da Fama',
+  'adm-regras':'Regras GR','adm-usuarios':'Usuários','adm-sugestoes':'Sugestões',
+};
+
+// Extend existing nav function
+const _navOrig = nav;
+window.nav = function(page){
+  if(ADM_PAGE_TITLES[page]){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
+    el('page-'+page)?.classList.add('on');
+    document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('on');
+    el('topbar-title').textContent = ADM_PAGE_TITLES[page];
+    _currentPage = page;
+    const admRenderers = {
+      'adm-campanhas':renderAdmCampanhas,'adm-metas':renderAdmMetas,
+      'adm-comissoes':renderAdmComissoes,'adm-academy':renderAdmAcademy,
+      'adm-news':renderAdmNews,'adm-avisos':renderAdmAvisos,
+      'adm-copa':renderAdmCopa,'adm-beneficios':renderAdmBeneficios,
+      'adm-hallfama':renderAdmHallFama,'adm-regras':renderAdmRegras,
+      'adm-usuarios':renderAdmUsuarios,'adm-sugestoes':renderAdmSugestoes,
+    };
+    admRenderers[page]?.();
+  } else {
+    _navOrig(page);
+  }
+}
+
+/* ── UTILS ── */
+let _admEditId = null;
+let _admModalType = null;
+let _admAllUsers = [];
+
+function openAdmModal(type, data=null){
+  _admModalType = type;
+  _admEditId = data?.id || null;
+  const titles = {
+    campanha:'Campanha', meta:'Meta', comissao:'Comissão',
+    academy:'Conteúdo Academy', news:'Notícia', aviso:'Aviso',
+    'copa-equipe':'Equipe Copa', beneficio:'Benefício',
+    hallfama:'Hall da Fama', regra:'Regra', usuario:'Usuário',
+  };
+  el('adm-modal-title').textContent = (data ? 'Editar ' : 'Nova ') + (titles[type]||type);
+  el('adm-modal-body').innerHTML = buildAdmForm(type, data);
+  el('modal-adm').classList.add('on');
+}
+function closeAdmModal(){
+  el('modal-adm').classList.remove('on');
+  _admEditId = null; _admModalType = null;
+}
+el('modal-adm').addEventListener('click', e=>{ if(e.target===el('modal-adm')) closeAdmModal(); });
+
+function av(id){ return document.getElementById('af-'+id)?.value?.trim()||''; }
+function asel(id){ return document.getElementById('af-'+id)?.value||''; }
+
+function buildAdmForm(type, d={}){
+  const inp = (id,label,val='',type2='text',ph='')=>
+    `<div class="adm-field"><label class="adm-label">${label}</label>
+     <input class="adm-input" id="af-${id}" type="${type2}" value="${val||''}" placeholder="${ph}"></div>`;
+  const sel = (id,label,opts,val='')=>
+    `<div class="adm-field"><label class="adm-label">${label}</label>
+     <select class="adm-select" id="af-${id}">${opts.map(o=>
+       `<option value="${o.v}" ${val===o.v?'selected':''}>${o.l}</option>`).join('')}</select></div>`;
+  const ta = (id,label,val='',ph='')=>
+    `<div class="adm-field"><label class="adm-label">${label}</label>
+     <textarea class="adm-textarea" id="af-${id}" placeholder="${ph}">${val||''}</textarea></div>`;
+  const g2 = (...fields)=>`<div class="adm-grid-2">${fields.join('')}</div>`;
+  const g3 = (...fields)=>`<div class="adm-grid-3">${fields.join('')}</div>`;
+
+  switch(type){
+    case 'campanha': return `
+      ${inp('titulo','Título da campanha',d.titulo,'text','Ex: Copa de Junho')}
+      ${ta('regras','Regras',d.regras,'Descreva as regras...')}
+      ${g3(
+        inp('meta_cotas','Meta (cotas)',d.meta_cotas,'number','0'),
+        inp('premio_valor','Prêmio (R$)',d.premio_valor,'number','0'),
+        inp('progresso_pct','Progresso %',d.progresso_pct,'number','0')
+      )}
+      ${g2(inp('data_inicio','Início',d.data_inicio,'date'),inp('data_fim','Fim',d.data_fim,'date'))}
+      ${sel('status','Status',[{v:'ativa',l:'✅ Ativa'},{v:'encerrada',l:'⛔ Encerrada'}],d.status||'ativa')}
+      ${inp('premio_descricao','Descrição do prêmio',d.premio_descricao,'text','Ex: Viagem para...')}`;
+
+    case 'meta': return `
+      ${sel('user_id','Colaborador',[{v:'',l:'Selecionar...'},..._admAllUsers.map(u=>({v:u.user_id,l:u.nome||u.user_id}))],d.user_id)}
+      ${g2(inp('referencia','Mês (YYYY-MM)',d.referencia,'month',new Date().toISOString().slice(0,7)),
+           inp('meta_cotas','Meta (cotas)',d.meta_cotas,'number','10'))}
+      ${inp('meta_valor','Meta volume (R$)',d.meta_valor,'number','0')}`;
+
+    case 'comissao': return `
+      ${sel('user_id','Colaborador',[{v:'',l:'Selecionar...'},..._admAllUsers.map(u=>({v:u.user_id,l:u.nome||u.user_id}))],d.user_id)}
+      ${g2(inp('referencia','Mês (YYYY-MM)',d.referencia,'month'),inp('valor','Valor (R$)',d.valor,'number','0'))}
+      ${inp('descricao','Descrição',d.descricao,'text','Ex: Comissão de vendas')}
+      ${sel('status','Status',[{v:'prevista',l:'Prevista'},{v:'liberada',l:'Liberada'},{v:'paga',l:'Paga'}],d.status||'prevista')}
+      ${inp('data_pagamento','Data pagamento',d.data_pagamento,'date')}`;
+
+    case 'academy': return `
+      ${inp('titulo','Título',d.titulo)}
+      ${g2(sel('tipo','Tipo',[{v:'video',l:'Vídeo'},{v:'live',l:'Live'},{v:'material',l:'Material'}],d.tipo),
+           inp('duracao','Duração',d.duracao,'text','Ex: 32 min'))}
+      ${inp('url','URL / Link',d.url,'url','https://')}
+      ${inp('instrutor','Instrutor',d.instrutor)}
+      ${ta('descricao','Descrição',d.descricao)}
+      ${sel('tem_certificado','Certificado',[{v:'false',l:'Não'},{v:'true',l:'Sim'}],String(d.tem_certificado))}`;
+
+    case 'news': return `
+      ${inp('titulo','Título',d.titulo)}
+      ${sel('categoria','Categoria',[{v:'empresa',l:'Empresa'},{v:'mercado',l:'Mercado'},{v:'novidade',l:'Novidade'}],d.categoria)}
+      ${ta('resumo','Resumo',d.resumo)}
+      ${ta('conteudo','Conteúdo completo',d.conteudo)}
+      ${inp('autor','Autor',d.autor)}`;
+
+    case 'aviso': return `
+      ${inp('titulo','Título',d.titulo)}
+      ${ta('conteudo','Conteúdo',d.conteudo)}
+      ${sel('tipo','Tipo',[{v:'info',l:'Info'},{v:'alerta',l:'Alerta'},{v:'urgente',l:'Urgente'}],d.tipo)}
+      ${sel('ativo','Ativo',[{v:'true',l:'Sim'},{v:'false',l:'Não'}],String(d.ativo!==false))}`;
+
+    case 'copa-equipe': return `
+      ${inp('nome','Nome da equipe',d.nome)}
+      ${inp('temporada','Temporada',d.temporada||new Date().getFullYear())}
+      ${g3(inp('vitorias','V',d.vitorias,'number','0'),inp('empates','E',d.empates,'number','0'),inp('derrotas','D',d.derrotas,'number','0'))}
+      ${g2(inp('gols_marcados','Gols marcados',d.gols_marcados,'number','0'),inp('gols_sofridos','Gols sofridos',d.gols_sofridos,'number','0'))}
+      ${inp('pontos','Pontos',d.pontos,'number','0')}`;
+
+    case 'beneficio': return `
+      ${sel('user_id','Colaborador',[{v:'',l:'Todos / Geral'},..._admAllUsers.map(u=>({v:u.user_id,l:u.nome||u.user_id}))],d.user_id)}
+      ${inp('titulo','Título',d.titulo)}
+      ${sel('tipo','Tipo',[{v:'beneficio',l:'Benefício'},{v:'folga',l:'Folga'}],d.tipo)}
+      ${ta('descricao','Descrição',d.descricao)}
+      ${g2(inp('validade','Válido até',d.validade,'date'),
+           sel('status','Status',[{v:'Disponível',l:'Disponível'},{v:'Usado',l:'Usado'},{v:'Expirado',l:'Expirado'}],d.status))}`;
+
+    case 'hallfama': return `
+      ${inp('nome','Nome',d.nome)}
+      ${g2(inp('categoria','Categoria',d.categoria,'text','Ex: Maior Vendedor'),inp('ano','Ano',d.ano||new Date().getFullYear(),'number'))}
+      ${inp('valor','Resultado',d.valor,'text','Ex: 87 cotas')}
+      ${ta('descricao','Descrição',d.descricao)}`;
+
+    case 'regra': return `
+      ${inp('titulo','Título',d.titulo)}
+      ${ta('conteudo','Conteúdo',d.conteudo)}
+      ${g2(inp('categoria','Categoria',d.categoria,'text','geral'),inp('ordem','Ordem',d.ordem,'number','0'))}`;
+
+    case 'usuario': return `
+      ${inp('nome','Nome',d.nome)}
+      ${sel('cargo','Cargo',[
+        {v:'Vendedor',l:'Vendedor'},
+        {v:'Supervisor',l:'Supervisor'},
+        {v:'Coordenador',l:'Coordenador'},
+        {v:'Admin',l:'Admin'},
+      ],d.cargo)}
+      ${inp('equipe','Equipe',d.equipe)}
+      ${inp('data_admissao','Data admissão',d.data_admissao,'date')}
+      ${inp('pontos','Pontos GR Nível',d.pontos,'number','0')}`;
+
+    default: return '<p style="color:var(--muted2)">Formulário não configurado.</p>';
+  }
+}
+
+async function saveAdmModal(){
+  const type = _admModalType;
+  const editId = _admEditId;
+  let payload = {};
+
+  switch(type){
+    case 'campanha':
+      payload = { titulo:av('titulo'), regras:av('regras'), meta_cotas:parseInt(av('meta_cotas'))||0,
+        premio_valor:parseFloat(av('premio_valor'))||0, progresso_pct:parseInt(av('progresso_pct'))||0,
+        data_inicio:av('data_inicio')||null, data_fim:av('data_fim')||null,
+        status:asel('status'), premio_descricao:av('premio_descricao') };
+      break;
+    case 'meta':
+      payload = { user_id:asel('user_id'), referencia:av('referencia'),
+        meta_cotas:parseInt(av('meta_cotas'))||10, meta_valor:parseFloat(av('meta_valor'))||0 };
+      break;
+    case 'comissao':
+      payload = { user_id:asel('user_id'), referencia:av('referencia'),
+        valor:parseFloat(av('valor'))||0, descricao:av('descricao'),
+        status:asel('status'), data_pagamento:av('data_pagamento')||null };
+      break;
+    case 'academy':
+      payload = { titulo:av('titulo'), tipo:asel('tipo'), duracao:av('duracao'),
+        url:av('url'), instrutor:av('instrutor'), descricao:av('descricao'),
+        tem_certificado: asel('tem_certificado')==='true' };
+      break;
+    case 'news':
+      payload = { titulo:av('titulo'), categoria:asel('categoria'),
+        resumo:av('resumo'), conteudo:av('conteudo'), autor:av('autor') };
+      break;
+    case 'aviso':
+      payload = { titulo:av('titulo'), conteudo:av('conteudo'),
+        tipo:asel('tipo'), ativo: asel('ativo')==='true' };
+      break;
+    case 'copa-equipe':
+      payload = { nome:av('nome'), temporada:av('temporada'),
+        vitorias:parseInt(av('vitorias'))||0, empates:parseInt(av('empates'))||0,
+        derrotas:parseInt(av('derrotas'))||0, gols_marcados:parseInt(av('gols_marcados'))||0,
+        gols_sofridos:parseInt(av('gols_sofridos'))||0, pontos:parseInt(av('pontos'))||0 };
+      break;
+    case 'beneficio':
+      payload = { user_id:asel('user_id')||null, titulo:av('titulo'), tipo:asel('tipo'),
+        descricao:av('descricao'), validade:av('validade')||null, status:asel('status') };
+      break;
+    case 'hallfama':
+      payload = { nome:av('nome'), categoria:av('categoria'), ano:parseInt(av('ano'))||new Date().getFullYear(),
+        valor:av('valor'), descricao:av('descricao') };
+      break;
+    case 'regra':
+      payload = { titulo:av('titulo'), conteudo:av('conteudo'),
+        categoria:av('categoria')||'geral', ordem:parseInt(av('ordem'))||0 };
+      break;
+    case 'usuario':
+      payload = { nome:av('nome'), cargo:asel('cargo'), equipe:av('equipe'),
+        data_admissao:av('data_admissao')||null, pontos:parseInt(av('pontos'))||0 };
+      break;
+  }
+
+  // Map type to table
+  const tables = {
+    campanha:'portal_campanhas', meta:'portal_metas', comissao:'portal_comissoes',
+    academy:'portal_academy', news:'portal_news', aviso:'portal_avisos',
+    'copa-equipe':'portal_copa_equipes', beneficio:'portal_beneficios',
+    hallfama:'portal_hall_fama', regra:'portal_regras',
+  };
+
+  const btn = el('adm-modal-save');
+  btn.textContent = 'Salvando...'; btn.disabled = true;
+
+  let error;
+  if(type === 'usuario'){
+    // Users table uses user_id as key
+    const {error:e} = await sb.from('portal_users').update(payload).eq('id', editId);
+    error = e;
+  } else if(editId){
+    const {error:e} = await sb.from(tables[type]).update(payload).eq('id', editId);
+    error = e;
+  } else {
+    const {error:e} = await sb.from(tables[type]).insert({...payload, criado_em:new Date().toISOString()});
+    error = e;
+  }
+
+  btn.textContent = 'Salvar'; btn.disabled = false;
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+
+  toast(editId ? 'Atualizado!' : 'Criado com sucesso!', 'ok');
+  closeAdmModal();
+  // Reload data and re-render
+  await reloadAdmData(type);
+  nav(_currentPage);
+}
+
+async function reloadAdmData(type){
+  const reloads = {
+    campanha: async()=>{ const {data}=await sb.from('portal_campanhas').select('*').order('criado_em',{ascending:false}); if(data)allCampanhas=data; },
+    meta:     async()=>{ const {data}=await sb.from('portal_metas').select('*'); if(data)allMetas=data; },
+    comissao: async()=>{ const {data}=await sb.from('portal_comissoes').select('*').order('referencia',{ascending:false}); if(data)allComissoes=data; },
+    academy:  async()=>{ const {data}=await sb.from('portal_academy').select('*').order('criado_em',{ascending:false}); if(data)allAcademy=data; },
+    news:     async()=>{ const {data}=await sb.from('portal_news').select('*').order('criado_em',{ascending:false}); if(data)allNews=data; },
+    aviso:    async()=>{ const {data}=await sb.from('portal_avisos').select('*').order('criado_em',{ascending:false}); if(data)allAvisos=data; },
+    'copa-equipe': async()=>{ const {data}=await sb.from('portal_copa_equipes').select('*'); if(data)allCopaEquipes=data; },
+    beneficio:async()=>{ const {data}=await sb.from('portal_beneficios').select('*'); if(data)allBeneficios=data; },
+    hallfama: async()=>{ const {data}=await sb.from('portal_hall_fama').select('*').order('ano',{ascending:false}); if(data)allHallFama=data; },
+    regra:    async()=>{ const {data}=await sb.from('portal_regras').select('*').order('ordem'); if(data)allRegras=data; },
+    usuario:  async()=>{ const {data}=await sb.from('portal_users').select('*'); if(data){ _admAllUsers=data; } },
+  };
+  await reloads[type]?.();
+}
+
+async function deleteAdmItem(type, id){
+  if(!confirm('Confirmar exclusão?')) return;
+  const tables = {
+    campanha:'portal_campanhas', meta:'portal_metas', comissao:'portal_comissoes',
+    academy:'portal_academy', news:'portal_news', aviso:'portal_avisos',
+    'copa-equipe':'portal_copa_equipes', beneficio:'portal_beneficios',
+    hallfama:'portal_hall_fama', regra:'portal_regras',
+  };
+  const {error} = await sb.from(tables[type]).delete().eq('id',id);
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  toast('Excluído','ok');
+  await reloadAdmData(type);
+  nav(_currentPage);
+}
+
+/* ── ADM RENDERERS ── */
+function admList(items, type, rowFn){
+  if(!items?.length) return '<div class="empty" style="padding:32px"><div class="empty-line"></div><div class="empty-text">Nenhum item ainda</div></div>';
+  return items.map(item => `
+    <div class="adm-row">
+      ${rowFn(item)}
+      <div class="adm-actions">
+        <button class="btn-edit" onclick='openAdmModal("${type}",${JSON.stringify(item).replace(/'/g,"&#39;")})'>Editar</button>
+        <button class="btn-del" onclick="deleteAdmItem('${type}','${item.id}')" title="Excluir">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderAdmCampanhas(){
+  const list = allCampanhas;
+  el('adm-camp-list').innerHTML = admList(list,'campanha', c=>`
+    <div class="status-dot ${c.status==='ativa'?'green':'muted'}"></div>
+    <div class="adm-row-main">
+      <div class="adm-row-title">${c.titulo}</div>
+      <div class="adm-row-sub">${fmtDate(c.data_inicio)} → ${fmtDate(c.data_fim)} · Meta: ${c.meta_cotas||0} cotas · Prêmio: ${fmtBRL(c.premio_valor)}</div>
+    </div>
+    <span class="tag" style="background:${c.status==='ativa'?'rgba(62,201,154,0.1)':'rgba(255,255,255,0.05)'};color:${c.status==='ativa'?'var(--green2)':'var(--muted2)'}">${c.status?.toUpperCase()}</span>`);
+}
+
+function renderAdmMetas(){
+  const list = allMetas;
+  el('adm-meta-list').innerHTML = admList(list,'meta', m=>{
+    const user = _admAllUsers.find(u=>u.user_id===m.user_id);
+    return `<div class="adm-row-main">
+      <div class="adm-row-title">${user?.nome||m.user_id||'–'}</div>
+      <div class="adm-row-sub">${m.referencia} · ${m.meta_cotas} cotas · ${fmtBRL(m.meta_valor)}</div>
+    </div>`;
+  });
+}
+
+function renderAdmComissoes(){
+  const list = allComissoes;
+  const statusColor = {prevista:'var(--gold)',liberada:'var(--green2)',paga:'var(--muted2)'};
+  el('adm-com-list').innerHTML = admList(list,'comissao', c=>{
+    const user = _admAllUsers.find(u=>u.user_id===c.user_id);
+    return `<div class="status-dot" style="background:${statusColor[c.status]||'var(--muted2)'}"></div>
+    <div class="adm-row-main">
+      <div class="adm-row-title">${user?.nome||c.user_id||'–'} · ${fmtBRL(c.valor)}</div>
+      <div class="adm-row-sub">${c.referencia} · ${c.descricao||'–'}</div>
+    </div>
+    <span class="tag" style="color:${statusColor[c.status]||'var(--muted2)'};border:1px solid currentColor;background:transparent">${c.status?.toUpperCase()}</span>`;
+  });
+}
+
+function renderAdmAcademy(){
+  el('adm-acad-list').innerHTML = admList(allAcademy,'academy', a=>`
+    <div class="adm-row-main">
+      <div class="adm-row-title">${a.titulo}</div>
+      <div class="adm-row-sub">${a.tipo?.toUpperCase()} · ${a.duracao||'–'} · ${a.instrutor||'–'}${a.tem_certificado?' · 🎓 Certificado':''}</div>
+    </div>`);
+}
+
+function renderAdmNews(){
+  el('adm-news-list').innerHTML = admList(allNews,'news', n=>`
+    <div class="adm-row-main">
+      <div class="adm-row-title">${n.titulo}</div>
+      <div class="adm-row-sub">${n.categoria?.toUpperCase()||'–'} · ${fmtDate(n.criado_em)} · ${n.autor||'–'}</div>
+    </div>`);
+}
+
+function renderAdmAvisos(){
+  el('adm-aviso-list').innerHTML = admList(allAvisos,'aviso', a=>`
+    <div class="status-dot ${a.ativo?'green':'muted'}"></div>
+    <div class="adm-row-main">
+      <div class="adm-row-title">${a.titulo}</div>
+      <div class="adm-row-sub">${a.tipo?.toUpperCase()||'INFO'} · ${fmtDate(a.criado_em)}</div>
+    </div>`);
+}
+
+function renderAdmCopa(){
+  el('adm-copa-list').innerHTML = admList(allCopaEquipes,'copa-equipe', e=>`
+    <div class="adm-row-main">
+      <div class="adm-row-title">${e.nome}</div>
+      <div class="adm-row-sub">Temp. ${e.temporada} · ${e.pontos} pts · ${e.vitorias}V ${e.empates}E ${e.derrotas}D · Gols ${e.gols_marcados}:${e.gols_sofridos}</div>
+    </div>`);
+}
+
+function renderAdmBeneficios(){
+  el('adm-benef-list').innerHTML = admList(allBeneficios,'beneficio', b=>{
+    const user = _admAllUsers.find(u=>u.user_id===b.user_id);
+    return `<div class="adm-row-main">
+      <div class="adm-row-title">${b.titulo}</div>
+      <div class="adm-row-sub">${b.tipo?.toUpperCase()} · ${user?.nome||'Geral'} · Válido: ${fmtDate(b.validade)}</div>
+    </div>
+    <span class="tag" style="background:rgba(255,255,255,0.05);color:var(--muted2)">${b.status||'–'}</span>`;
+  });
+}
+
+function renderAdmHallFama(){
+  el('adm-hall-list').innerHTML = admList(allHallFama,'hallfama', h=>`
+    <div class="adm-row-main">
+      <div class="adm-row-title">${h.nome} · ${h.valor||'–'}</div>
+      <div class="adm-row-sub">${h.categoria||'–'} · ${h.ano}</div>
+    </div>`);
+}
+
+function renderAdmRegras(){
+  el('adm-regra-list').innerHTML = admList(allRegras,'regra', r=>`
+    <div style="font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--gold-dim);width:28px;flex-shrink:0">${String(r.ordem||0).padStart(2,'0')}</div>
+    <div class="adm-row-main">
+      <div class="adm-row-title">${r.titulo}</div>
+      <div class="adm-row-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:400px">${r.conteudo?.slice(0,80)||'–'}</div>
+    </div>`);
+}
+
+async function renderAdmUsuarios(){
+  // Load all users for admin
+  if(!_admAllUsers.length){
+    const {data} = await sb.from('portal_users').select('*').order('nome');
+    _admAllUsers = data||[];
+  }
+  const cargoColor = {admin:'var(--gold)',coordenador:'var(--violet2)',supervisor:'var(--green2)',vendedor:'var(--muted2)'};
+  el('adm-user-list').innerHTML = _admAllUsers.length===0
+    ?'<div class="empty" style="padding:32px"><div class="empty-line"></div><div class="empty-text">Nenhum usuário cadastrado</div></div>'
+    :_admAllUsers.map(u=>`
+      <div class="adm-row">
+        <div class="su-av" style="width:28px;height:28px;font-size:12px;flex-shrink:0;background:var(--gold);color:#07070C;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800">${(u.nome||'?')[0].toUpperCase()}</div>
+        <div class="adm-row-main">
+          <div class="adm-row-title">${u.nome||'Sem nome'}</div>
+          <div class="adm-row-sub">${u.equipe||'–'} · Admissão: ${fmtDate(u.data_admissao)} · ${u.pontos||0} pts</div>
+        </div>
+        <span class="tag" style="color:${cargoColor[(u.cargo||'vendedor').toLowerCase()]||'var(--muted2)'};border:1px solid currentColor;background:transparent">${(u.cargo||'Vendedor').toUpperCase()}</span>
+        <div class="adm-actions">
+          <button class="btn-edit" onclick='openAdmModal("usuario",${JSON.stringify(u).replace(/'/g,"&#39;")})'>Editar</button>
+        </div>
+      </div>`).join('');
+}
+
+async function renderAdmSugestoes(){
+  // Load all sugestoes for admin
+  const {data} = await sb.from('portal_sugestoes').select('*').order('criado_em',{ascending:false});
+  const list = data||[];
+  const statusColor = {pendente:'var(--gold)',analisada:'var(--violet2)',implementada:'var(--green2)'};
+  el('adm-sug-list').innerHTML = list.length===0
+    ?'<div class="empty" style="padding:32px"><div class="empty-line"></div><div class="empty-text">Nenhuma sugestão</div></div>'
+    :list.map(s=>`
+      <div class="adm-row">
+        <div class="adm-row-main">
+          <div class="adm-row-title" style="white-space:normal;font-size:12.5px">${s.texto}</div>
+          <div class="adm-row-sub">${s.categoria||'–'} · ${s.anonimo?'Anônima':'–'} · ${fmtDate(s.criado_em)}</div>
+        </div>
+        <select class="adm-select" style="width:130px;font-size:11px;padding:6px 8px" onchange="updateSugStatus('${s.id}',this.value)">
+          <option value="pendente" ${s.status==='pendente'?'selected':''}>Pendente</option>
+          <option value="analisada" ${s.status==='analisada'?'selected':''}>Analisada</option>
+          <option value="implementada" ${s.status==='implementada'?'selected':''}>Implementada</option>
+        </select>
+      </div>`).join('');
+}
+
+async function updateSugStatus(id, status){
+  const {error} = await sb.from('portal_sugestoes').update({status}).eq('id',id);
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  toast('Status atualizado','ok');
+}
+
+/* ── Load users when admin loads ── */
+const _loadAllOrig = loadAll;
+window.loadAll = async function(){
+  await _loadAllOrig();
+  if(isAdminOrCoordOrSup()){
+    const {data} = await sb.from('portal_users').select('*').order('nome');
+    _admAllUsers = data||[];
+  }
+}
+</script>
