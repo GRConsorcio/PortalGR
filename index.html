@@ -888,9 +888,30 @@ async function doAuth(){
 async function doRegister(){
   const name=v('r-name'),email=v('r-email'),pass=v('r-pass');
   if(!name||!email||!pass){el('a-err').textContent='Preencha todos os campos';return;}
-  const {error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name}}});
-  if(error){el('a-err').textContent=error.message;return;}
-  toast('Conta criada! Verifique seu e-mail.','ok');
+  if(pass.length<6){el('a-err').textContent='Senha deve ter pelo menos 6 caracteres';return;}
+  el('a-err').textContent='';
+  const btn=document.querySelector('#auth-register .btn-auth');
+  if(btn){btn.textContent='Criando...';btn.disabled=true;}
+  const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name}}});
+  if(btn){btn.textContent='Criar conta';btn.disabled=false;}
+  if(error){
+    // 500 = trigger falhando porque tabelas ainda não existem
+    if(error.status===500||error.message?.includes('Database error')){
+      el('a-err').innerHTML='Execute o SQL no Supabase primeiro.<br><span style="font-size:10px;color:var(--muted2)">Dashboard → SQL Editor → cole o arquivo gr-portal-SQL.sql</span>';
+    } else {
+      el('a-err').textContent=error.message;
+    }
+    return;
+  }
+  if(data?.user){
+    // Tenta criar perfil manualmente (caso trigger não exista ainda)
+    await sb.from('portal_users').upsert({user_id:data.user.id,nome:name},{onConflict:'user_id'}).catch(()=>{});
+    toast('Conta criada com sucesso!','ok');
+    // Auto login
+    const {error:loginErr}=await sb.auth.signInWithPassword({email,password:pass});
+    if(!loginErr) return;
+  }
+  toast('Verifique seu e-mail para confirmar o cadastro.','ok');
 }
 async function doLogout(){await sb.auth.signOut();location.reload();}
 
