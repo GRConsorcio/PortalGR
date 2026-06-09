@@ -1211,8 +1211,7 @@ async function loadAll(){
   CUP=prf;
   if(CUP){
     el('su-role').textContent=CUP.cargo||'Vendedor';
-    const lv=getLevelForPts(CUP.pontos||0);
-    el('su-role').textContent=(CUP.cargo||'Vendedor');
+    console.log('Portal profile loaded:', CUP.cargo, CUP);
   }
 }
 
@@ -1230,9 +1229,18 @@ function nav(page){
 }
 
 /* ═══ ROLE HELPERS ═══ */
-function isAdmin(){ return ['admin','administrador'].includes((CUP?.cargo||'').toLowerCase()); }
-function isCoord(){ return ['coordenador','coordinador'].includes((CUP?.cargo||'').toLowerCase()); }
-function isSup(){ return ['supervisor'].includes((CUP?.cargo||'').toLowerCase()); }
+function isAdmin(){ 
+  const cargo = (CUP?.cargo||'').toLowerCase().trim();
+  return ['admin','administrador'].includes(cargo); 
+}
+function isCoord(){ 
+  const cargo = (CUP?.cargo||'').toLowerCase().trim();
+  return ['coordenador','coordinador'].includes(cargo); 
+}
+function isSup(){ 
+  const cargo = (CUP?.cargo||'').toLowerCase().trim();
+  return ['supervisor'].includes(cargo); 
+}
 function isAdminOrCoord(){ return isAdmin()||isCoord(); }
 function isAdminOrCoordOrSup(){ return isAdmin()||isCoord()||isSup(); }
 function canManage(){ return isAdmin(); }
