@@ -208,20 +208,6 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .camp-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green2))}
 .camp-prog{display:flex;justify-content:space-between;font-size:10px;color:var(--muted2);margin-top:5px}
 
-/* Comissões */
-.comiss-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px}
-.comiss-tab{padding:10px 16px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;color:var(--muted2);transition:all .15s}
-.comiss-tab.on{color:var(--gold);border-bottom-color:var(--gold)}
-.comiss-row{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);gap:12px;font-size:12.5px}
-.comiss-row:last-child{border-bottom:none}
-.comiss-mes{color:var(--muted2);width:80px;flex-shrink:0}
-.comiss-desc{flex:1}
-.comiss-val{font-family:var(--font-d);font-weight:700;text-align:right}
-.comiss-status{font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 7px}
-.status-prevista{background:rgba(201,168,76,0.12);color:var(--gold)}
-.status-liberada{background:rgba(45,155,111,0.12);color:var(--green2)}
-.status-paga{background:rgba(255,255,255,0.06);color:var(--muted2)}
-
 /* Beneficios */
 .benef-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border)}
 .benef-card{background:var(--s2);padding:20px}
@@ -512,10 +498,6 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
       Campanhas
     </div>
     <div class="nav-sect">Financeiro</div>
-    <div class="nav-item" data-page="comissoes" onclick="nav('comissoes')">
-      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="16" height="11" rx="1"/><line x1="1" y1="8" x2="17" y2="8"/><line x1="5" y1="12" x2="8" y2="12"/></svg>
-      Comissões
-    </div>
     <div class="nav-item" data-page="beneficios" onclick="nav('beneficios')">
       <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 2c0 0-7 3.5-7 8a7 7 0 0014 0c0-4.5-7-8-7-8z"/><path d="M9 2v14"/></svg>
       Benefícios
@@ -564,9 +546,9 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
           <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2L4 7H2a1 1 0 00-1 1v2a1 1 0 001 1h2l10 5V2z"/></svg>
           Campanhas
         </div>
-        <div class="nav-item admin-only" data-page="adm-comissoes" onclick="nav('adm-comissoes')">
-          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="16" height="11" rx="1"/><line x1="1" y1="8" x2="17" y2="8"/></svg>
-          Comissões
+        <div class="nav-item admin-only" data-page="adm-destaques" onclick="nav('adm-destaques')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 1l2.2 5.4L17 7l-4 3.9L14 17l-5-3-5 3 1-6.1-4-3.9 5.8-.6z"/></svg>
+          Destaques
         </div>
         <div class="nav-item admin-only" data-page="adm-academy" onclick="nav('adm-academy')">
           <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 1L1 5l8 4 8-4-8-4z"/><path d="M5 7v5a4 4 0 008 0V7"/></svg>
@@ -640,7 +622,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
       <div class="kpi-grid" id="dash-kpis">
         <div class="kpi-card"><div class="kpi-label">Cotas este mês</div><div class="kpi-val" id="kpi-cotas">–</div><div class="kpi-sub">Meta: <span id="kpi-meta">–</span></div><div class="kpi-delta up" id="kpi-delta">–</div></div>
         <div class="kpi-card"><div class="kpi-label">Volume vendido</div><div class="kpi-val gold" id="kpi-volume" style="color:var(--gold2)">–</div><div class="kpi-sub">Mês atual</div></div>
-        <div class="kpi-card"><div class="kpi-label">Comissão prevista</div><div class="kpi-val" id="kpi-comissao">–</div><div class="kpi-sub">Baseado em vendas</div></div>
+        <div class="kpi-card"><div class="kpi-label">Nível GR</div><div class="kpi-val" id="kpi-nivel" style="color:var(--gold2)">–</div><div class="kpi-sub" id="kpi-nivel-sub">–</div></div>
         <div class="kpi-card"><div class="kpi-label">Ranking equipe</div><div class="kpi-val" id="kpi-rank">–</div><div class="kpi-sub" id="kpi-rank-sub">–</div></div>
       </div>
       <div style="height:16px"></div>
@@ -801,28 +783,6 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
       <div class="grid-2" id="camp-grid"></div>
     </div>
 
-    <!-- COMISSÕES -->
-    <div class="page" id="page-comissoes">
-      <div class="kpi-grid" style="margin-bottom:16px">
-        <div class="kpi-card"><div class="kpi-label">Prevista</div><div class="kpi-val" id="com-prevista" style="color:var(--gold2)">–</div></div>
-        <div class="kpi-card"><div class="kpi-label">Liberada</div><div class="kpi-val" id="com-liberada">–</div></div>
-        <div class="kpi-card"><div class="kpi-label">Paga</div><div class="kpi-val" id="com-paga" style="color:var(--green2)">–</div></div>
-        <div class="kpi-card"><div class="kpi-label">Total acumulado</div><div class="kpi-val" id="com-total">–</div></div>
-      </div>
-      <div class="panel">
-        <div class="panel-head"><div class="panel-title">Histórico de comissões</div></div>
-        <div class="panel-body" style="padding:0 20px 20px">
-          <div class="comiss-tabs">
-            <button class="comiss-tab on" onclick="switchComissTab('todas',this)">Todas</button>
-            <button class="comiss-tab" onclick="switchComissTab('prevista',this)">Previstas</button>
-            <button class="comiss-tab" onclick="switchComissTab('liberada',this)">Liberadas</button>
-            <button class="comiss-tab" onclick="switchComissTab('paga',this)">Pagas</button>
-          </div>
-          <div id="comiss-list"></div>
-        </div>
-      </div>
-    </div>
-
     <!-- BENEFÍCIOS -->
     <div class="page" id="page-beneficios">
       <div class="panel" style="margin-bottom:16px">
@@ -956,13 +916,13 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
       <div class="adm-table-wrap" id="adm-meta-list"></div>
     </div>
 
-    <!-- ══ ADM: COMISSÕES ══ -->
-    <div class="page" id="page-adm-comissoes">
+    <!-- ══ ADM: DESTAQUES ══ -->
+    <div class="page" id="page-adm-destaques">
       <div class="adm-page-head">
-        <div class="adm-page-title">Comissões</div>
-        <button class="btn-primary" onclick="openAdmModal('comissao')">+ Lançar comissão</button>
+        <div class="adm-page-title">Destaques do Mês</div>
+        <button class="btn-primary" onclick="openAdmModal('destaque')">+ Novo destaque</button>
       </div>
-      <div class="adm-table-wrap" id="adm-com-list"></div>
+      <div class="adm-table-wrap" id="adm-dest-list"></div>
     </div>
 
     <!-- ══ ADM: ACADEMY ══ -->
@@ -1070,12 +1030,11 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 /* ═══ STATE ═══ */
 let CU = null, CUP = null;
-let allVendas=[], allMetas=[], allCampanhas=[], allComissoes=[], allBeneficios=[];
+let allVendas=[], allMetas=[], allCampanhas=[], allBeneficios=[];
 let allAcademy=[], allNews=[], allSugestoes=[], allHallFama=[], allRegras=[];
-let allCopaEquipes=[], allCopaPartidas=[], allAvisos=[], allCarreira=[];
+let allCopaEquipes=[], allCopaPartidas=[], allAvisos=[], allCarreira=[], allDestaques=[];
 let _currentPage = 'dashboard';
 let _sugAnon = false;
-let _comissFilter = 'todas';
 
 /* ═══ NÍVEIS CONFIG ═══ */
 const LEVELS = [
@@ -1228,7 +1187,7 @@ async function doRegister(){
   if(data?.user){
     // Tenta criar perfil manualmente (caso trigger não exista ainda)
     try{
-      await sb.from('portal_users').upsert({user_id:data.user.id,nome:name},{onConflict:'user_id'});
+      await sb.from('portal_users').upsert({user_id:data.user.id,nome:name,email:email},{onConflict:'user_id'});
     } catch(e){ console.warn('Profile upsert:',e.message); }
     toast('Conta criada com sucesso!','ok');
     // Auto login
@@ -1261,7 +1220,6 @@ async function initApp(user){
   el('su-av').textContent=(dn[0]||'?').toUpperCase();
   el('auth-screen').style.display='none';
   await loadAll();
-  console.log('initApp: cargo=', CUP?.cargo, '| isAdmin=', isAdmin(), '| isAdminOrCoordOrSup=', isAdminOrCoordOrSup());
   renderSidebar();
   renderNav();
   renderDashboard();
@@ -1270,11 +1228,14 @@ async function initApp(user){
 
 async function loadAll(){
   const uid=CU.id;
-  const [vr,mr,cr,cor,br,ar,nr,sr,hr,rr,cpr,avr,carr]=await Promise.allSettled([
+  // OTIMIZAÇÃO: o perfil (portal_users) era buscado DEPOIS de todo o resto, em
+  // série — um round-trip inteiro de rede jogado fora à toa, já que nenhuma
+  // dessas 13 consultas depende do perfil. Juntei tudo num Promise.allSettled
+  // só, então roda tudo em paralelo e a tela carrega mais rápido.
+  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf]=await Promise.allSettled([
     sb.from('portal_vendas').select('*').eq('user_id',uid).order('data',{ascending:false}),
     sb.from('portal_metas').select('*').eq('user_id',uid),
     sb.from('portal_campanhas').select('*').order('criado_em',{ascending:false}),
-    sb.from('portal_comissoes').select('*').eq('user_id',uid).order('referencia',{ascending:false}),
     sb.from('portal_beneficios').select('*').eq('user_id',uid),
     sb.from('portal_academy').select('*').order('criado_em',{ascending:false}),
     sb.from('portal_news').select('*').order('criado_em',{ascending:false}),
@@ -1284,11 +1245,12 @@ async function loadAll(){
     sb.from('portal_copa_equipes').select('*'),
     sb.from('portal_avisos').select('*').order('criado_em',{ascending:false}).limit(5),
     sb.from('portal_carreira').select('*').eq('user_id',uid).order('ordem'),
+    sb.from('portal_destaques').select('*').order('referencia',{ascending:false}).limit(1),
+    sb.from('portal_users').select('*').eq('user_id',uid).maybeSingle(),
   ]);
   if(vr.value?.data)allVendas=vr.value.data;
   if(mr.value?.data)allMetas=mr.value.data;
   if(cr.value?.data)allCampanhas=cr.value.data;
-  if(cor.value?.data)allComissoes=cor.value.data;
   if(br.value?.data)allBeneficios=br.value.data;
   if(ar.value?.data)allAcademy=ar.value.data;
   if(nr.value?.data)allNews=nr.value.data;
@@ -1298,18 +1260,24 @@ async function loadAll(){
   if(cpr.value?.data)allCopaEquipes=cpr.value.data;
   if(avr.value?.data)allAvisos=avr.value.data;
   if(carr.value?.data)allCarreira=carr.value.data;
+  if(der.value?.data)allDestaques=der.value.data;
 
-  // Load profile
-  const {data:prf}=await sb.from('portal_users').select('*').eq('user_id',CU.id).maybeSingle();
-  CUP=prf;
+  CUP=prf.value?.data||null;
   if(CUP){
     el('su-role').textContent=CUP.cargo||'Vendedor';
-    console.log('Portal profile loaded:', CUP.cargo, CUP);
+    // BUGFIX: o cadastro (doRegister) nunca salvava o e-mail em portal_users —
+    // só o nome. Isso deixava o admin sem nenhum jeito de ver o e-mail de quem
+    // ele está editando (auth.users não é legível pelo client com a chave anon).
+    // Preenche/corrige aqui, silenciosamente, se estiver faltando.
+    if(!CUP.email && CU.email){
+      sb.from('portal_users').update({email:CU.email}).eq('user_id',CU.id)
+        .then(()=>{ CUP.email=CU.email; });
+    }
   }
 }
 
 /* ═══ NAV ═══ */
-const PAGE_TITLES={dashboard:'Dashboard',niveis:'GR Níveis',performance:'Performance',destaques:'Destaques do Mês',copa:'Copa GR',campanhas:'Campanhas',comissoes:'Comissões',beneficios:'Benefícios',academy:'GR Academy',news:'GR News',sugestoes:'Caixinha de Sugestões',hallfama:'Hall da Fama',regras:'Regras GR',carreira:'Carreira'};
+const PAGE_TITLES={dashboard:'Dashboard',niveis:'GR Níveis',performance:'Performance',destaques:'Destaques do Mês',copa:'Copa GR',campanhas:'Campanhas',beneficios:'Benefícios',academy:'GR Academy',news:'GR News',sugestoes:'Caixinha de Sugestões',hallfama:'Hall da Fama',regras:'Regras GR',carreira:'Carreira'};
 function nav(page){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
@@ -1317,7 +1285,7 @@ function nav(page){
   document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('on');
   el('topbar-title').textContent=PAGE_TITLES[page]||page;
   _currentPage=page;
-  const renderers={dashboard:renderDashboard,niveis:renderNiveis,performance:renderPerformance,destaques:renderDestaques,copa:renderCopa,campanhas:()=>renderCampanhas('ativa'),comissoes:renderComissoes,beneficios:renderBeneficios,academy:()=>renderAcademy('todos'),news:renderNews,sugestoes:renderSugestoes,hallfama:renderHallFama,regras:renderRegras,carreira:renderCarreira};
+  const renderers={dashboard:renderDashboard,niveis:renderNiveis,performance:renderPerformance,destaques:renderDestaques,copa:renderCopa,campanhas:()=>renderCampanhas('ativa'),beneficios:renderBeneficios,academy:()=>renderAcademy('todos'),news:renderNews,sugestoes:renderSugestoes,hallfama:renderHallFama,regras:renderRegras,carreira:renderCarreira};
   renderers[page]?.();
 }
 
@@ -1418,8 +1386,10 @@ function renderDashboard(){
   el('kpi-cotas').textContent=cotas;
   el('kpi-meta').textContent=metaCotas+' cotas';
   el('kpi-volume').textContent=fmtBRL(volume);el('kpi-volume').style.color='var(--gold2)';
-  const comMes=allComissoes.filter(c=>c.referencia===mesAtual);
-  el('kpi-comissao').textContent=fmtBRL(comMes.reduce((s,c)=>s+(parseFloat(c.valor)||0),0));
+  const nivelAtual=getLevelForStats(cotas,volume);
+  el('kpi-nivel').textContent=nivelAtual.name;
+  el('kpi-nivel').style.color=nivelAtual.color;
+  el('kpi-nivel-sub').textContent='Baseado no mês atual';
   el('kpi-rank').textContent='–';
   el('kpi-rank-sub').textContent='Ranking em breve';
   el('kpi-delta').textContent=cotas>=metaCotas?'✓ Meta atingida':`${metaCotas-cotas} cotas para a meta`;
@@ -1531,27 +1501,62 @@ function renderPerformance(){
 }
 
 /* ═══ DESTAQUES ═══ */
+// BUGFIX/GAP: essa página inteira era hardcoded — "1º Lugar/2º Lugar/3º Lugar"
+// com "Dados em breve" fixo no HTML, sem nenhuma tabela ou CRUD por trás. Não
+// tinha como o admin editar nada disso. Agora usa portal_destaques de verdade
+// (ver SQL no final do arquivo) com CRUD completo no painel admin.
 function renderDestaques(){
   const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const now=new Date();
+  const refAtual=now.toISOString().slice(0,7);
   el('dest-mes').textContent=meses[now.getMonth()]+' '+now.getFullYear();
 
-  // Simula top 3 baseado em dados reais se disponíveis
-  el('dest-top3').innerHTML=['1º Lugar','2º Lugar','3º Lugar'].map((pos,i)=>`
-    <div class="destaque-card" style="--dc-color:${['var(--gold)','var(--silver)','var(--bronze)'][i]}">
-      <div class="dc-rank">${i+1}</div>
-      <div class="dc-av">${['?','?','?'][i]}</div>
-      <div class="dc-name">${pos}</div>
-      <div class="dc-role">Dados em breve</div>
-      <div class="dc-val">–</div>
-      <div class="dc-label">cotas</div>
-    </div>`).join('');
+  const doMes=allDestaques.filter(d=>d.referencia===refAtual);
+  const ranking=doMes.filter(d=>d.tipo==='ranking'&&d.posicao).sort((a,b)=>a.posicao-b.posicao).slice(0,3);
+  const cores=['var(--gold)','var(--silver)','var(--bronze)'];
 
-  el('dest-evolucao').innerHTML='<div class="empty"><div class="empty-line"></div><div class="empty-text">Nenhum dado disponível</div></div>';
-  el('dest-especial').innerHTML='<div class="empty"><div class="empty-line"></div><div class="empty-text">Nenhum reconhecimento este mês</div></div>';
+  el('dest-top3').innerHTML=ranking.length===0
+    ? '<div class="empty" style="grid-column:1/-1"><div class="empty-line"></div><div class="empty-text">Nenhum destaque cadastrado este mês</div></div>'
+    : ranking.map((d,i)=>`
+      <div class="destaque-card" style="--dc-color:${cores[d.posicao-1]||'var(--muted2)'}">
+        <div class="dc-rank">${d.posicao}</div>
+        <div class="dc-av">${(d.nome||'?')[0].toUpperCase()}</div>
+        <div class="dc-name">${d.nome||'–'}</div>
+        <div class="dc-role">${d.cargo||''}</div>
+        <div class="dc-val">${d.valor||'–'}</div>
+        <div class="dc-label">${d.valor_label||'cotas'}</div>
+      </div>`).join('');
+
+  const especiais=doMes.filter(d=>d.tipo==='especial');
+  el('dest-especial').innerHTML=especiais.length===0
+    ?'<div class="empty"><div class="empty-line"></div><div class="empty-text">Nenhum reconhecimento este mês</div></div>'
+    :especiais.map(d=>`<div style="padding:12px 0;border-bottom:1px solid var(--border);font-size:12.5px">
+        <div style="font-weight:600;margin-bottom:2px">${d.titulo||d.nome||'–'}</div>
+        <div style="color:var(--muted2);font-size:11.5px">${d.descricao||''}</div>
+      </div>`).join('');
+
+  // Evolução: usa o histórico de referências existentes em allDestaques (ranking, posição 1)
+  const historico=[...new Set(allDestaques.filter(d=>d.tipo==='ranking'&&d.posicao===1).map(d=>d.referencia))]
+    .sort().slice(-6);
+  el('dest-evolucao').innerHTML=historico.length===0
+    ?'<div class="empty"><div class="empty-line"></div><div class="empty-text">Nenhum dado disponível</div></div>'
+    :historico.map(ref=>{
+      const camp=allDestaques.find(d=>d.referencia===ref&&d.posicao===1&&d.tipo==='ranking');
+      return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <span style="color:var(--muted2)">${ref}</span><span style="font-weight:600">${camp?.nome||'–'}</span></div>`;
+    }).join('');
 }
 
 /* ═══ COPA ═══ */
+// GAP CONHECIDO: o chaveamento/estatísticas detalhadas da Copa GR nunca
+// tiveram dado real por trás aqui no portal — eram texto fixo mesmo ("em
+// breve"). Em vez de duplicar o chaveamento completo (que já existe e
+// funciona no seu app Copa GR separado), foquei em deixar a tabela de
+// classificação (que já usa dado real) funcionando bem, e linkei pro app
+// completo pra quem quiser ver o chaveamento/duelos.
+// Troque a URL abaixo pelo link publicado do seu app Copa GR.
+const COPA_GR_URL = 'https://SEU-LINK-DA-COPA-GR-AQUI';
+
 function renderCopa(){
   el('copa-tabela').innerHTML=allCopaEquipes.length===0
     ?'<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted2)">Copa não iniciada</td></tr>'
@@ -1564,8 +1569,14 @@ function renderCopa(){
       <td style="font-family:var(--font-d);font-weight:700;color:var(--gold2)">${e.pontos||0}</td>
     </tr>`).join('');
 
-  el('copa-bracket').innerHTML='<div style="padding:20px;color:var(--muted2);font-size:12px">Chaveamento disponível quando os grupos forem definidos.</div>';
-  el('copa-stats').innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted2)">Estatísticas em breve</td></tr>';
+  const configurado = !COPA_GR_URL.includes('SEU-LINK');
+  el('copa-bracket').innerHTML = configurado
+    ? `<div style="padding:24px;text-align:center">
+        <div style="font-size:12.5px;color:var(--muted2);margin-bottom:12px">O chaveamento completo, com os duelos e placares ao vivo, está no app Copa GR.</div>
+        <a href="${COPA_GR_URL}" target="_blank" class="btn-primary" style="display:inline-block;text-decoration:none;padding:10px 20px">🏆 Abrir Copa GR completa</a>
+      </div>`
+    : `<div style="padding:20px;color:var(--muted2);font-size:12px">Chaveamento completo disponível no app Copa GR — peça pro admin configurar o link (constante COPA_GR_URL no código).</div>`;
+  el('copa-stats').innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted2)">Estatísticas detalhadas de jogador (cartões, gols) ficam no app Copa GR completo</td></tr>';
 }
 
 /* ═══ CAMPANHAS ═══ */
@@ -1588,35 +1599,6 @@ function renderCampanhas(status){
       <div class="camp-prize"><span style="font-size:11px;color:var(--muted2)">Prêmio:</span><span class="camp-prize-val">${fmtBRL(c.premio_valor)}</span></div>
       <div class="camp-bar"><div class="camp-bar-fill" style="width:${c.progresso_pct||0}%"></div></div>
       <div class="camp-prog"><span>${c.progresso_pct||0}% atingido</span><span>Meta: ${c.meta_cotas||'–'} cotas</span></div>
-    </div>`).join('');
-}
-
-/* ═══ COMISSÕES ═══ */
-function switchComissTab(f,btn){
-  _comissFilter=f;
-  document.querySelectorAll('.comiss-tab').forEach(t=>t.classList.remove('on'));
-  btn.classList.add('on');
-  renderComissoes();
-}
-function renderComissoes(){
-  const prev=allComissoes.filter(c=>c.status==='prevista').reduce((s,c)=>s+(parseFloat(c.valor)||0),0);
-  const lib=allComissoes.filter(c=>c.status==='liberada').reduce((s,c)=>s+(parseFloat(c.valor)||0),0);
-  const paga=allComissoes.filter(c=>c.status==='paga').reduce((s,c)=>s+(parseFloat(c.valor)||0),0);
-  el('com-prevista').textContent=fmtBRL(prev);
-  el('com-liberada').textContent=fmtBRL(lib);
-  el('com-paga').textContent=fmtBRL(paga);
-  el('com-total').textContent=fmtBRL(prev+lib+paga);
-
-  const list=_comissFilter==='todas'?allComissoes:allComissoes.filter(c=>c.status===_comissFilter);
-  const statusClass={prevista:'status-prevista',liberada:'status-liberada',paga:'status-paga'};
-  const statusLabel={prevista:'Prevista',liberada:'Liberada',paga:'Paga'};
-  el('comiss-list').innerHTML=list.length===0
-    ?'<div class="empty"><div class="empty-line"></div><div class="empty-text">Nenhum registro</div></div>'
-    :list.map(c=>`<div class="comiss-row">
-      <span class="comiss-mes">${c.referencia||'–'}</span>
-      <span class="comiss-desc">${c.descricao||'Comissão'}</span>
-      <span class="comiss-val" style="color:${c.status==='paga'?'var(--green2)':'var(--gold2)'}">${fmtBRL(c.valor)}</span>
-      <span class="comiss-status ${statusClass[c.status]||''}">${statusLabel[c.status]||c.status}</span>
     </div>`).join('');
 }
 
@@ -1666,7 +1648,36 @@ function renderAcademy(tipo){
       </div>
     </div>`).join('');
 }
-function openAcad(id){const a=allAcademy.find(x=>x.id===id);if(a?.url)window.open(a.url,'_blank');}
+// BUGFIX/MELHORIA: antes só dava window.open(url) — saía do portal pra assistir
+// no YouTube direto. Agora, se for link do YouTube, abre embutido dentro do
+// próprio portal. Outros tipos de link (PDF, material externo) continuam
+// abrindo em nova aba, que faz mais sentido pra esses casos.
+function _youtubeEmbedUrl(url){
+  if(!url) return null;
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{6,})/);
+  return m ? `https://www.youtube.com/embed/${m[1]}?autoplay=1&rel=0` : null;
+}
+function openAcad(id){
+  const a=allAcademy.find(x=>x.id===id);
+  if(!a?.url) return;
+  const embed=_youtubeEmbedUrl(a.url);
+  if(!embed){ window.open(a.url,'_blank'); return; }
+  const modal=document.createElement('div');
+  modal.className='modal-bg on';
+  modal.innerHTML=`
+    <div class="modal" style="width:820px;max-width:96vw;padding:20px">
+      <button class="modal-close" onclick="this.closest('.modal-bg').remove()">✕</button>
+      <div style="font-family:var(--font-d);font-weight:700;font-size:18px;margin-bottom:4px">${a.titulo||''}</div>
+      <div style="font-size:11.5px;color:var(--muted2);margin-bottom:14px">${a.duracao||''}${a.instrutor?' · '+a.instrutor:''}</div>
+      <div style="position:relative;padding-top:56.25%;background:#000;border-radius:8px;overflow:hidden">
+        <iframe src="${embed}" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>
+      </div>
+      ${a.descricao?`<div style="margin-top:14px;font-size:12.5px;color:var(--muted2);line-height:1.5">${a.descricao}</div>`:''}
+    </div>`;
+  // pausa o vídeo ao fechar (remove o iframe do DOM em vez de só escondê-lo)
+  modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
 
 /* ═══ NEWS ═══ */
 function renderNews(){
@@ -1783,7 +1794,7 @@ function renderCarreira(){
 
 /* ── NAV extension for admin pages ── */
 const ADM_PAGE_TITLES = {
-  'adm-campanhas':'Campanhas','adm-metas':'Metas','adm-comissoes':'Comissões',
+  'adm-campanhas':'Campanhas','adm-metas':'Metas','adm-destaques':'Destaques',
   'adm-academy':'GR Academy','adm-news':'GR News','adm-avisos':'Avisos',
   'adm-copa':'Copa GR','adm-beneficios':'Benefícios','adm-hallfama':'Hall da Fama',
   'adm-regras':'Regras GR','adm-usuarios':'Usuários','adm-sugestoes':'Sugestões',
@@ -1801,7 +1812,7 @@ window.nav = function(page){
     _currentPage = page;
     const admRenderers = {
       'adm-campanhas':renderAdmCampanhas,'adm-metas':renderAdmMetas,
-      'adm-comissoes':renderAdmComissoes,'adm-academy':renderAdmAcademy,
+      'adm-destaques':renderAdmDestaques,'adm-academy':renderAdmAcademy,
       'adm-news':renderAdmNews,'adm-avisos':renderAdmAvisos,
       'adm-copa':renderAdmCopa,'adm-beneficios':renderAdmBeneficios,
       'adm-hallfama':renderAdmHallFama,'adm-regras':renderAdmRegras,
@@ -1818,21 +1829,84 @@ let _admEditId = null;
 let _admModalType = null;
 let _admAllUsers = [];
 
+// ═══ AUTO-SAVE DE RASCUNHO — não existia nenhum tipo de auto-save no portal.
+// Enquanto o admin preenche um formulário (campanha, destaque, etc.), o
+// conteúdo é salvo automaticamente no localStorage a cada mudança. Se a aba
+// fechar, cair a conexão, ou der erro no meio do preenchimento, o rascunho é
+// oferecido de volta na próxima vez que esse mesmo formulário for aberto. ═══
+let _admDraftTimer = null;
+function _admDraftKey(type, editId){ return `admDraft_${type}_${editId||'new'}`; }
+function _admSaveDraft(){
+  if(!_admModalType) return;
+  const body = el('adm-modal-body');
+  if(!body) return;
+  const data = {};
+  body.querySelectorAll('[id^="af-"]').forEach(f=>{ data[f.id.slice(3)] = f.value; });
+  try{
+    localStorage.setItem(_admDraftKey(_admModalType,_admEditId), JSON.stringify({data, ts:Date.now()}));
+    const ind = el('adm-autosave-ind');
+    if(ind){ ind.textContent='Rascunho salvo automaticamente'; ind.style.opacity='1';
+      clearTimeout(_admDraftTimer); _admDraftTimer=setTimeout(()=>{ind.style.opacity='0';},1600); }
+  }catch(e){ /* localStorage cheio/bloqueado — não é crítico, ignora */ }
+}
+function _admClearDraft(type, editId){
+  try{ localStorage.removeItem(_admDraftKey(type,editId)); }catch(e){}
+}
+function _admRestoreDraftIfAny(type, editId){
+  let raw=null;
+  try{ raw = localStorage.getItem(_admDraftKey(type,editId)); }catch(e){}
+  if(!raw) return;
+  let saved; try{ saved = JSON.parse(raw); }catch(e){ return; }
+  if(!saved?.data) return;
+  const banner = document.createElement('div');
+  banner.id='adm-draft-banner';
+  banner.style.cssText='background:rgba(201,168,76,0.1);border:1px solid var(--gold-line);color:var(--gold2);font-size:11.5px;padding:9px 12px;border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px';
+  const quando = new Date(saved.ts).toLocaleString('pt-BR');
+  banner.innerHTML = `<span>💾 Rascunho não salvo encontrado (${quando})</span>
+    <span style="display:flex;gap:8px;flex-shrink:0">
+      <button class="btn-outline" style="padding:4px 10px;font-size:10.5px" onclick="_admApplyDraft()">Restaurar</button>
+      <button class="btn-outline" style="padding:4px 10px;font-size:10.5px" onclick="_admDismissDraft('${type}','${editId||''}')">Descartar</button>
+    </span>`;
+  el('adm-modal-body').prepend(banner);
+  window._admPendingDraft = saved.data;
+}
+function _admApplyDraft(){
+  if(!window._admPendingDraft) return;
+  Object.entries(window._admPendingDraft).forEach(([k,val])=>{
+    const f = el('af-'+k);
+    if(f) f.value = val;
+  });
+  el('adm-draft-banner')?.remove();
+  toast('Rascunho restaurado','ok');
+}
+function _admDismissDraft(type, editId){
+  _admClearDraft(type, editId||null);
+  el('adm-draft-banner')?.remove();
+}
+
 function openAdmModal(type, data=null){
   _admModalType = type;
   _admEditId = data?.id || null;
   const titles = {
-    campanha:'Campanha', meta:'Meta', comissao:'Comissão',
+    campanha:'Campanha', meta:'Meta', destaque:'Destaque',
     academy:'Conteúdo Academy', news:'Notícia', aviso:'Aviso',
     'copa-equipe':'Equipe Copa', beneficio:'Benefício',
     hallfama:'Hall da Fama', regra:'Regra', usuario:'Usuário',
   };
   el('adm-modal-title').textContent = (data ? 'Editar ' : 'Nova ') + (titles[type]||type);
-  el('adm-modal-body').innerHTML = buildAdmForm(type, data);
+  el('adm-modal-body').innerHTML = buildAdmForm(type, data)
+    + `<div id="adm-autosave-ind" style="font-size:10px;color:var(--muted2);text-align:right;margin-top:6px;opacity:0;transition:opacity .3s">Rascunho salvo automaticamente</div>`;
   el('modal-adm').classList.add('on');
+  _admRestoreDraftIfAny(type, _admEditId);
+  // auto-save em qualquer alteração de campo, com pequeno debounce
+  el('adm-modal-body').oninput = () => {
+    clearTimeout(_admDraftTimer);
+    _admDraftTimer = setTimeout(_admSaveDraft, 500);
+  };
 }
 function closeAdmModal(){
   el('modal-adm').classList.remove('on');
+  el('adm-modal-body').oninput = null;
   _admEditId = null; _admModalType = null;
 }
 // modal-adm click outside — initialized in setupAdminEvents()
@@ -1873,12 +1947,21 @@ function buildAdmForm(type, d={}){
            inp('meta_cotas','Meta (cotas)',d.meta_cotas,'number','10'))}
       ${inp('meta_valor','Meta volume (R$)',d.meta_valor,'number','0')}`;
 
-    case 'comissao': return `
-      ${sel('user_id','Colaborador',[{v:'',l:'Selecionar...'},..._admAllUsers.map(u=>({v:u.user_id,l:u.nome||u.user_id}))],d.user_id)}
-      ${g2(inp('referencia','Mês (YYYY-MM)',d.referencia,'month'),inp('valor','Valor (R$)',d.valor,'number','0'))}
-      ${inp('descricao','Descrição',d.descricao,'text','Ex: Comissão de vendas')}
-      ${sel('status','Status',[{v:'prevista',l:'Prevista'},{v:'liberada',l:'Liberada'},{v:'paga',l:'Paga'}],d.status||'prevista')}
-      ${inp('data_pagamento','Data pagamento',d.data_pagamento,'date')}`;
+    case 'destaque': return `
+      ${g2(
+        inp('referencia','Mês (YYYY-MM)',d.referencia,'month',new Date().toISOString().slice(0,7)),
+        sel('tipo','Tipo',[{v:'ranking',l:'Ranking (top 3)'},{v:'especial',l:'Reconhecimento especial'}],d.tipo||'ranking')
+      )}
+      ${sel('user_id','Vincular a um colaborador (opcional)',[{v:'',l:'— Não vincular —'},..._admAllUsers.map(u=>({v:u.user_id,l:u.nome||u.user_id}))],d.user_id)}
+      ${inp('nome','Nome (preenche automático se vincular acima)',d.nome,'text','Ex: João Silva')}
+      ${inp('cargo','Cargo/Equipe',d.cargo,'text','Ex: Equipe Luiz')}
+      ${g3(
+        inp('posicao','Posição (1, 2 ou 3 — só p/ ranking)',d.posicao,'number','1'),
+        inp('valor','Valor',d.valor,'text','Ex: 18'),
+        inp('valor_label','Rótulo do valor',d.valor_label||'cotas','text','cotas')
+      )}
+      ${inp('titulo','Título (só p/ reconhecimento especial)',d.titulo,'text','Ex: Prêmio Qualidade')}
+      ${ta('descricao','Descrição (só p/ reconhecimento especial)',d.descricao)}`;
 
     case 'academy': return `
       ${inp('titulo','Título',d.titulo)}
@@ -1929,14 +2012,22 @@ function buildAdmForm(type, d={}){
       ${g2(inp('categoria','Categoria',d.categoria,'text','geral'),inp('ordem','Ordem',d.ordem,'number','0'))}`;
 
     case 'usuario': return `
+      <div class="adm-field"><label class="adm-label">E-mail (não editável aqui)</label>
+        <input class="adm-input" value="${d.email||'— não registrado, usuário fez cadastro antes dessa opção existir —'}" disabled style="opacity:.55;cursor:not-allowed"></div>
       ${inp('nome','Nome',d.nome)}
-      ${sel('cargo','Cargo',[
+      ${sel('cargo','Cargo / Perfil de acesso',[
         {v:'Vendedor',l:'Vendedor'},
         {v:'Supervisor',l:'Supervisor'},
         {v:'Coordenador',l:'Coordenador'},
         {v:'Admin',l:'Admin'},
       ],d.cargo)}
-      ${inp('equipe','Equipe',d.equipe)}
+      <div class="adm-field"><label class="adm-label">Equipe</label>
+        <input class="adm-input" id="af-equipe" list="equipe-suggestions" value="${d.equipe||''}" placeholder="Ex: Equipe Luiz">
+        <datalist id="equipe-suggestions">
+          ${[...new Set(_admAllUsers.map(u=>u.equipe).filter(Boolean))].map(eq=>`<option value="${eq}">`).join('')}
+        </datalist>
+        <div style="font-size:10px;color:var(--muted2);margin-top:4px">Digite e escolha uma equipe já existente na lista pra evitar duplicar com nome diferente (ex: "equipe luiz" vs "Equipe Luiz" viram times diferentes no sistema).</div>
+      </div>
       ${inp('data_admissao','Data admissão',d.data_admissao,'date')}
       ${inp('pontos','Pontos GR Nível',d.pontos,'number','0')}`;
 
@@ -1960,11 +2051,15 @@ async function saveAdmModal(){
       payload = { user_id:asel('user_id'), referencia:av('referencia'),
         meta_cotas:parseInt(av('meta_cotas'))||10, meta_valor:parseFloat(av('meta_valor'))||0 };
       break;
-    case 'comissao':
-      payload = { user_id:asel('user_id'), referencia:av('referencia'),
-        valor:parseFloat(av('valor'))||0, descricao:av('descricao'),
-        status:asel('status'), data_pagamento:av('data_pagamento')||null };
+    case 'destaque':{
+      const uid=asel('user_id');
+      const userVinc=uid?_admAllUsers.find(u=>u.user_id===uid):null;
+      payload = { referencia:av('referencia'), tipo:asel('tipo'), user_id:uid||null,
+        nome:av('nome')||userVinc?.nome||'', cargo:av('cargo')||userVinc?.cargo||'',
+        posicao:av('posicao')?parseInt(av('posicao')):null, valor:av('valor'),
+        valor_label:av('valor_label')||'cotas', titulo:av('titulo'), descricao:av('descricao') };
       break;
+    }
     case 'academy':
       payload = { titulo:av('titulo'), tipo:asel('tipo'), duracao:av('duracao'),
         url:av('url'), instrutor:av('instrutor'), descricao:av('descricao'),
@@ -2004,7 +2099,7 @@ async function saveAdmModal(){
 
   // Map type to table
   const tables = {
-    campanha:'portal_campanhas', meta:'portal_metas', comissao:'portal_comissoes',
+    campanha:'portal_campanhas', meta:'portal_metas', destaque:'portal_destaques',
     academy:'portal_academy', news:'portal_news', aviso:'portal_avisos',
     'copa-equipe':'portal_copa_equipes', beneficio:'portal_beneficios',
     hallfama:'portal_hall_fama', regra:'portal_regras',
@@ -2029,6 +2124,7 @@ async function saveAdmModal(){
   btn.textContent = 'Salvar'; btn.disabled = false;
   if(error){ toast('Erro: '+error.message,'err'); return; }
 
+  _admClearDraft(type, editId);
   toast(editId ? 'Atualizado!' : 'Criado com sucesso!', 'ok');
   closeAdmModal();
   // Reload data and re-render
@@ -2040,7 +2136,7 @@ async function reloadAdmData(type){
   const reloads = {
     campanha: async()=>{ const {data}=await sb.from('portal_campanhas').select('*').order('criado_em',{ascending:false}); if(data)allCampanhas=data; },
     meta:     async()=>{ const {data}=await sb.from('portal_metas').select('*'); if(data)allMetas=data; },
-    comissao: async()=>{ const {data}=await sb.from('portal_comissoes').select('*').order('referencia',{ascending:false}); if(data)allComissoes=data; },
+    destaque: async()=>{ const {data}=await sb.from('portal_destaques').select('*').order('referencia',{ascending:false}); if(data)allDestaques=data; },
     academy:  async()=>{ const {data}=await sb.from('portal_academy').select('*').order('criado_em',{ascending:false}); if(data)allAcademy=data; },
     news:     async()=>{ const {data}=await sb.from('portal_news').select('*').order('criado_em',{ascending:false}); if(data)allNews=data; },
     aviso:    async()=>{ const {data}=await sb.from('portal_avisos').select('*').order('criado_em',{ascending:false}); if(data)allAvisos=data; },
@@ -2056,7 +2152,7 @@ async function reloadAdmData(type){
 async function deleteAdmItem(type, id){
   if(!confirm('Confirmar exclusão?')) return;
   const tables = {
-    campanha:'portal_campanhas', meta:'portal_metas', comissao:'portal_comissoes',
+    campanha:'portal_campanhas', meta:'portal_metas', destaque:'portal_destaques',
     academy:'portal_academy', news:'portal_news', aviso:'portal_avisos',
     'copa-equipe':'portal_copa_equipes', beneficio:'portal_beneficios',
     hallfama:'portal_hall_fama', regra:'portal_regras',
@@ -2103,17 +2199,18 @@ function renderAdmMetas(){
   });
 }
 
-function renderAdmComissoes(){
-  const list = allComissoes;
-  const statusColor = {prevista:'var(--gold)',liberada:'var(--green2)',paga:'var(--muted2)'};
-  el('adm-com-list').innerHTML = admList(list,'comissao', c=>{
-    const user = _admAllUsers.find(u=>u.user_id===c.user_id);
-    return `<div class="status-dot" style="background:${statusColor[c.status]||'var(--muted2)'}"></div>
+function renderAdmDestaques(){
+  const list = allDestaques;
+  el('adm-dest-list').innerHTML = admList(list,'destaque', d=>{
+    const label = d.tipo==='ranking'
+      ? `${d.posicao||'–'}º lugar · ${d.nome||'–'} · ${d.valor||''} ${d.valor_label||''}`
+      : `${d.titulo||d.nome||'–'} (reconhecimento especial)`;
+    return `<div class="status-dot" style="background:${d.tipo==='ranking'?'var(--gold)':'var(--violet2)'}"></div>
     <div class="adm-row-main">
-      <div class="adm-row-title">${user?.nome||c.user_id||'–'} · ${fmtBRL(c.valor)}</div>
-      <div class="adm-row-sub">${c.referencia} · ${c.descricao||'–'}</div>
+      <div class="adm-row-title">${label}</div>
+      <div class="adm-row-sub">${d.referencia||'–'} · ${d.cargo||'–'}</div>
     </div>
-    <span class="tag" style="color:${statusColor[c.status]||'var(--muted2)'};border:1px solid currentColor;background:transparent">${c.status?.toUpperCase()}</span>`;
+    <span class="tag" style="background:rgba(255,255,255,0.05);color:var(--muted2)">${(d.tipo||'').toUpperCase()}</span>`;
   });
 }
 
@@ -2192,13 +2289,24 @@ async function renderAdmUsuarios(){
         <div class="su-av" style="width:28px;height:28px;font-size:12px;flex-shrink:0;background:var(--gold);color:#07070C;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800">${(u.nome||'?')[0].toUpperCase()}</div>
         <div class="adm-row-main">
           <div class="adm-row-title">${u.nome||'Sem nome'}</div>
-          <div class="adm-row-sub">${u.equipe||'–'} · Admissão: ${fmtDate(u.data_admissao)} · ${u.pontos||0} pts</div>
+          <div class="adm-row-sub">${u.email||'sem e-mail registrado'} · ${u.equipe||'sem equipe'} · Admissão: ${fmtDate(u.data_admissao)} · ${u.pontos||0} pts</div>
         </div>
         <span class="tag" style="color:${cargoColor[(u.cargo||'vendedor').toLowerCase()]||'var(--muted2)'};border:1px solid currentColor;background:transparent">${(u.cargo||'Vendedor').toUpperCase()}</span>
         <div class="adm-actions">
+          ${u.email?`<button class="btn-outline" style="padding:4px 10px;font-size:10.5px" onclick="resetUserPassword('${u.email}')" title="Envia e-mail de redefinição de senha">🔑 Senha</button>`:''}
           <button class="btn-edit" onclick='openAdmModal("usuario",${JSON.stringify(u).replace(/'/g,"&#39;")})'>Editar</button>
         </div>
       </div>`).join('');
+}
+
+// Vínculo/gestão de conta: envia e-mail de redefinição de senha pro usuário —
+// não existia nenhuma opção de gestão de senha antes (admin não tinha como
+// ajudar alguém que esqueceu a senha, só existia auto-cadastro).
+async function resetUserPassword(email){
+  if(!confirm(`Enviar e-mail de redefinição de senha para ${email}?`)) return;
+  const {error} = await sb.auth.resetPasswordForEmail(email);
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  toast('E-mail de redefinição enviado para '+email,'ok');
 }
 
 async function renderAdmSugestoes(){
@@ -2402,6 +2510,17 @@ function editOrgNode(id){
   document.body.appendChild(modal);
 }
 
+// BUGFIX/AUTO-SAVE: antes, editar/adicionar/remover um cargo só mudava o
+// objeto em memória — só ia pro banco quando o admin clicasse manualmente em
+// "✓ Salvar" pra sair do modo edição. Se navegasse pra outra página antes
+// disso, perdia tudo. Agora cada alteração já dispara uma gravação automática
+// (com um pequeno debounce pra não martelar o banco a cada tecla).
+let _orgSaveTimer=null;
+function _orgAutoSave(){
+  clearTimeout(_orgSaveTimer);
+  _orgSaveTimer=setTimeout(()=>{ saveOrgData(); }, 700);
+}
+
 function saveOrgNode(id, btn){
   const node = _orgData.nodes.find(n=>n.id===id);
   if(!node) return;
@@ -2412,18 +2531,21 @@ function saveOrgNode(id, btn){
   node.parentId = document.getElementById('on-parent').value||null;
   btn.closest('.modal-bg').remove();
   renderOrganograma();
+  _orgAutoSave();
 }
 
 function deleteOrgNode(id){
   if(!confirm('Remover este cargo do organograma?')) return;
   _orgData.nodes = _orgData.nodes.filter(n=>n.id!==id && n.parentId!==id);
   renderOrganograma();
+  _orgAutoSave();
 }
 
 function addOrgNode(){
   const newId = 'node_'+Date.now();
   _orgData.nodes.push({id:newId, name:'', role:'Novo cargo', level:1, parentId:_orgData.nodes[0]?.id||null, photo:''});
   renderOrganograma();
+  _orgAutoSave();
   setTimeout(()=>editOrgNode(newId), 100);
 }
 
@@ -2436,5 +2558,39 @@ CREATE TABLE IF NOT EXISTS portal_organograma (
 ALTER TABLE portal_organograma ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "org_read" ON portal_organograma FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "org_write" ON portal_organograma FOR ALL USING (is_portal_admin());
+*/
+
+/* ── SQL needed for Destaques (nova tabela — página inteira era hardcoded antes) ──
+CREATE TABLE IF NOT EXISTS portal_destaques (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  referencia TEXT NOT NULL,           -- 'YYYY-MM'
+  tipo TEXT NOT NULL DEFAULT 'ranking', -- 'ranking' | 'especial'
+  user_id UUID REFERENCES auth.users(id),
+  nome TEXT,
+  cargo TEXT,
+  posicao INT,                        -- 1, 2 ou 3 (só pra tipo='ranking')
+  valor TEXT,
+  valor_label TEXT DEFAULT 'cotas',
+  titulo TEXT,                        -- só pra tipo='especial'
+  descricao TEXT,                     -- só pra tipo='especial'
+  criado_em TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE portal_destaques ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "dest_read" ON portal_destaques FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "dest_write" ON portal_destaques FOR ALL USING (is_portal_admin());
+*/
+
+/* ── SQL needed: coluna de e-mail em portal_users (não existia — admin não
+   conseguia ver o e-mail de ninguém pra gerenciar/resetar senha) ──
+ALTER TABLE portal_users ADD COLUMN IF NOT EXISTS email TEXT;
+-- Backfill pontual pra quem já tinha conta antes dessa coluna existir
+-- (rode manualmente comparando com auth.users, caso precise popular os antigos):
+-- UPDATE portal_users pu SET email = au.email FROM auth.users au WHERE pu.user_id = au.id AND pu.email IS NULL;
+*/
+
+/* ── Tabela portal_comissoes: pode ser removida do banco se não for mais usada
+   em nenhum outro lugar. O portal não lê nem grava mais nela a partir desta
+   versão — a remoção do banco é opcional e só reduz uma tabela ociosa:
+DROP TABLE IF EXISTS portal_comissoes;
 */
 </script>
