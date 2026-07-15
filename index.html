@@ -1915,6 +1915,13 @@ function av(id){ return document.getElementById('af-'+id)?.value?.trim()||''; }
 function asel(id){ return document.getElementById('af-'+id)?.value||''; }
 
 function buildAdmForm(type, d={}){
+  // BUGFIX: `d={}` como parâmetro padrão só funciona se `d` vier undefined.
+  // openAdmModal(type) sem segundo argumento passa `null` explícito (é o
+  // default dela: `data=null`), e null explícito NÃO ativa o padrão do
+  // parâmetro — `d` continuava null, e qualquer `d.titulo`/`d.user_id`
+  // quebrava com "Cannot read properties of null". Isso derrubava TODO botão
+  // "Novo/Nova X" do admin, não só Benefícios.
+  d = d || {};
   const inp = (id,label,val='',type2='text',ph='')=>
     `<div class="adm-field"><label class="adm-label">${label}</label>
      <input class="adm-input" id="af-${id}" type="${type2}" value="${val||''}" placeholder="${ph}"></div>`;
