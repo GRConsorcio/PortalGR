@@ -1105,6 +1105,20 @@ const PONTOS_RULES = [
 function fmtBRL(v){if(!v)return'R$ 0';return'R$ '+parseFloat(v).toLocaleString('pt-BR',{minimumFractionDigits:0})}
 function fmtDate(s){if(!s)return'–';return new Date(s).toLocaleDateString('pt-BR')}
 function toast(msg,type='ok'){const w=document.getElementById('toast-wrap');const d=document.createElement('div');d.className='toast '+type;d.textContent=msg;w.appendChild(d);setTimeout(()=>d.remove(),3500)}
+// Traduz os dois erros do Supabase que mais confundem: tabela que ainda não
+// foi criada (falta rodar o SQL) e coluna NOT NULL que não deixa salvar em
+// branco — em vez de mostrar o erro cru do Postgres, diz o que fazer.
+function _friendlySbError(error, table){
+  const msg = error?.message || '';
+  if(error?.code==='PGRST205' || /Could not find the table/i.test(msg)){
+    return `A tabela "${table}" ainda não existe no Supabase. Rode o SQL correspondente (comentário no final do código-fonte) no SQL Editor do Supabase e recarregue a página.`;
+  }
+  if(/violates not-null constraint/i.test(msg)){
+    const col = msg.match(/column "([^"]+)"/)?.[1] || 'um campo obrigatório';
+    return `Falta preencher "${col}" — ou, se o campo em branco é intencional (ex: benefício "Geral" sem colaborador), a coluna no banco ainda exige valor. Rode no Supabase: ALTER TABLE ${table} ALTER COLUMN ${col} DROP NOT NULL;`;
+  }
+  return 'Erro: '+msg;
+}
 function v(id){return document.getElementById(id)?.value||''}
 function el(id){return document.getElementById(id)}
 function getLevelForPts(pts){return LEVELS.slice().reverse().find(l=>pts>=l.min)||LEVELS[0]}
@@ -1306,6 +1320,10 @@ function isAdminOrCoord(){ return isAdmin()||isCoord(); }
 function isAdminOrCoordOrSup(){ return isAdmin()||isCoord()||isSup(); }
 function canManage(){ return isAdmin(); }
 function canViewAll(){ return isAdminOrCoordOrSup(); }
+// Escopo de dados: admin/coordenador veem tudo; supervisor só a própria
+// equipe (comparando o texto de portal_users.equipe); vendedor só a si
+// mesmo (já garantido nas telas pessoais via .eq('user_id',uid)).
+function myTeamScope(){ return isSup()&&!isAdminOrCoord() ? (CUP?.equipe||null) : null; } // null = sem restrição (vê tudo)
 
 function renderNav(){
   // Show/hide admin nav section
@@ -1320,7 +1338,7 @@ function renderNav(){
         el2.style.display = isAdmin() ? 'flex' : 'none';
       });
       document.querySelectorAll('.coord-only').forEach(el2=>{
-        el2.style.display = isAdminOrCoord() ? 'flex' : 'none';
+        el2.style.display = isAdminOrCoordOrSup() ? 'flex' : 'none';
       });
     } else {
       adminSection.style.display='none';
@@ -1548,14 +1566,15 @@ function renderDestaques(){
 }
 
 /* ═══ COPA ═══ */
-// GAP CONHECIDO: o chaveamento/estatísticas detalhadas da Copa GR nunca
-// tiveram dado real por trás aqui no portal — eram texto fixo mesmo ("em
-// breve"). Em vez de duplicar o chaveamento completo (que já existe e
-// funciona no seu app Copa GR separado), foquei em deixar a tabela de
-// classificação (que já usa dado real) funcionando bem, e linkei pro app
-// completo pra quem quiser ver o chaveamento/duelos.
-// Troque a URL abaixo pelo link publicado do seu app Copa GR.
-const COPA_GR_URL = 'https://SEU-LINK-DA-COPA-GR-AQUI';
+// Espelho do app Copa GR embutido via iframe — visão de espectador (não dá
+// pra editar através daqui, é só uma "janela" pro app real). Isso não
+// substitui autenticação de verdade: o app Copa GR em si não tem controle de
+// acesso por usuário (é uma URL única compartilhada) — quem tiver o link
+// direto do Copa GR ainda consegue clicar em "Editar" LÁ. Se quiser bloquear
+// edição de verdade mesmo por quem acessa o Copa GR direto, isso precisa ser
+// implementado no próprio app Copa GR (ex: ler um parâmetro ?readonly=1 na
+// URL e esconder os botões de edição) — me chama nesse arquivo se quiser.
+const COPA_GR_URL = 'https://grconsorcio.github.io/COPAGR/';
 
 function renderCopa(){
   el('copa-tabela').innerHTML=allCopaEquipes.length===0
@@ -1569,14 +1588,17 @@ function renderCopa(){
       <td style="font-family:var(--font-d);font-weight:700;color:var(--gold2)">${e.pontos||0}</td>
     </tr>`).join('');
 
-  const configurado = !COPA_GR_URL.includes('SEU-LINK');
-  el('copa-bracket').innerHTML = configurado
-    ? `<div style="padding:24px;text-align:center">
-        <div style="font-size:12.5px;color:var(--muted2);margin-bottom:12px">O chaveamento completo, com os duelos e placares ao vivo, está no app Copa GR.</div>
-        <a href="${COPA_GR_URL}" target="_blank" class="btn-primary" style="display:inline-block;text-decoration:none;padding:10px 20px">🏆 Abrir Copa GR completa</a>
-      </div>`
-    : `<div style="padding:20px;color:var(--muted2);font-size:12px">Chaveamento completo disponível no app Copa GR — peça pro admin configurar o link (constante COPA_GR_URL no código).</div>`;
-  el('copa-stats').innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted2)">Estatísticas detalhadas de jogador (cartões, gols) ficam no app Copa GR completo</td></tr>';
+  el('copa-bracket').innerHTML = `
+    <div style="width:100%">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:11px;color:var(--muted2)">Espelho do app Copa GR — visualização apenas</div>
+        <a href="${COPA_GR_URL}" target="_blank" style="font-size:11px;color:var(--gold2);text-decoration:none">Abrir em tela cheia ↗</a>
+      </div>
+      <div style="position:relative;width:100%;height:640px;border:1px solid var(--border2);border-radius:8px;overflow:hidden;background:#000">
+        <iframe src="${COPA_GR_URL}" style="width:100%;height:100%;border:0" loading="lazy" title="Copa GR"></iframe>
+      </div>
+    </div>`;
+  el('copa-stats').innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted2)">Estatísticas detalhadas de jogador (cartões, gols) — veja no espelho da Copa GR acima</td></tr>';
 }
 
 /* ═══ CAMPANHAS ═══ */
@@ -1680,25 +1702,59 @@ function openAcad(id){
 }
 
 /* ═══ NEWS ═══ */
+// BUGFIX/MELHORIA: o campo "Conteúdo completo" já existia no formulário do
+// admin, mas nunca era mostrado em lugar nenhum pro usuário — só resumo e
+// título apareciam, o clique não abria nada. Agora clicar numa notícia abre
+// um leitor: se tiver PDF anexado, mostra o PDF embutido (o navegador já
+// dá scroll nativo); senão, mostra o conteúdo completo num modal estilo
+// blog, com scroll.
+function openNewsReader(id){
+  const n=allNews.find(x=>x.id===id);
+  if(!n) return;
+  const modal=document.createElement('div');
+  modal.className='modal-bg on';
+  modal.innerHTML = n.pdf_url
+    ? `<div class="modal" style="width:900px;max-width:96vw;height:90vh;padding:16px;display:flex;flex-direction:column">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-shrink:0">
+          <div style="font-family:var(--font-d);font-weight:700;font-size:16px">${n.titulo}</div>
+          <button class="modal-close" style="position:static" onclick="this.closest('.modal-bg').remove()">✕</button>
+        </div>
+        <iframe src="${n.pdf_url}" style="flex:1;width:100%;border:0;border-radius:6px;background:#fff"></iframe>
+      </div>`
+    : `<div class="modal" style="width:720px;max-width:96vw;max-height:85vh;padding:0;display:flex;flex-direction:column">
+        <div style="padding:24px 28px 16px;flex-shrink:0;border-bottom:1px solid var(--border)">
+          <button class="modal-close" onclick="this.closest('.modal-bg').remove()">✕</button>
+          <span class="news-tag ${{'empresa':'news-tag-empresa','mercado':'news-tag-mercado','novidade':'news-tag-novidade'}[n.categoria]||'news-tag-empresa'}">${n.categoria?.toUpperCase()||'EMPRESA'}</span>
+          <div style="font-family:var(--font-d);font-weight:800;font-size:22px;margin-top:8px">${n.titulo}</div>
+          <div style="font-size:11px;color:var(--muted2);margin-top:4px">${fmtDate(n.criado_em)}${n.autor?' · '+n.autor:''}</div>
+        </div>
+        <div style="padding:20px 28px 28px;overflow-y:auto;font-size:13.5px;line-height:1.8;color:var(--text)">
+          ${(n.conteudo||n.resumo||'Sem conteúdo.').split('\n').map(p=>`<p style="margin-bottom:14px">${p}</p>`).join('')}
+        </div>
+      </div>`;
+  modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
 function renderNews(){
   const featured=allNews[0];
   const rest=allNews.slice(1,7);
   const tagClass={'empresa':'news-tag-empresa','mercado':'news-tag-mercado','novidade':'news-tag-novidade'};
   el('news-layout').innerHTML=`
     <div>
-      ${featured?`<div class="news-featured">
+      ${featured?`<div class="news-featured" onclick="openNewsReader('${featured.id}')" style="cursor:pointer">
         <span class="news-tag ${tagClass[featured.categoria]||'news-tag-empresa'}">${featured.categoria?.toUpperCase()||'EMPRESA'}</span>
         <div class="news-headline">${featured.titulo}</div>
         <div class="news-excerpt">${featured.resumo||''}</div>
-        <div class="news-date">${fmtDate(featured.criado_em)}</div>
+        <div class="news-date">${fmtDate(featured.criado_em)}${featured.pdf_url?' · 📄 PDF disponível':''}</div>
       </div>`:'<div class="empty"><div class="empty-line"></div><div class="empty-text">Nenhuma notícia</div></div>'}
     </div>
     <div class="panel" style="padding:0">
       <div class="panel-head"><div class="panel-title">Mais recentes</div></div>
       <div style="padding:0 16px">
-        ${rest.length===0?'<div class="empty" style="padding:24px 0"><div class="empty-line"></div><div class="empty-text">Sem notícias</div></div>':rest.map(n=>`<div class="news-list-item">
+        ${rest.length===0?'<div class="empty" style="padding:24px 0"><div class="empty-line"></div><div class="empty-text">Sem notícias</div></div>':rest.map(n=>`<div class="news-list-item" onclick="openNewsReader('${n.id}')" style="cursor:pointer">
           <div class="nli-tag">${n.categoria?.toUpperCase()||'EMPRESA'}</div>
-          <div class="nli-title">${n.titulo}</div>
+          <div class="nli-title">${n.titulo}${n.pdf_url?' 📄':''}</div>
           <div class="nli-date">${fmtDate(n.criado_em)}</div>
         </div>`).join('')}
       </div>
@@ -1913,6 +1969,10 @@ function closeAdmModal(){
 
 function av(id){ return document.getElementById('af-'+id)?.value?.trim()||''; }
 function asel(id){ return document.getElementById('af-'+id)?.value||''; }
+function _scopedUsers(){
+  const scope = myTeamScope();
+  return scope ? _admAllUsers.filter(u=>u.equipe===scope) : _admAllUsers;
+}
 
 function buildAdmForm(type, d={}){
   // BUGFIX: `d={}` como parâmetro padrão só funciona se `d` vier undefined.
@@ -1949,7 +2009,7 @@ function buildAdmForm(type, d={}){
       ${inp('premio_descricao','Descrição do prêmio',d.premio_descricao,'text','Ex: Viagem para...')}`;
 
     case 'meta': return `
-      ${sel('user_id','Colaborador',[{v:'',l:'Selecionar...'},..._admAllUsers.map(u=>({v:u.user_id,l:u.nome||u.user_id}))],d.user_id)}
+      ${sel('user_id','Colaborador',[{v:'',l:'Selecionar...'},..._scopedUsers().map(u=>({v:u.user_id,l:u.nome||u.user_id}))],d.user_id)}
       ${g2(inp('referencia','Mês (YYYY-MM)',d.referencia,'month',new Date().toISOString().slice(0,7)),
            inp('meta_cotas','Meta (cotas)',d.meta_cotas,'number','10'))}
       ${inp('meta_valor','Meta volume (R$)',d.meta_valor,'number','0')}`;
@@ -1959,7 +2019,7 @@ function buildAdmForm(type, d={}){
         inp('referencia','Mês (YYYY-MM)',d.referencia,'month',new Date().toISOString().slice(0,7)),
         sel('tipo','Tipo',[{v:'ranking',l:'Ranking (top 3)'},{v:'especial',l:'Reconhecimento especial'}],d.tipo||'ranking')
       )}
-      ${sel('user_id','Vincular a um colaborador (opcional)',[{v:'',l:'— Não vincular —'},..._admAllUsers.map(u=>({v:u.user_id,l:u.nome||u.user_id}))],d.user_id)}
+      ${sel('user_id','Vincular a um colaborador (opcional)',[{v:'',l:'— Não vincular —'},..._scopedUsers().map(u=>({v:u.user_id,l:u.nome||u.user_id}))],d.user_id)}
       ${inp('nome','Nome (preenche automático se vincular acima)',d.nome,'text','Ex: João Silva')}
       ${inp('cargo','Cargo/Equipe',d.cargo,'text','Ex: Equipe Luiz')}
       ${g3(
@@ -1983,7 +2043,8 @@ function buildAdmForm(type, d={}){
       ${inp('titulo','Título',d.titulo)}
       ${sel('categoria','Categoria',[{v:'empresa',l:'Empresa'},{v:'mercado',l:'Mercado'},{v:'novidade',l:'Novidade'}],d.categoria)}
       ${ta('resumo','Resumo',d.resumo)}
-      ${ta('conteudo','Conteúdo completo',d.conteudo)}
+      ${inp('pdf_url','URL do PDF (opcional — se preenchido, abre o PDF em vez do texto)',d.pdf_url,'url','https://...')}
+      ${ta('conteudo','Conteúdo completo (usado se não tiver PDF acima)',d.conteudo)}
       ${inp('autor','Autor',d.autor)}`;
 
     case 'aviso': return `
@@ -2000,7 +2061,7 @@ function buildAdmForm(type, d={}){
       ${inp('pontos','Pontos',d.pontos,'number','0')}`;
 
     case 'beneficio': return `
-      ${sel('user_id','Colaborador',[{v:'',l:'Todos / Geral'},..._admAllUsers.map(u=>({v:u.user_id,l:u.nome||u.user_id}))],d.user_id)}
+      ${sel('user_id','Colaborador',[{v:'',l:'Todos / Geral'},..._scopedUsers().map(u=>({v:u.user_id,l:u.nome||u.user_id}))],d.user_id)}
       ${inp('titulo','Título',d.titulo)}
       ${sel('tipo','Tipo',[{v:'beneficio',l:'Benefício'},{v:'folga',l:'Folga'}],d.tipo)}
       ${ta('descricao','Descrição',d.descricao)}
@@ -2074,7 +2135,7 @@ async function saveAdmModal(){
       break;
     case 'news':
       payload = { titulo:av('titulo'), categoria:asel('categoria'),
-        resumo:av('resumo'), conteudo:av('conteudo'), autor:av('autor') };
+        resumo:av('resumo'), conteudo:av('conteudo'), autor:av('autor'), pdf_url:av('pdf_url')||null };
       break;
     case 'aviso':
       payload = { titulo:av('titulo'), conteudo:av('conteudo'),
@@ -2129,7 +2190,10 @@ async function saveAdmModal(){
   }
 
   btn.textContent = 'Salvar'; btn.disabled = false;
-  if(error){ toast('Erro: '+error.message,'err'); return; }
+  if(error){
+    toast(_friendlySbError(error, tables[type]||'portal_users'), 'err');
+    return;
+  }
 
   _admClearDraft(type, editId);
   toast(editId ? 'Atualizado!' : 'Criado com sucesso!', 'ok');
@@ -2195,8 +2259,19 @@ function renderAdmCampanhas(){
     <span class="tag" style="background:${c.status==='ativa'?'rgba(62,201,154,0.1)':'rgba(255,255,255,0.05)'};color:${c.status==='ativa'?'var(--green2)':'var(--muted2)'}">${c.status?.toUpperCase()}</span>`);
 }
 
-function renderAdmMetas(){
-  const list = allMetas;
+// BUGFIX: allMetas vinha só com a meta do PRÓPRIO usuário logado (é assim que
+// loadAll() carrega, .eq('user_id',uid), pra tela pessoal de Performance). A
+// tela de admin usava essa mesma variável achando que tinha todo mundo — só
+// ficava completa depois que alguém criasse/editasse uma meta na sessão
+// (reloadAdmData busca sem filtro). Agora busca tudo direto ao abrir a página.
+async function renderAdmMetas(){
+  const {data} = await sb.from('portal_metas').select('*');
+  if(data) allMetas = data;
+  const scope = myTeamScope();
+  const list = scope ? allMetas.filter(m=>{
+    const u=_admAllUsers.find(u=>u.user_id===m.user_id);
+    return u?.equipe===scope;
+  }) : allMetas;
   el('adm-meta-list').innerHTML = admList(list,'meta', m=>{
     const user = _admAllUsers.find(u=>u.user_id===m.user_id);
     return `<div class="adm-row-main">
@@ -2288,10 +2363,15 @@ async function renderAdmUsuarios(){
     const {data} = await sb.from('portal_users').select('*').order('nome');
     _admAllUsers = data||[];
   }
+  // PARTIÇÃO DE EQUIPES: admin/coordenador veem todo mundo; supervisor só
+  // vê quem está na mesma equipe dele (CUP.equipe); vendedor nem chega
+  // aqui (essa página é coord-only, vendedor não tem o nav-item).
+  const scope = myTeamScope();
+  const list = scope ? _admAllUsers.filter(u=>u.equipe===scope) : _admAllUsers;
   const cargoColor = {admin:'var(--gold)',coordenador:'var(--violet2)',supervisor:'var(--green2)',vendedor:'var(--muted2)'};
-  el('adm-user-list').innerHTML = _admAllUsers.length===0
-    ?'<div class="empty" style="padding:32px"><div class="empty-line"></div><div class="empty-text">Nenhum usuário cadastrado</div></div>'
-    :_admAllUsers.map(u=>`
+  el('adm-user-list').innerHTML = list.length===0
+    ?`<div class="empty" style="padding:32px"><div class="empty-line"></div><div class="empty-text">${scope?'Nenhum membro cadastrado na sua equipe ("'+scope+'")':'Nenhum usuário cadastrado'}</div></div>`
+    :list.map(u=>`
       <div class="adm-row">
         <div class="su-av" style="width:28px;height:28px;font-size:12px;flex-shrink:0;background:var(--gold);color:#07070C;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800">${(u.nome||'?')[0].toUpperCase()}</div>
         <div class="adm-row-main">
@@ -2593,6 +2673,39 @@ ALTER TABLE portal_users ADD COLUMN IF NOT EXISTS email TEXT;
 -- Backfill pontual pra quem já tinha conta antes dessa coluna existir
 -- (rode manualmente comparando com auth.users, caso precise popular os antigos):
 -- UPDATE portal_users pu SET email = au.email FROM auth.users au WHERE pu.user_id = au.id AND pu.email IS NULL;
+*/
+
+/* ── SEGURANÇA REAL da partição de equipes (leia isso) ──
+O que implementei no código (myTeamScope, _scopedUsers) é filtro do lado do
+CLIENTE — só esconde da TELA quem não é da equipe do supervisor. Isso resolve
+a experiência de uso, mas não é proteção de verdade: qualquer supervisor
+tecnicamente curioso consegue abrir o DevTools e chamar
+`sb.from('portal_users').select('*')` direto, sem filtro nenhum, e ver todo
+mundo — porque a permissão real de quem pode ler o quê é decidida pelas
+policies de RLS no Supabase, não pelo JavaScript da página.
+Se você quer bloqueio de verdade (não só visual), a policy de RLS em
+portal_users precisa comparar a equipe de quem está logado com a equipe da
+linha sendo lida. Um jeito comum de fazer isso:
+CREATE OR REPLACE FUNCTION my_equipe() RETURNS TEXT AS $$
+  SELECT equipe FROM portal_users WHERE user_id = auth.uid();
+$$ LANGUAGE sql SECURITY DEFINER STABLE;
+
+CREATE POLICY "usuarios_leitura_por_equipe" ON portal_users FOR SELECT
+USING (
+  is_portal_admin() OR is_portal_coordenador()  -- ajuste pros nomes de função que você já usa
+  OR equipe = my_equipe()
+  OR user_id = auth.uid()  -- todo mundo sempre pode ler o próprio registro
+);
+*/
+
+/* ── SQL needed: coluna pdf_url em portal_news (leitor de PDF/blog) ──
+ALTER TABLE portal_news ADD COLUMN IF NOT EXISTS pdf_url TEXT;
+*/
+
+/* ── SQL needed: portal_beneficios.user_id não pode ser NULL hoje, mas a
+   opção "Todos / Geral" do formulário manda null de propósito (benefício
+   sem colaborador específico). Rode isso pra liberar: ──
+ALTER TABLE portal_beneficios ALTER COLUMN user_id DROP NOT NULL;
 */
 
 /* ── Tabela portal_comissoes: pode ser removida do banco se não for mais usada
