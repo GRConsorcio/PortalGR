@@ -1040,6 +1040,11 @@ let CU = null, CUP = null;
 let allVendas=[], allMetas=[], allCampanhas=[], allBeneficios=[];
 let allAcademy=[], allNews=[], allSugestoes=[], allHallFama=[], allRegras=[];
 let allCopaEquipes=[], allCopaPartidas=[], allAvisos=[], allCarreira=[], allDestaques=[];
+// Resumo agregado de vendas vindo do CRM (contagens/somas por vendedor —
+// nunca dado de cliente/lead). Ver fetchCrmResumo(). null até carregar, ou
+// se o e-mail do usuário não bater com nenhum vendedor do CRM (ex: conta
+// só do Portal, sem correspondente lá).
+let _crmResumo = null;
 let _currentPage = 'dashboard';
 let _sugAnon = false;
 
@@ -1251,6 +1256,13 @@ async function doSetNewPassword(){
 sb.auth.onAuthStateChange(async(ev,session)=>{
   if(ev==='PASSWORD_RECOVERY'){
     _inRecovery=true;
+    // BUGFIX: se o navegador já tinha uma sessão válida (ex: pessoa já tinha
+    // logado antes), INITIAL_SESSION dispara antes deste evento e roda
+    // initApp(), que esconde #auth-screen inteiro (display:none). Só trocar
+    // os formulários DE DENTRO não adianta se o container pai continua
+    // escondido — a tela de definir senha nunca aparecia, mesmo com o token
+    // de recovery processado corretamente. Força o container a aparecer aqui.
+    el('auth-screen').style.display='flex';
     el('auth-tabs').style.display='none';
     el('auth-login').style.display='none';
     el('auth-register').style.display='none';
@@ -1271,10 +1283,36 @@ async function initApp(user){
   el('su-av').textContent=(dn[0]||'?').toUpperCase();
   el('auth-screen').style.display='none';
   await loadAll();
+  await fetchCrmResumo(CUP?.email||CU.email);
   renderSidebar();
   renderNav();
   renderDashboard();
   renderNiveis();
+}
+
+/* ═══ RESUMO DE VENDAS (CRM) ═══
+   O CRM (projeto Supabase separado) é quem tem as vendas de verdade —
+   portal_vendas aqui no Portal nunca foi alimentado. Em vez de duplicar
+   dado de cliente/lead pro Portal, chama uma função agregada no banco do
+   CRM que devolve só contagens/somas por vendedor (nunca nome, telefone,
+   CPF ou qualquer coisa do cliente) e casa pelo e-mail. */
+const CRM_SUPA_URL='https://prquggwhjcvenzuziaox.supabase.co';
+const CRM_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBycXVnZ3doamN2ZW56dXppYW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMTUzMDUsImV4cCI6MjA5Mzc5MTMwNX0.vjbVhGIUowS6AGE1Uf5uDutCMI193mhgra3GSwlqMec';
+const CRM_RESUMO_SECRET='pgr_resumo_a71f9c3e5b8d2467a0f1c9e3b6d8f452a17c9e04';
+async function fetchCrmResumo(email){
+  if(!email){ _crmResumo=null; return; }
+  try{
+    const resp=await fetch(CRM_SUPA_URL+'/rest/v1/rpc/portal_resumo_vendedor',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':CRM_ANON_KEY,'Authorization':'Bearer '+CRM_ANON_KEY},
+      body:JSON.stringify({p_email:email,p_secret:CRM_RESUMO_SECRET})
+    });
+    const data=await resp.json();
+    _crmResumo=(data&&!data.error)?data:null;
+  }catch(e){
+    console.warn('[fetchCrmResumo] erro:',e.message);
+    _crmResumo=null;
+  }
 }
 
 async function loadAll(){
@@ -1393,12 +1431,26 @@ function renderNav(){
   }
 }
 
-/* ═══ SIDEBAR LEVEL ═══ */
-function getSidebarLevel(){
+/* ═══ ESTATÍSTICAS DO MÊS (cotas/volume) ═══
+   Fonte única usada por sidebar, dashboard, níveis e performance. Prefere o
+   resumo agregado do CRM (_crmResumo — a fonte real de vendas); só cai para
+   portal_vendas (tabela local, historicamente nunca alimentada) se o e-mail
+   do usuário não corresponder a nenhum vendedor no CRM. */
+function getMesAtualStats(){
+  if(_crmResumo){
+    return {cotas:_crmResumo.cotas_mes||0, volume:_crmResumo.volume_mes||0};
+  }
   const mesAtual=new Date().toISOString().slice(0,7);
   const vendasMes=allVendas.filter(v=>v.data?.startsWith(mesAtual));
-  const cotas=vendasMes.reduce((s,v)=>s+(v.cotas||0),0);
-  const volume=vendasMes.reduce((s,v)=>s+(parseFloat(v.valor)||0),0);
+  return {
+    cotas: vendasMes.reduce((s,v)=>s+(v.cotas||0),0),
+    volume: vendasMes.reduce((s,v)=>s+(parseFloat(v.valor)||0),0),
+  };
+}
+
+/* ═══ SIDEBAR LEVEL ═══ */
+function getSidebarLevel(){
+  const {cotas,volume}=getMesAtualStats();
   return {lv:getLevelForStats(cotas,volume), cotas, volume};
 }
 function getLevelForPts(pts){ return LEVELS.find(l=>l.id==='bronze')||LEVELS[0]; } // legacy compat
@@ -1431,9 +1483,7 @@ function renderSidebar(){
 /* ═══ DASHBOARD ═══ */
 function renderDashboard(){
   const mesAtual=new Date().toISOString().slice(0,7);
-  const vendasMes=allVendas.filter(v=>v.data?.startsWith(mesAtual));
-  const cotas=vendasMes.reduce((s,v)=>s+(v.cotas||0),0);
-  const volume=vendasMes.reduce((s,v)=>s+(parseFloat(v.valor)||0),0);
+  const {cotas,volume}=getMesAtualStats();
   const meta=allMetas.find(m=>m.referencia===mesAtual);
   const metaCotas=meta?.meta_cotas||10;
   const pct=Math.min(100,Math.round((cotas/metaCotas)*100));
@@ -1445,8 +1495,9 @@ function renderDashboard(){
   el('kpi-nivel').textContent=nivelAtual.name;
   el('kpi-nivel').style.color=nivelAtual.color;
   el('kpi-nivel-sub').textContent='Baseado no mês atual';
-  el('kpi-rank').textContent='–';
-  el('kpi-rank-sub').textContent='Ranking em breve';
+  const rk=_crmResumo?.ranking_equipe;
+  el('kpi-rank').textContent=rk?.posicao?`${rk.posicao}º de ${rk.total_membros}`:'–';
+  el('kpi-rank-sub').textContent=rk?.posicao?'Na sua equipe':'Sem equipe no CRM';
   el('kpi-delta').textContent=cotas>=metaCotas?'✓ Meta atingida':`${metaCotas-cotas} cotas para a meta`;
   el('kpi-delta').className='kpi-delta '+(cotas>=metaCotas?'up':'dn');
 
@@ -1469,10 +1520,7 @@ function renderDashboard(){
 
 /* ═══ NÍVEIS ═══ */
 function renderNiveis(){
-  const mesAtual=new Date().toISOString().slice(0,7);
-  const vendasMes=allVendas.filter(v=>v.data?.startsWith(mesAtual));
-  const cotas=vendasMes.reduce((s,v)=>s+(v.cotas||0),0);
-  const volume=vendasMes.reduce((s,v)=>s+(parseFloat(v.valor)||0),0);
+  const {cotas,volume}=getMesAtualStats();
   const lv=getLevelForStats(cotas,volume);
   const levelOrder=['nao_classificado','bronze','prata','ouro','diamante','elite'];
   const curIdx=levelOrder.indexOf(lv.id);
@@ -1521,9 +1569,7 @@ function renderNiveis(){
 /* ═══ PERFORMANCE ═══ */
 function renderPerformance(){
   const mesAtual=new Date().toISOString().slice(0,7);
-  const vendasMes=allVendas.filter(v=>v.data?.startsWith(mesAtual));
-  const cotas=vendasMes.reduce((s,v)=>s+(v.cotas||0),0);
-  const volume=vendasMes.reduce((s,v)=>s+(parseFloat(v.valor)||0),0);
+  const {cotas,volume}=getMesAtualStats();
   const meta=allMetas.find(m=>m.referencia===mesAtual);
   const metaCotas=meta?.meta_cotas||10;
   const pct=Math.round((cotas/metaCotas)*100);
@@ -1532,18 +1578,25 @@ function renderPerformance(){
   el('perf-inadim').textContent=(CUP?.inadimplencia_pct||0)+'%';
   el('perf-meta-pct').textContent=pct+'%';
 
-  // Evolução mensal
-  const meses=[];
-  for(let i=5;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);meses.push(d.toISOString().slice(0,7));}
-  const max=Math.max(1,...meses.map(m=>allVendas.filter(v=>v.data?.startsWith(m)).reduce((s,v)=>s+(v.cotas||0),0)));
-  el('perf-evolucao').innerHTML=meses.map(m=>{
-    const c=allVendas.filter(v=>v.data?.startsWith(m)).reduce((s,v)=>s+(v.cotas||0),0);
-    const w=Math.round((c/max)*100);
-    const label=m.slice(5)+'/'+m.slice(2,4);
-    return`<div class="perf-bar-row"><span class="pbl-name">${label}</span><div class="pbl-bar"><div class="pbl-fill" style="width:${w}%"></div></div><span class="pbl-val">${c}</span></div>`;
+  // Evolução mensal — usa evolucao_6m do CRM quando disponível (só cotas por
+  // mês, agregado, sem nenhum dado de venda/cliente individual); cai pro
+  // cálculo local (portal_vendas) só se o resumo do CRM não carregou.
+  const evolucao=_crmResumo?.evolucao_6m||(()=>{
+    const meses=[];
+    for(let i=5;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);meses.push(d.toISOString().slice(0,7));}
+    return meses.map(m=>({mes:m,cotas:allVendas.filter(v=>v.data?.startsWith(m)).reduce((s,v)=>s+(v.cotas||0),0)}));
+  })();
+  const max=Math.max(1,...evolucao.map(e=>e.cotas));
+  el('perf-evolucao').innerHTML=evolucao.map(e=>{
+    const w=Math.round((e.cotas/max)*100);
+    const label=e.mes.slice(5)+'/'+e.mes.slice(2,4);
+    return`<div class="perf-bar-row"><span class="pbl-name">${label}</span><div class="pbl-bar"><div class="pbl-fill" style="width:${w}%"></div></div><span class="pbl-val">${e.cotas}</span></div>`;
   }).join('');
 
-  el('perf-ranking').innerHTML='<div class="empty"><div class="empty-line"></div><div class="empty-text">Dados da equipe em breve</div></div>';
+  const rk=_crmResumo?.ranking_equipe;
+  el('perf-ranking').innerHTML=rk?.posicao
+    ?`<div style="padding:16px 0;text-align:center"><div style="font-family:var(--font-d);font-size:32px;font-weight:800;color:var(--gold2)">${rk.posicao}º</div><div style="color:var(--muted2);font-size:12px">de ${rk.total_membros} na sua equipe (cotas do mês)</div></div>`
+    :'<div class="empty"><div class="empty-line"></div><div class="empty-text">Sem equipe vinculada no CRM</div></div>';
 
   // Histórico
   el('perf-vendas-hist').innerHTML=allVendas.slice(0,20).map(v=>`<tr>
