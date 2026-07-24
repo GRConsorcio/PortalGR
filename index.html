@@ -66,7 +66,11 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .auth-err{font-size:11px;color:var(--red);margin-top:10px;min-height:14px;text-align:center}
 
 /* ── LAYOUT ── */
-.sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--s1);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:200}
+.sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--s1);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:200;transition:transform .25s ease}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:199}
+.sidebar-backdrop.on{display:block}
+.mobile-menu-btn{display:none;width:36px;height:36px;background:transparent;border:1px solid var(--border);align-items:center;justify-content:center;cursor:pointer;color:var(--text);flex-shrink:0}
+.mobile-menu-btn:hover{border-color:var(--border2)}
 .logo-wrap{padding:20px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
 .logo-mark{width:34px;height:34px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:14px;color:#08080D;flex-shrink:0}
 .logo-text{font-family:var(--font-d);font-size:16px;font-weight:800;color:var(--gold2)}
@@ -126,9 +130,9 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .kpi-delta.dn{color:var(--red)}
 
 .panel{background:var(--s2);border:1px solid var(--border);margin-bottom:16px}
-.panel-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.panel-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .panel-title{font-family:var(--font-d);font-size:16px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase}
-.panel-body{padding:20px}
+.panel-body{padding:20px;overflow-x:auto}
 
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
@@ -392,20 +396,39 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .status-dot.red{background:var(--red)}
 .status-dot.muted{background:var(--muted2)}
 
+/* ── MOBILE (≤960px): sidebar vira gaveta deslizante em vez de sumir sem
+   nenhum jeito de navegar (era o estado antigo: display:none e pronto —
+   o menu inteiro ficava inacessível no celular). Agora ela continua no DOM,
+   fora da tela (translateX), e um botão hambúrguer na topbar abre/fecha
+   com um backdrop escurecendo o fundo. */
 @media(max-width:960px){
   :root{--sidebar-w:0px}
-  .sidebar{display:none}
+  .sidebar{transform:translateX(-100%);box-shadow:0 0 40px rgba(0,0,0,0.5)}
+  .sidebar.mobile-open{transform:translateX(0)}
   .main{margin-left:0}
+  .mobile-menu-btn{display:flex}
+  .topbar{padding:0 14px}
   .kpi-grid{grid-template-columns:1fr 1fr}
+  .kpi-val{font-size:32px}
   .levels-grid,.hall-grid{grid-template-columns:1fr 1fr}
   .grid-2,.grid-3,.acad-grid,.benef-grid{grid-template-columns:1fr}
   .news-grid{grid-template-columns:1fr}
   .progress-hero{grid-template-columns:1fr}
+  .ph-left{border-right:none;border-bottom:1px solid var(--border)}
   .content{padding:16px}
+  .adm-grid-2,.adm-grid-3{grid-template-columns:1fr}
+  .modal{padding:22px}
 }
 @media(max-width:520px){
   .kpi-grid{grid-template-columns:1fr}
   .levels-grid,.hall-grid{grid-template-columns:1fr}
+  .auth-wrap{padding:28px 22px;width:100%}
+  #auth-screen{padding:12px}
+  .hall-hero-title{font-size:24px}
+  .panel-head{padding:12px 14px}
+  .panel-body{padding:14px}
+  .kpi-card{padding:16px 18px}
+  .topbar-title{font-size:15px}
 }
 </style>
 </head>
@@ -608,10 +631,14 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
     </button>
   </div>
 </nav>
+<div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMobileNav(false)"></div>
 
 <!-- MAIN -->
 <div class="main">
   <div class="topbar">
+    <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Abrir menu">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="1" y1="4" x2="17" y2="4"/><line x1="1" y1="9" x2="17" y2="9"/><line x1="1" y1="14" x2="17" y2="14"/></svg>
+    </button>
     <div class="topbar-title" id="topbar-title">Dashboard</div>
     <div class="topbar-right">
       <span id="topbar-role-badge" style="display:none;font-size:8px;font-weight:700;letter-spacing:2px;font-family:var(--font-b);padding:3px 8px;border:1px solid currentColor;opacity:0.7"></span>
@@ -1376,6 +1403,16 @@ function nav(page){
   _currentPage=page;
   const renderers={dashboard:renderDashboard,niveis:renderNiveis,performance:renderPerformance,destaques:renderDestaques,copa:renderCopa,campanhas:()=>renderCampanhas('ativa'),beneficios:renderBeneficios,academy:()=>renderAcademy('todos'),news:renderNews,sugestoes:renderSugestoes,hallfama:renderHallFama,regras:renderRegras,carreira:renderCarreira};
   renderers[page]?.();
+  toggleMobileNav(false); // fecha a gaveta ao trocar de página no celular
+}
+
+/* ═══ MENU MOBILE (gaveta) ═══ */
+function toggleMobileNav(force){
+  const sidebar=el('sidebar'), backdrop=el('sidebar-backdrop');
+  if(!sidebar||!backdrop) return;
+  const open=typeof force==='boolean'?force:!sidebar.classList.contains('mobile-open');
+  sidebar.classList.toggle('mobile-open',open);
+  backdrop.classList.toggle('on',open);
 }
 
 /* ═══ ROLE HELPERS ═══ */
@@ -1965,6 +2002,7 @@ window.nav = function(page){
       'adm-usuarios':renderAdmUsuarios,'adm-sugestoes':renderAdmSugestoes,
     };
     admRenderers[page]?.();
+    toggleMobileNav(false); // fecha a gaveta ao trocar de página no celular
   } else {
     _navOrig(page);
   }
