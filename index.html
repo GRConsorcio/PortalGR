@@ -2869,9 +2869,18 @@ const ORG_DEFAULT = {
 };
 
 async function loadOrgData(){
-  const {data} = await sb.from('portal_organograma').select('*').maybeSingle().catch(()=>({data:null}));
-  if(data?.estrutura) _orgData = data.estrutura;
-  else _orgData = ORG_DEFAULT;
+  // BUGFIX: ".catch()" encadeado direto no query builder do supabase-js
+  // quebrava com "catch is not a function" — o builder só é "thenable"
+  // (implementa .then), não uma Promise de verdade, então precisa de um
+  // try/catch de verdade em volta do await, não um .catch() na cadeia.
+  let data=null;
+  try{
+    const res = await sb.from('portal_organograma').select('*').maybeSingle();
+    data = res.data;
+  }catch(e){
+    console.warn('[loadOrgData] falha ao buscar organograma:', e.message);
+  }
+  _orgData = data?.estrutura ? data.estrutura : ORG_DEFAULT;
 }
 
 async function saveOrgData(){
