@@ -488,7 +488,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .panel,.kpi-card,.destaque-card,.modal,.auth-wrap,.progress-hero,.ph-stat,
 .adm-table-wrap,.copa-bracket,.timeline-card{border-radius:14px}
 .a-inp-wrap,.btn-auth,.a-inp,.adm-input,.adm-select,.adm-textarea{border-radius:10px}
-.btn-primary,.btn-outline,.btn-edit,.btn-del,.auth-tab,.tag,.copa-subtab{border-radius:7px}
+.btn-primary,.btn-outline,.btn-edit,.btn-del,.auth-tab,.tag{border-radius:7px}
 .su-av,.logo-mark,.notif-btn,.dc-av,.lc-mark,.mobile-menu-btn,.theme-toggle,
 .timeline-dot{border-radius:50%}
 .org-photo{border-radius:14px}
@@ -516,14 +516,13 @@ button,input,select,textarea{font:inherit}
 .theme-toggle svg{width:16px;height:16px}
 
 /* ── Copa GR: linha do tempo de edições/campeões ── */
-.copa-subtabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
-.copa-subtab{padding:8px 16px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:var(--font-b);color:var(--muted2);background:var(--s2);border:1px solid var(--border);cursor:pointer;transition:all .15s}
-.copa-subtab.on{color:#08080D;background:var(--gold);border-color:var(--gold)}
 .timeline-wrap{position:relative;padding-left:30px}
 .timeline-wrap::before{content:'';position:absolute;left:9px;top:4px;bottom:4px;width:2px;background:linear-gradient(var(--gold-dim),var(--border))}
 .timeline-item{position:relative;margin-bottom:18px}
 .timeline-dot{position:absolute;left:-30px;top:18px;width:14px;height:14px;background:var(--s1);border:3px solid var(--gold);box-shadow:0 0 0 4px var(--gold-glow)}
 .timeline-card{background:var(--s2);border:1px solid var(--border);padding:16px 18px;display:flex;align-items:center;gap:14px}
+.timeline-photo{width:56px;height:56px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--gold-dim);box-shadow:0 0 0 3px var(--gold-glow)}
+.timeline-photo img{width:100%;height:100%;object-fit:cover}
 .timeline-flag{width:40px;text-align:center;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .flag-img{border-radius:3px;box-shadow:0 0 0 1px var(--border2);vertical-align:middle;display:inline-block}
 .timeline-year{font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--gold2);width:60px;flex-shrink:0}
@@ -892,45 +891,12 @@ button,input,select,textarea{font:inherit}
 
     <!-- COPA GR -->
     <div class="page" id="page-copa">
-      <div class="copa-subtabs" role="tablist" aria-label="Copa GR — seções">
-        <button class="copa-subtab on" id="copa-subtab-class" role="tab" aria-selected="true" onclick="showCopaView('classificacao')">Classificação</button>
-        <button class="copa-subtab" id="copa-subtab-time" role="tab" aria-selected="false" onclick="showCopaView('timeline')">🏆 Linha do Tempo</button>
-      </div>
-
-      <div id="copa-view-classificacao">
-        <div class="panel" style="margin-bottom:16px">
-          <div class="panel-head">
-            <div class="panel-title">Copa GR — Classificação</div>
-            <span class="tag" style="background:rgba(45,155,111,0.12);color:var(--green2)">EM ANDAMENTO</span>
-          </div>
-          <div class="panel-body" style="padding:0">
-            <table class="tbl"><thead><tr><th>Pos</th><th>Equipe</th><th>J</th><th>V</th><th>E</th><th>D</th><th>Gols</th><th>Pts</th></tr></thead>
-            <tbody id="copa-tabela"></tbody></table>
-          </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">🏆 Copa GR — Campeões por edição</div>
+          <span class="tag" style="background:rgba(201,168,76,0.12);color:var(--gold2)" id="copa-ed-count"></span>
         </div>
-        <div class="panel" style="margin-bottom:16px">
-          <div class="panel-head"><div class="panel-title">Chaveamento</div></div>
-          <div class="panel-body" style="padding:0;overflow-x:auto">
-            <div class="copa-bracket" id="copa-bracket"></div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-head"><div class="panel-title">Estatísticas individuais</div></div>
-          <div class="panel-body" style="padding:0">
-            <table class="tbl"><thead><tr><th>Vendedor</th><th>Equipe</th><th>Cotas</th><th>Volume</th><th>Gols</th></tr></thead>
-            <tbody id="copa-stats"></tbody></table>
-          </div>
-        </div>
-      </div>
-
-      <div id="copa-view-timeline" style="display:none">
-        <div class="panel">
-          <div class="panel-head">
-            <div class="panel-title">Campeões por edição</div>
-            <span class="tag" style="background:rgba(201,168,76,0.12);color:var(--gold2)" id="copa-ed-count"></span>
-          </div>
-          <div class="panel-body" id="copa-timeline"></div>
-        </div>
+        <div class="panel-body" id="copa-timeline"></div>
       </div>
     </div>
 
@@ -1845,40 +1811,10 @@ function renderDestaques(){
     }).join('');
 }
 
-/* ═══ COPA ═══ */
-// Espelho do app Copa GR embutido via iframe — visão de espectador (não dá
-// pra editar através daqui, é só uma "janela" pro app real). Isso não
-// substitui autenticação de verdade: o app Copa GR em si não tem controle de
-// acesso por usuário (é uma URL única compartilhada) — quem tiver o link
-// direto do Copa GR ainda consegue clicar em "Editar" LÁ. Se quiser bloquear
-// edição de verdade mesmo por quem acessa o Copa GR direto, isso precisa ser
-// implementado no próprio app Copa GR (ex: ler um parâmetro ?readonly=1 na
-// URL e esconder os botões de edição) — me chama nesse arquivo se quiser.
-const COPA_GR_URL = 'https://grconsorcio.github.io/COPAGR/';
-
+/* ═══ COPA ═══
+   A página só mostra a Linha do Tempo dos campeões — a classificação/
+   chaveamento (espelho do app externo COPAGR) foi removida a pedido. */
 function renderCopa(){
-  el('copa-tabela').innerHTML=allCopaEquipes.length===0
-    ?'<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted2)">Copa não iniciada</td></tr>'
-    :allCopaEquipes.sort((a,b)=>(b.pontos||0)-(a.pontos||0)).map((e,i)=>`<tr>
-      <td style="font-family:var(--font-d);font-weight:700;color:${i===0?'var(--gold2)':'var(--muted2)'}">${i+1}</td>
-      <td style="font-weight:600">${e.nome}</td>
-      <td>${e.jogos||0}</td><td style="color:var(--green2)">${e.vitorias||0}</td>
-      <td>${e.empates||0}</td><td style="color:var(--red)">${e.derrotas||0}</td>
-      <td>${e.gols_marcados||0}:${e.gols_sofridos||0}</td>
-      <td style="font-family:var(--font-d);font-weight:700;color:var(--gold2)">${e.pontos||0}</td>
-    </tr>`).join('');
-
-  el('copa-bracket').innerHTML = `
-    <div style="width:100%">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <div style="font-size:11px;color:var(--muted2)">Espelho do app Copa GR — visualização apenas</div>
-        <a href="${COPA_GR_URL}" target="_blank" style="font-size:11px;color:var(--gold2);text-decoration:none">Abrir em tela cheia ↗</a>
-      </div>
-      <div style="position:relative;width:100%;height:640px;border:1px solid var(--border2);border-radius:8px;overflow:hidden;background:#000">
-        <iframe src="${COPA_GR_URL}" style="width:100%;height:100%;border:0" loading="lazy" title="Copa GR"></iframe>
-      </div>
-    </div>`;
-  el('copa-stats').innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted2)">Estatísticas detalhadas de jogador (cartões, gols) — veja no espelho da Copa GR acima</td></tr>';
   renderCopaTimeline();
 }
 
@@ -1906,16 +1842,6 @@ const PAISES_COPA=[
   {v:'KR',l:'🇰🇷 Coreia do Sul'},{v:'VE',l:'🇻🇪 Venezuela'},
 ];
 
-function showCopaView(view){
-  el('copa-view-classificacao').style.display = view==='classificacao' ? '' : 'none';
-  el('copa-view-timeline').style.display = view==='timeline' ? '' : 'none';
-  el('copa-subtab-class').classList.toggle('on', view==='classificacao');
-  el('copa-subtab-class').setAttribute('aria-selected', String(view==='classificacao'));
-  el('copa-subtab-time').classList.toggle('on', view==='timeline');
-  el('copa-subtab-time').setAttribute('aria-selected', String(view==='timeline'));
-  if(view==='timeline') window.__pageEnter?.(el('copa-view-timeline'));
-}
-
 function renderCopaTimeline(){
   const wrap=el('copa-timeline'), countTag=el('copa-ed-count');
   if(!wrap) return;
@@ -1929,6 +1855,7 @@ function renderCopaTimeline(){
     <div class="timeline-item">
       <div class="timeline-dot"></div>
       <div class="timeline-card">
+        ${ed.imagem_url?`<div class="timeline-photo"><img src="${ed.imagem_url}" alt="${ed.equipe_campea}"></div>`:''}
         <div class="timeline-flag" title="${ed.pais||''}">${flagImg(ed.pais_code,30)}</div>
         <div class="timeline-year">${ed.ano}</div>
         <div class="timeline-body">
@@ -2429,6 +2356,18 @@ function buildAdmForm(type, d={}){
       ${g2(inp('capitao','Capitão / destaque',d.capitao,'text','Ex: João Silva'),
            inp('pontos_finais','Pontos finais',d.pontos_finais,'number','0'))}
       ${inp('titulo','Título/apelido da edição (opcional)',d.titulo,'text','Ex: Copa de Verão')}
+      <div class="adm-field">
+        <label class="adm-label">Foto do(a) campeão(ã)</label>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <div class="timeline-photo" id="ce-photo-preview" style="width:52px;height:52px">${d.imagem_url?`<img src="${d.imagem_url}" alt="">`:''}</div>
+          <div style="flex:1">
+            <input type="file" id="ce-photo-file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none" onchange="handleCopaEdicaoPhotoUpload(event)">
+            <button type="button" class="btn-outline" style="font-size:11px" onclick="document.getElementById('ce-photo-file').click()">📷 Enviar foto</button>
+            <span id="ce-photo-status" style="font-size:10px;color:var(--muted2);margin-left:8px"></span>
+          </div>
+        </div>
+        <input class="adm-input" id="af-imagem_url" value="${d.imagem_url||''}" placeholder="ou cole uma URL de imagem..." style="font-size:11px">
+      </div>
       ${ta('descricao','Descrição / destaque da edição',d.descricao,'Ex: Final decidida nos pênaltis...')}
       ${inp('ordem','Ordem de exibição (só se houver mais de uma no mesmo ano)',d.ordem,'number','0')}`;
 
@@ -2525,7 +2464,8 @@ async function saveAdmModal(){
       payload = { ano:parseInt(av('ano'))||new Date().getFullYear(), pais_code:paisCode, pais:paisNome,
         equipe_campea:av('equipe_campea'), capitao:av('capitao'),
         pontos_finais:av('pontos_finais')?parseInt(av('pontos_finais')):null,
-        titulo:av('titulo'), descricao:av('descricao'), ordem:parseInt(av('ordem'))||0 };
+        titulo:av('titulo'), descricao:av('descricao'), ordem:parseInt(av('ordem'))||0,
+        imagem_url:av('imagem_url')||null };
       break;
     }
     case 'beneficio':
@@ -3097,6 +3037,37 @@ async function handleNewsPdfUpload(e){
   const {data} = sb.storage.from('portal-uploads').getPublicUrl(path);
   urlInput.value = data.publicUrl;
   statusEl.textContent = 'Enviado ✓';
+  statusEl.style.color = 'var(--green2)';
+}
+
+// Foto do campeão/campeã de uma edição da Copa GR — mesmo padrão de upload
+// direto usado no organograma e no PDF do News (bucket "portal-uploads").
+async function handleCopaEdicaoPhotoUpload(e){
+  const file = e.target.files?.[0];
+  if(!file) return;
+  const statusEl = document.getElementById('ce-photo-status');
+  const preview = document.getElementById('ce-photo-preview');
+  const urlInput = document.getElementById('af-imagem_url');
+  if(file.size > 5*1024*1024){
+    toast('Imagem muito grande (máx. 5MB)','err');
+    e.target.value='';
+    return;
+  }
+  preview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="">`;
+  statusEl.textContent = 'Enviando...';
+  statusEl.style.color = 'var(--muted2)';
+  const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+  const path = `copa-edicoes/${Date.now()}.${ext}`;
+  const {error} = await sb.storage.from('portal-uploads').upload(path, file, {upsert:true});
+  if(error){
+    statusEl.textContent = 'Falha no envio';
+    statusEl.style.color = 'var(--red)';
+    toast('Erro ao enviar imagem: '+error.message,'err');
+    return;
+  }
+  const {data} = sb.storage.from('portal-uploads').getPublicUrl(path);
+  urlInput.value = data.publicUrl;
+  statusEl.textContent = 'Enviada ✓';
   statusEl.style.color = 'var(--green2)';
 }
 
