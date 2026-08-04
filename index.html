@@ -2380,7 +2380,15 @@ function buildAdmForm(type, d={}){
       ${inp('titulo','Título',d.titulo)}
       ${sel('categoria','Categoria',[{v:'empresa',l:'Empresa'},{v:'mercado',l:'Mercado'},{v:'novidade',l:'Novidade'}],d.categoria)}
       ${ta('resumo','Resumo',d.resumo)}
-      ${inp('pdf_url','URL do PDF (opcional — se preenchido, abre o PDF em vez do texto)',d.pdf_url,'url','https://...')}
+      <div class="adm-field">
+        <label class="adm-label">PDF (opcional — se preenchido, abre o PDF embutido em vez do texto)</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <input type="file" id="news-pdf-file" accept="application/pdf" style="display:none" onchange="handleNewsPdfUpload(event)">
+          <button type="button" class="btn-outline" style="font-size:11px" onclick="document.getElementById('news-pdf-file').click()">📄 Enviar PDF</button>
+          <span id="news-pdf-status" style="font-size:10px;color:var(--muted2)"></span>
+        </div>
+        <input class="adm-input" id="af-pdf_url" type="url" value="${d.pdf_url||''}" placeholder="ou cole uma URL de PDF...">
+      </div>
       ${ta('conteudo','Conteúdo completo (usado se não tiver PDF acima)',d.conteudo)}
       ${inp('autor','Autor',d.autor)}`;
 
@@ -3022,6 +3030,40 @@ async function handleOrgPhotoUpload(e, nodeId){
   const {data} = sb.storage.from('portal-uploads').getPublicUrl(path);
   urlInput.value = data.publicUrl;
   statusEl.textContent = 'Enviada ✓';
+  statusEl.style.color = 'var(--green2)';
+}
+
+// Sobe o PDF de uma notícia pro Storage (bucket público "portal-uploads") e
+// preenche o campo af-pdf_url — o leitor (openNewsReader) já sabe exibir
+// qualquer pdf_url embutido num iframe, sem precisar baixar pra ver.
+async function handleNewsPdfUpload(e){
+  const file = e.target.files?.[0];
+  if(!file) return;
+  const statusEl = document.getElementById('news-pdf-status');
+  const urlInput = document.getElementById('af-pdf_url');
+  if(file.type!=='application/pdf'){
+    toast('Selecione um arquivo PDF','err');
+    e.target.value='';
+    return;
+  }
+  if(file.size > 15*1024*1024){
+    toast('PDF muito grande (máx. 15MB)','err');
+    e.target.value='';
+    return;
+  }
+  statusEl.textContent = 'Enviando...';
+  statusEl.style.color = 'var(--muted2)';
+  const path = `news/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+  const {error} = await sb.storage.from('portal-uploads').upload(path, file, {upsert:true});
+  if(error){
+    statusEl.textContent = 'Falha no envio';
+    statusEl.style.color = 'var(--red)';
+    toast('Erro ao enviar PDF: '+error.message,'err');
+    return;
+  }
+  const {data} = sb.storage.from('portal-uploads').getPublicUrl(path);
+  urlInput.value = data.publicUrl;
+  statusEl.textContent = 'Enviado ✓';
   statusEl.style.color = 'var(--green2)';
 }
 
