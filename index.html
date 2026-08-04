@@ -672,6 +672,10 @@ button,input,select,textarea{font:inherit}
     <div id="nav-admin-section" style="display:none">
       <div class="nav-sect" style="color:var(--gold-dim);margin-top:4px">Gestão</div>
       <div id="nav-admin-items">
+        <div class="nav-item coord-only" data-page="adm-vendas-equipe" onclick="nav('adm-vendas-equipe')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 15V9M7 15V5M12 15v-7M17 15V3"/></svg>
+          Vendas da Equipe
+        </div>
         <div class="nav-item coord-only" data-page="adm-metas" onclick="nav('adm-metas')">
           <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="9" r="7"/><circle cx="9" cy="9" r="3"/><line x1="9" y1="1" x2="9" y2="3"/></svg>
           Metas
@@ -1040,6 +1044,25 @@ button,input,select,textarea{font:inherit}
         <button class="btn-primary" onclick="openAdmModal('meta')">+ Nova meta</button>
       </div>
       <div class="adm-table-wrap" id="adm-meta-list"></div>
+    </div>
+
+    <!-- ══ ADM: VENDAS DA EQUIPE (dados agregados do CRM — nunca dado de cliente) ══ -->
+    <div class="page" id="page-adm-vendas-equipe">
+      <div class="adm-page-head">
+        <div class="adm-page-title">Vendas da Equipe</div>
+        <span class="small-note" id="vendas-equipe-ref" style="font-size:11px;color:var(--muted2)"></span>
+      </div>
+      <div id="vendas-equipe-loading" style="padding:32px;text-align:center;color:var(--muted2);font-size:12px">Carregando dados do CRM...</div>
+      <div class="adm-table-wrap" id="vendas-equipe-wrap" style="display:none;overflow-x:auto">
+        <table class="tbl">
+          <thead><tr>
+            <th>Vendedor</th><th>Equipe</th>
+            <th>Cotas (mês)</th><th>Volume (mês)</th><th>Vendas (mês)</th>
+            <th>Cotas (total)</th><th>Volume (total)</th>
+          </tr></thead>
+          <tbody id="vendas-equipe-body"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- ══ ADM: DESTAQUES ══ -->
@@ -1437,6 +1460,56 @@ async function fetchCrmResumo(email){
   }catch(e){
     console.warn('[fetchCrmResumo] erro:',e.message);
     _crmResumo=null;
+  }
+}
+
+// ═══ VENDAS DA EQUIPE (CRM) ═══
+// Mesmo padrão de portal_resumo_vendedor, mas devolve cotas/volume de TODOS
+// os vendedores de uma vez (função própria no CRM, com seu próprio segredo)
+// — pra tela de Gestão → Vendas da Equipe. Continua só agregado por
+// vendedor: nunca nome, telefone ou qualquer dado de cliente/lead.
+const CRM_RESUMO_EQUIPE_SECRET='pgr_equipe_9f3a7c1e6b4d8025f9c3a1e7b5d90462c8f1a3e6';
+async function fetchCrmResumoEquipe(){
+  const resp=await fetch(CRM_SUPA_URL+'/rest/v1/rpc/portal_resumo_todos_vendedores',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':CRM_ANON_KEY,'Authorization':'Bearer '+CRM_ANON_KEY},
+    body:JSON.stringify({p_secret:CRM_RESUMO_EQUIPE_SECRET})
+  });
+  const data=await resp.json();
+  if(!data||data.error) throw new Error(data?.error||'Falha ao buscar dados do CRM');
+  return data;
+}
+
+async function renderAdmVendasEquipe(){
+  const loadEl=el('vendas-equipe-loading'), wrapEl=el('vendas-equipe-wrap'), bodyEl=el('vendas-equipe-body');
+  loadEl.style.display='block'; loadEl.textContent='Carregando dados do CRM...';
+  wrapEl.style.display='none';
+  try{
+    const data=await fetchCrmResumoEquipe();
+    let vendedores=data.vendedores||[];
+    // Supervisor só vê a própria equipe (mesmo escopo usado no resto do Portal
+    // via myTeamScope()) — admin/coordenador continuam vendo todo mundo.
+    const scope=myTeamScope();
+    if(scope) vendedores=vendedores.filter(v=>v.equipe===scope);
+    el('vendas-equipe-ref').textContent=data.mes_referencia?`Referência: ${data.mes_referencia}`:'';
+    if(!vendedores.length){
+      loadEl.textContent='Nenhum vendedor encontrado.';
+      return;
+    }
+    bodyEl.innerHTML=vendedores.map(v=>`<tr>
+      <td style="font-weight:600">${v.nome||'–'}</td>
+      <td style="color:var(--muted2)">${v.equipe||'–'}</td>
+      <td style="font-family:var(--font-d);font-weight:700;color:var(--gold2)">${v.cotas_mes||0}</td>
+      <td>${fmtBRL(v.volume_mes||0)}</td>
+      <td>${v.vendas_mes||0}</td>
+      <td>${v.cotas_total||0}</td>
+      <td>${fmtBRL(v.volume_total||0)}</td>
+    </tr>`).join('');
+    loadEl.style.display='none';
+    wrapEl.style.display='block';
+  }catch(e){
+    loadEl.textContent='Erro ao carregar: '+e.message;
+    console.warn('[renderAdmVendasEquipe]',e.message);
   }
 }
 
@@ -2129,6 +2202,7 @@ function renderCarreira(){
 
 /* ── NAV extension for admin pages ── */
 const ADM_PAGE_TITLES = {
+  'adm-vendas-equipe':'Vendas da Equipe',
   'adm-campanhas':'Campanhas','adm-metas':'Metas','adm-destaques':'Destaques',
   'adm-academy':'GR Academy','adm-news':'GR News','adm-avisos':'Avisos',
   'adm-copa':'Copa GR','adm-beneficios':'Benefícios','adm-hallfama':'Hall da Fama',
@@ -2146,6 +2220,7 @@ window.nav = function(page){
     el('topbar-title').textContent = ADM_PAGE_TITLES[page];
     _currentPage = page;
     const admRenderers = {
+      'adm-vendas-equipe':renderAdmVendasEquipe,
       'adm-campanhas':renderAdmCampanhas,'adm-metas':renderAdmMetas,
       'adm-destaques':renderAdmDestaques,'adm-academy':renderAdmAcademy,
       'adm-news':renderAdmNews,'adm-avisos':renderAdmAvisos,
