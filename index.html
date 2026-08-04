@@ -345,11 +345,34 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted2);cursor:pointer;font-size:16px;transition:color .15s}
 .modal-close:hover{color:var(--text)}
 
-/* ══ ORGANOGRAMA CSS ══ */
-.org-level{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;position:relative;padding:0 8px}
-.org-level+.org-level{margin-top:0}
-.org-node{display:flex;flex-direction:column;align-items:center;position:relative}
-.org-node::before{content:'';position:absolute;top:-24px;left:50%;width:1px;height:24px;background:var(--border2)}
+/* ══ ORGANOGRAMA CSS ══
+   Árvore de verdade (não mais fileiras agrupadas por um número de "nível"
+   digitado à mão) — quem reporta pra quem é decidido só pelo campo "Reporta
+   para", e a posição visual (embaixo do respectivo chefe) vem da estrutura
+   pai/filho, com o clássico truque de CSS de display:table pra centralizar
+   cada nó sobre seus próprios filhos automaticamente. */
+.org-tree, .org-tree ul{
+  display:table; margin:0 auto; padding:0; list-style:none; position:relative;
+}
+.org-tree li{
+  display:table-cell; vertical-align:top; text-align:center; position:relative;
+  padding:32px 14px 0 14px;
+}
+.org-tree li::before, .org-tree li::after{
+  content:''; position:absolute; top:0; right:50%;
+  border-top:1px solid var(--border2); width:50%; height:24px;
+}
+.org-tree li::after{ right:auto; left:50%; border-left:1px solid var(--border2); }
+.org-tree li:only-child{ padding-top:24px; }
+.org-tree li:only-child::before, .org-tree li:only-child::after{ display:none; }
+.org-tree li:first-child::before, .org-tree li:last-child::after{ border:0 none; }
+.org-tree > li{ padding-top:0; }
+.org-tree > li::before, .org-tree > li::after{ display:none; }
+.org-tree ul::before{
+  content:''; position:absolute; top:0; left:50%;
+  border-left:1px solid var(--border2); width:0; height:24px;
+}
+.org-node{display:inline-flex;flex-direction:column;align-items:center;position:relative}
 .org-card{background:var(--s2);border:1px solid var(--border);padding:14px 16px;text-align:center;width:150px;position:relative;transition:border-color .15s;cursor:default}
 .org-card:hover{border-color:var(--border2)}
 .org-card.top-card{border-color:var(--gold-dim);background:var(--s1)}
@@ -358,12 +381,6 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .org-photo img{width:100%;height:100%;object-fit:cover}
 .org-name{font-family:var(--font-d);font-size:13px;font-weight:700;letter-spacing:0.3px;margin-bottom:2px;line-height:1.2}
 .org-role{font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted2)}
-.org-connector{display:flex;justify-content:center;position:relative;height:48px}
-.org-connector::before{content:'';position:absolute;top:0;left:50%;width:1px;height:100%;background:var(--border2)}
-.org-children-line{position:relative;display:flex;justify-content:center;margin-bottom:0}
-.org-children-line::before{content:'';position:absolute;top:0;left:calc(50% - 0.5px);height:24px;width:1px;background:var(--border2)}
-.org-branch{position:relative;display:flex;justify-content:center;gap:0}
-.org-branch-line{position:absolute;top:0;background:var(--border2);height:1px}
 .org-edit-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;gap:6px}
 .org-card:hover .org-edit-overlay.active{display:flex}
 .org-edit-btn-sm{background:var(--s1);border:1px solid var(--border2);color:var(--muted2);padding:4px 8px;font-size:9px;cursor:pointer;font-family:var(--font-b);font-weight:600;letter-spacing:1px;transition:all .12s}
@@ -2904,27 +2921,22 @@ async function renderOrganograma(){
   const container = document.getElementById('org-tree');
   if(!container) return;
 
-  // Group nodes by level
-  const levels = {};
-  _orgData.nodes.forEach(n=>{
-    if(!levels[n.level]) levels[n.level] = [];
-    levels[n.level].push(n);
-  });
-
-  const maxLevel = Math.max(...Object.keys(levels).map(Number));
+  const nodes = _orgData.nodes;
+  const byId = Object.fromEntries(nodes.map(n=>[n.id,n]));
 
   function nodeHTML(n){
     const initials = (n.name||n.role||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
     const photo = n.photo
       ? `<div class="org-photo"><img src="${n.photo}" alt="${n.name}" onerror="this.parentNode.innerHTML='${initials}'"></div>`
       : `<div class="org-photo">${initials}</div>`;
+    const isRoot = !n.parentId || !byId[n.parentId];
     const editOverlay = _orgEditMode
       ? `<div class="org-edit-overlay active">
           <button class="org-edit-btn-sm" onclick="editOrgNode('${n.id}')">Editar</button>
-          ${n.level>0?`<button class="org-edit-btn-sm" style="color:var(--red)" onclick="deleteOrgNode('${n.id}')">✕</button>`:''}
+          ${!isRoot?`<button class="org-edit-btn-sm" style="color:var(--red)" onclick="deleteOrgNode('${n.id}')">✕</button>`:''}
         </div>` : '';
     return `<div class="org-node" data-id="${n.id}">
-      <div class="org-card ${n.level===0?'top-card':''}">
+      <div class="org-card ${isRoot?'top-card':''}">
         ${editOverlay}
         ${photo}
         <div class="org-name">${n.name||'<span style="color:var(--muted2);font-style:italic">Sem nome</span>'}</div>
@@ -2933,18 +2945,32 @@ async function renderOrganograma(){
     </div>`;
   }
 
-  // Build tree HTML level by level
-  let html = '<div style="min-width:600px">';
+  // Monta a árvore de verdade a partir de "Reporta para" (parentId), não de
+  // um número de nível digitado à mão — quem reporta pra alguém SEMPRE
+  // aparece visualmente embaixo de quem foi escolhido em "Reporta para",
+  // não importa o que tiver em qualquer campo antigo de nível.
+  const childrenOf = {};
+  nodes.forEach(n=>{
+    const hasValidParent = n.parentId && byId[n.parentId] && n.parentId!==n.id;
+    const key = hasValidParent ? n.parentId : '__root__';
+    (childrenOf[key] = childrenOf[key]||[]).push(n);
+  });
 
-  for(let lvl=0; lvl<=maxLevel; lvl++){
-    const nodes = levels[lvl]||[];
-    if(lvl > 0){
-      html += `<div class="org-connector"></div>`;
-    }
-    html += `<div class="org-level">`;
-    nodes.forEach(n=>{ html += nodeHTML(n); });
-    html += `</div>`;
+  // Evita recursão infinita se alguém acidentalmente formar um ciclo
+  // (A reporta pra B, que reporta pra A) — cada nó só pode aparecer uma vez.
+  const rendered = new Set();
+  function renderNode(n){
+    if(rendered.has(n.id)) return '';
+    rendered.add(n.id);
+    const kids = childrenOf[n.id];
+    return `<li>
+      ${nodeHTML(n)}
+      ${kids?.length?`<ul>${kids.map(renderNode).join('')}</ul>`:''}
+    </li>`;
   }
+
+  const roots = childrenOf['__root__']||[];
+  let html = `<ul class="org-tree">${roots.map(renderNode).join('')}</ul>`;
 
   if(_orgEditMode){
     html += `<div style="text-align:center;margin-top:24px">
@@ -2952,7 +2978,6 @@ async function renderOrganograma(){
     </div>`;
   }
 
-  html += '</div>';
   container.innerHTML = html;
 }
 
@@ -2960,7 +2985,6 @@ function editOrgNode(id){
   const node = _orgData.nodes.find(n=>n.id===id);
   if(!node) return;
 
-  const levels = [...new Set(_orgData.nodes.map(n=>n.level))].sort();
   const parents = _orgData.nodes.filter(n=>n.id!==id);
 
   const modal = document.createElement('div');
@@ -2987,13 +3011,13 @@ function editOrgNode(id){
         </div>
         <input class="adm-input" id="on-photo" value="${node.photo||''}" placeholder="ou cole uma URL de imagem..." style="margin-top:8px;font-size:11px" oninput="_updateOrgPhotoPreview()">
       </div>
-      <div class="adm-field"><label class="adm-label">Nível (0 = topo)</label>
-        <input class="adm-input" id="on-level" type="number" min="0" max="10" value="${node.level}"></div>
       <div class="adm-field"><label class="adm-label">Reporta para</label>
         <select class="adm-select" id="on-parent">
           <option value="">— Nenhum (topo) —</option>
           ${parents.map(p=>`<option value="${p.id}" ${node.parentId===p.id?'selected':''}>${p.name||p.role}</option>`).join('')}
-        </select></div>
+        </select>
+        <div style="font-size:10px;color:var(--muted2);margin-top:4px">Define quem é o chefe direto — a posição no organograma (embaixo de quem escolher aqui) é calculada sozinha, não precisa mexer em nível.</div>
+      </div>
       <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
         <button class="btn-outline" onclick="this.closest('.modal-bg').remove()">Cancelar</button>
         <button class="btn-primary" onclick="saveOrgNode('${id}',this)">Salvar</button>
@@ -3093,7 +3117,6 @@ function saveOrgNode(id, btn){
   node.name = document.getElementById('on-name').value.trim();
   node.role = document.getElementById('on-role').value.trim();
   node.photo = document.getElementById('on-photo').value.trim();
-  node.level = parseInt(document.getElementById('on-level').value)||0;
   node.parentId = document.getElementById('on-parent').value||null;
   btn.closest('.modal-bg').remove();
   renderOrganograma();
@@ -3109,7 +3132,7 @@ function deleteOrgNode(id){
 
 function addOrgNode(){
   const newId = 'node_'+Date.now();
-  _orgData.nodes.push({id:newId, name:'', role:'Novo cargo', level:1, parentId:_orgData.nodes[0]?.id||null, photo:''});
+  _orgData.nodes.push({id:newId, name:'', role:'Novo cargo', parentId:_orgData.nodes[0]?.id||null, photo:''});
   renderOrganograma();
   _orgAutoSave();
   setTimeout(()=>editOrgNode(newId), 100);
