@@ -113,7 +113,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .su-logout:hover{color:var(--red)}
 
 /* ── MAIN ── */
-.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;min-width:0}
 .topbar{height:var(--topbar-h);background:var(--s1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;position:sticky;top:0;z-index:100;gap:16px}
 .topbar-title{font-family:var(--font-d);font-size:18px;font-weight:700;letter-spacing:-0.3px}
 .topbar-sub{font-size:11px;color:var(--muted2);margin-left:8px}
@@ -122,7 +122,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .notif-btn:hover{border-color:var(--border2)}
 .notif-dot{width:6px;height:6px;background:var(--gold);position:absolute;top:6px;right:6px}
 
-.content{padding:28px;flex:1}
+.content{padding:28px;flex:1;min-width:0}
 
 /* ── PAGES ── */
 .page{display:none}
@@ -385,6 +385,32 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .org-card:hover .org-edit-overlay.active{display:flex}
 .org-edit-btn-sm{background:var(--s1);border:1px solid var(--border2);color:var(--muted2);padding:4px 8px;font-size:9px;cursor:pointer;font-family:var(--font-b);font-weight:600;letter-spacing:1px;transition:all .12s}
 .org-edit-btn-sm:hover{color:var(--gold);border-color:var(--gold-dim)}
+.org-tenure{font-size:9px;color:var(--muted2);margin-top:3px;letter-spacing:0.5px}
+
+/* ══ ORGANOGRAMA — viewport com scroll/zoom/pan ══
+   Antes o .org-tree (display:table, margin:auto) simplesmente vazava pra
+   fora da tela quando mais largo que o container — auto-margin não centraliza
+   um elemento maior que o pai, e não tinha zoom nenhum, então em telas
+   menores (e às vezes até no PC) ficava impossível ver a árvore inteira.
+   Agora #org-container é o viewport com scroll de verdade, e a escala do
+   .org-tree é controlada por JS (zoom CSS, que reflui o layout — diferente
+   de transform:scale, que não muda a área de scroll). */
+#org-container{position:relative;overflow:hidden;width:100%;max-width:100%}
+#org-tree{overflow:auto;max-height:calc(100vh - 220px);max-width:100%;padding:20px 24px 32px;cursor:grab;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y pinch-zoom}
+#org-tree.grabbing{cursor:grabbing;user-select:none}
+#org-tree ul.org-tree{transform-origin:top center}
+.org-zoom-controls{position:absolute;top:0;right:0;display:flex;gap:4px;z-index:5}
+.org-zoom-btn{width:26px;height:26px;border:1px solid var(--border2);background:var(--s2);color:var(--text);cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-b)}
+.org-zoom-btn:hover{border-color:var(--gold-dim);color:var(--gold2)}
+@media(max-width:960px){
+  .org-card{width:104px;padding:10px 8px}
+  .org-photo{width:38px;height:38px;font-size:15px;margin-bottom:5px}
+  .org-name{font-size:11px}
+  .org-role{font-size:8px;letter-spacing:1px}
+  .org-tenure{font-size:8px}
+  .org-tree li{padding:24px 8px 0 8px}
+  #org-tree{max-height:calc(100vh - 260px)}
+}
 
 /* ══ ADMIN PANEL CSS ══ */
 .adm-page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
@@ -734,6 +760,9 @@ button,input,select,textarea{font:inherit}
       <div class="su-name" id="su-name">–</div>
       <div class="su-role" id="su-role">Vendedor</div>
     </div>
+    <button class="su-logout" onclick="openChangePasswordModal()" title="Trocar minha senha" style="margin-right:2px">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="6" width="8" height="6" rx="1"/><path d="M4.5 6V4a2.5 2.5 0 015 0v2"/></svg>
+    </button>
     <button class="su-logout" onclick="doLogout()" title="Sair">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 1h4v12H9M5 10l-4-3 4-3M1 7h8"/></svg>
     </button>
@@ -1023,9 +1052,19 @@ button,input,select,textarea{font:inherit}
         <div class="adm-page-title">Organograma GR</div>
         <button class="btn-primary" id="org-edit-btn" style="display:none" onclick="toggleOrgEdit()">✎ Editar</button>
       </div>
-      <div id="org-container">
-        <div id="org-tree" style="overflow-x:auto;padding:20px 0"></div>
+      <div class="adm-tabs">
+        <div class="adm-tab on" id="org-tab-arvore" onclick="orgSwitchTab('arvore')">Árvore</div>
+        <div class="adm-tab" id="org-tab-tempo" onclick="orgSwitchTab('tempo')">Tempo de empresa</div>
       </div>
+      <div id="org-container">
+        <div class="org-zoom-controls">
+          <button class="org-zoom-btn" onclick="orgZoomBy(-0.15)" title="Diminuir">−</button>
+          <button class="org-zoom-btn" onclick="orgZoomReset()" title="Ajustar à tela">⤢</button>
+          <button class="org-zoom-btn" onclick="orgZoomBy(0.15)" title="Aumentar">+</button>
+        </div>
+        <div id="org-tree"></div>
+      </div>
+      <div class="adm-table-wrap" id="org-tempo-wrap" style="display:none"></div>
     </div>
 
     <!-- ══ ADM: CAMPANHAS ══ -->
@@ -2785,7 +2824,8 @@ async function renderAdmUsuarios(){
         </div>
         <span class="tag" style="color:${cargoColor[(u.cargo||'vendedor').toLowerCase()]||'var(--muted2)'};border:1px solid currentColor;background:transparent">${(u.cargo||'Vendedor').toUpperCase()}</span>
         <div class="adm-actions">
-          ${u.email?`<button class="btn-outline" style="padding:4px 10px;font-size:10.5px" onclick="resetUserPassword('${u.email}')" title="Envia e-mail de redefinição de senha">🔑 Senha</button>`:''}
+          ${u.email?`<button class="btn-outline" style="padding:4px 10px;font-size:10.5px" onclick="resetUserPassword('${u.email}')" title="Envia e-mail de redefinição de senha (depende do e-mail chegar)">🔑 E-mail</button>`:''}
+          ${u.user_id?`<button class="btn-outline" style="padding:4px 10px;font-size:10.5px" onclick="openAdminSetPasswordModal('${u.user_id}','${(u.nome||'').replace(/'/g,"&#39;")}')" title="Define a senha na hora, sem depender de e-mail">🔒 Definir senha</button>`:''}
           <button class="btn-edit" onclick='openAdmModal("usuario",${JSON.stringify(u).replace(/'/g,"&#39;")})'>Editar</button>
         </div>
       </div>`).join('');
@@ -2799,6 +2839,93 @@ async function resetUserPassword(email){
   const {error} = await sb.auth.resetPasswordForEmail(email);
   if(error){ toast('Erro: '+error.message,'err'); return; }
   toast('E-mail de redefinição enviado para '+email,'ok');
+}
+
+/* ── Trocar a própria senha (self-service, sem e-mail) ──
+   Pra quem consegue logar mas quer/precisa trocar a senha — não depende do
+   fluxo de e-mail do Supabase, só troca a senha da sessão atual mesmo. */
+function openChangePasswordModal(){
+  const modal = document.createElement('div');
+  modal.className = 'modal-bg on';
+  modal.innerHTML = `
+    <div class="modal" style="width:380px">
+      <div class="modal-title">Trocar minha senha</div>
+      <button class="modal-close" onclick="this.closest('.modal-bg').remove()">✕</button>
+      <div class="adm-field"><label class="adm-label">Nova senha</label>
+        <input class="adm-input" id="cp-pass1" type="password" placeholder="Mínimo 6 caracteres"></div>
+      <div class="adm-field"><label class="adm-label">Confirme a nova senha</label>
+        <input class="adm-input" id="cp-pass2" type="password" placeholder="Repita a senha" onkeydown="if(event.key==='Enter')doChangeOwnPassword()"></div>
+      <div id="cp-err" style="font-size:11.5px;color:var(--red);margin-bottom:8px"></div>
+      <button class="btn-primary" style="width:100%" onclick="doChangeOwnPassword()">Salvar nova senha</button>
+    </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('cp-pass1').focus();
+}
+
+async function doChangeOwnPassword(){
+  const p1 = document.getElementById('cp-pass1').value;
+  const p2 = document.getElementById('cp-pass2').value;
+  const err = document.getElementById('cp-err');
+  if(!p1 || p1.length<6){ err.textContent='A senha deve ter pelo menos 6 caracteres'; return; }
+  if(p1!==p2){ err.textContent='As senhas não coincidem'; return; }
+  const btn = document.querySelector('.modal-bg.on .btn-primary');
+  if(btn){ btn.textContent='Salvando...'; btn.disabled=true; }
+  const {error} = await sb.auth.updateUser({password:p1});
+  if(btn){ btn.textContent='Salvar nova senha'; btn.disabled=false; }
+  if(error){ err.textContent = error.message; return; }
+  document.querySelector('.modal-bg.on')?.remove();
+  toast('Senha alterada com sucesso!','ok');
+}
+
+/* ── Definir senha direto (sem e-mail) ──
+   O reset por e-mail do Supabase não estava chegando/funcionando — em vez de
+   depender do envio, o admin digita a nova senha aqui e ela é aplicada na
+   hora via edge function "admin-set-password" (usa a service_role key no
+   servidor pra trocar a senha de outro usuário; o client nunca tem
+   permissão de fazer isso sozinho, só da própria conta). */
+function openAdminSetPasswordModal(userId, nome){
+  const modal = document.createElement('div');
+  modal.className = 'modal-bg on';
+  modal.innerHTML = `
+    <div class="modal" style="width:380px">
+      <div class="modal-title">Definir senha — ${nome||'usuário'}</div>
+      <button class="modal-close" onclick="this.closest('.modal-bg').remove()">✕</button>
+      <div class="adm-field"><label class="adm-label">Nova senha</label>
+        <input class="adm-input" id="asp-pass1" type="password" placeholder="Mínimo 6 caracteres"></div>
+      <div class="adm-field"><label class="adm-label">Confirme a nova senha</label>
+        <input class="adm-input" id="asp-pass2" type="password" placeholder="Repita a senha" onkeydown="if(event.key==='Enter')doAdminSetPassword('${userId}')"></div>
+      <div id="asp-err" style="font-size:11.5px;color:var(--red);margin-bottom:8px"></div>
+      <button class="btn-primary" style="width:100%" onclick="doAdminSetPassword('${userId}')">Definir senha agora</button>
+    </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('asp-pass1').focus();
+}
+
+async function doAdminSetPassword(userId){
+  const p1 = document.getElementById('asp-pass1').value;
+  const p2 = document.getElementById('asp-pass2').value;
+  const err = document.getElementById('asp-err');
+  if(!p1 || p1.length<6){ err.textContent='A senha deve ter pelo menos 6 caracteres'; return; }
+  if(p1!==p2){ err.textContent='As senhas não coincidem'; return; }
+  const btn = document.querySelector('.modal-bg.on .btn-primary');
+  if(btn){ btn.textContent='Definindo...'; btn.disabled=true; }
+  try{
+    const {data:{session}} = await sb.auth.getSession();
+    if(!session?.access_token){ err.textContent='Sessão expirada, faça login novamente'; return; }
+    const resp = await fetch(SUPA_URL+'/functions/v1/admin-set-password',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
+      body:JSON.stringify({user_id:userId, new_password:p1})
+    });
+    const out = await resp.json().catch(()=>({}));
+    if(!resp.ok || !out.success){ err.textContent = out.error||'Erro ao definir senha'; return; }
+    document.querySelector('.modal-bg.on')?.remove();
+    toast('Senha definida com sucesso!','ok');
+  }catch(e){
+    err.textContent = 'Erro: '+e.message;
+  }finally{
+    if(btn){ btn.textContent='Definir senha agora'; btn.disabled=false; }
+  }
 }
 
 async function renderAdmSugestoes(){
@@ -2956,6 +3083,7 @@ async function renderOrganograma(){
         ${photo}
         <div class="org-name">${n.name||'<span style="color:var(--muted2);font-style:italic">Sem nome</span>'}</div>
         <div class="org-role">${n.role}</div>
+        ${n.admissao && calcTempoEmpresa(n.admissao) ? `<div class="org-tenure">${calcTempoEmpresa(n.admissao)}</div>` : ''}
       </div>
     </div>`;
   }
@@ -2994,6 +3122,131 @@ async function renderOrganograma(){
   }
 
   container.innerHTML = html;
+  _orgSetupPan();
+  requestAnimationFrame(orgZoomReset);
+}
+
+/* ── Zoom/fit + pan do organograma ──
+   "zoom" (não transform:scale) porque ele reflui o box model no tamanho
+   visual reduzido — assim o container com overflow:auto calcula a área de
+   scroll certa. Com transform:scale a área de scroll ficava do tamanho
+   original, sobrando espaço vazio ou cortando conteúdo sem dar pra rolar. */
+let _orgZoom = 1;
+function _orgTreeEls(){
+  const wrap = document.getElementById('org-tree');
+  const tree = wrap?.querySelector(':scope > ul.org-tree');
+  return {wrap, tree};
+}
+function orgZoomReset(){
+  const {wrap, tree} = _orgTreeEls();
+  if(!wrap || !tree) return;
+  tree.style.zoom = 1;
+  const natural = tree.scrollWidth;
+  const avail = wrap.clientWidth - 8;
+  let scale = avail > 0 ? avail / natural : 1;
+  scale = Math.min(1, Math.max(0.3, scale));
+  _orgZoom = scale;
+  tree.style.zoom = scale;
+  wrap.scrollLeft = (wrap.scrollWidth - wrap.clientWidth) / 2;
+}
+function orgZoomBy(delta){
+  const {tree} = _orgTreeEls();
+  if(!tree) return;
+  _orgZoom = Math.min(1.6, Math.max(0.25, _orgZoom + delta));
+  tree.style.zoom = _orgZoom;
+}
+let _orgResizeTimer = null;
+window.addEventListener('resize', () => {
+  if(_currentPage !== 'organograma') return;
+  clearTimeout(_orgResizeTimer);
+  _orgResizeTimer = setTimeout(orgZoomReset, 200);
+});
+
+// Arrasta com o mouse pra navegar no PC (scrollbar de overflow sozinha é
+// chata de usar com trackpad/mouse sem shift) — no touch o scroll nativo
+// já funciona sem precisar de nada disso, então só liga no mousedown.
+let _orgPanBound = false;
+function _orgSetupPan(){
+  const wrap = document.getElementById('org-tree');
+  if(!wrap || _orgPanBound) return;
+  _orgPanBound = true;
+  let dragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
+  wrap.addEventListener('mousedown', e => {
+    if(e.target.closest('.org-edit-overlay')) return;
+    dragging = true;
+    wrap.classList.add('grabbing');
+    startX = e.clientX; startY = e.clientY;
+    startLeft = wrap.scrollLeft; startTop = wrap.scrollTop;
+  });
+  window.addEventListener('mousemove', e => {
+    if(!dragging) return;
+    wrap.scrollLeft = startLeft - (e.clientX - startX);
+    wrap.scrollTop = startTop - (e.clientY - startY);
+  });
+  window.addEventListener('mouseup', () => { dragging = false; wrap.classList.remove('grabbing'); });
+}
+
+/* ── Aba "Tempo de empresa" ──
+   Guarda a data de admissão em cada nó (node.admissao, "YYYY-MM-DD") e
+   calcula o tempo de casa a partir dela, em vez de pedir pra digitar "2 anos"
+   à mão — assim não desatualiza sozinho com o tempo. */
+function calcTempoEmpresa(dataStr){
+  if(!dataStr) return null;
+  const inicio = new Date(dataStr + 'T00:00:00');
+  if(isNaN(inicio.getTime())) return null;
+  const hoje = new Date();
+  let meses = (hoje.getFullYear() - inicio.getFullYear()) * 12 + (hoje.getMonth() - inicio.getMonth());
+  if(hoje.getDate() < inicio.getDate()) meses--;
+  if(meses < 0) return null;
+  if(meses < 1) return 'Recém-chegado(a)';
+  const anos = Math.floor(meses / 12);
+  const mesesRestantes = meses % 12;
+  const parts = [];
+  if(anos) parts.push(`${anos} ${anos===1?'ano':'anos'}`);
+  if(mesesRestantes || !anos) parts.push(`${mesesRestantes} ${mesesRestantes===1?'mês':'meses'}`);
+  return parts.join(' e ');
+}
+
+function orgSwitchTab(tab){
+  document.getElementById('org-tab-arvore').classList.toggle('on', tab==='arvore');
+  document.getElementById('org-tab-tempo').classList.toggle('on', tab==='tempo');
+  document.getElementById('org-container').style.display = tab==='arvore' ? '' : 'none';
+  document.getElementById('org-tempo-wrap').style.display = tab==='tempo' ? '' : 'none';
+  document.getElementById('org-edit-btn').style.display = tab==='arvore' && isAdminOrCoordOrSup() ? 'block' : 'none';
+  if(tab==='tempo') renderOrgTempo();
+  else if(tab==='arvore') requestAnimationFrame(orgZoomReset);
+}
+
+async function renderOrgTempo(){
+  if(!_orgData) await loadOrgData();
+  const wrap = document.getElementById('org-tempo-wrap');
+  if(!wrap) return;
+  const canEdit = isAdminOrCoordOrSup();
+  const nodes = [..._orgData.nodes].sort((a,b)=>(a.name||a.role||'').localeCompare(b.name||b.role||''));
+  wrap.innerHTML = nodes.map(n=>{
+    const tempo = calcTempoEmpresa(n.admissao);
+    return `<div class="adm-row">
+      <div class="adm-row-main">
+        <div class="adm-row-title">${n.name||'<span style="color:var(--muted2);font-style:italic">Sem nome</span>'}</div>
+        <div class="adm-row-sub">${n.role||''}${tempo?` • ${tempo} de empresa`:''}</div>
+      </div>
+      ${canEdit ? `
+        <input type="date" class="adm-input" style="width:160px" id="org-adm-${n.id}" value="${n.admissao||''}">
+        <button class="btn-edit" onclick="saveOrgTenure('${n.id}')">Salvar</button>
+      ` : ''}
+    </div>`;
+  }).join('') || '<div class="adm-row"><div class="adm-row-main">Nenhum cargo cadastrado.</div></div>';
+}
+
+async function saveOrgTenure(id){
+  const input = document.getElementById(`org-adm-${id}`);
+  if(!input) return;
+  const node = _orgData.nodes.find(n=>n.id===id);
+  if(!node) return;
+  node.admissao = input.value || null;
+  await saveOrgData();
+  toast('Tempo de empresa atualizado!','ok');
+  renderOrgTempo();
 }
 
 function editOrgNode(id){
