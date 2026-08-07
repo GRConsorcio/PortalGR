@@ -2855,7 +2855,13 @@ async function renderAdmUsuarios(){
 // ajudar alguém que esqueceu a senha, só existia auto-cadastro).
 async function resetUserPassword(email){
   if(!confirm(`Enviar e-mail de redefinição de senha para ${email}?`)) return;
-  const {error} = await sb.auth.resetPasswordForEmail(email);
+  // redirectTo explícito: sem isso o Supabase usa a Site URL do projeto (raiz
+  // do domínio), que dá 404 quando o portal está publicado num subcaminho
+  // (ex.: grconsorcio.github.io/PortalGR/) — precisa também estar cadastrada
+  // em Authentication > URL Configuration > Redirect URLs no Supabase.
+  const {error} = await sb.auth.resetPasswordForEmail(email,{
+    redirectTo: window.location.origin+window.location.pathname
+  });
   if(error){ toast('Erro: '+error.message,'err'); return; }
   toast('E-mail de redefinição enviado para '+email,'ok');
 }
