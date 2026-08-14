@@ -1053,9 +1053,20 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
     <!-- COPA GR -->
     <div class="page" id="page-copa">
+      <div style="display:flex;gap:8px;margin-bottom:16px" id="copa-subtabs">
+        <button class="btn-primary" id="copa-tab-copa" onclick="renderCopa('copa')">Copa</button>
+        <button class="btn-outline" id="copa-tab-copinha" onclick="renderCopa('copinha')">Copinha</button>
+      </div>
+      <div class="panel" id="copa-chaveamento-panel" style="display:none;margin-bottom:16px">
+        <div class="panel-head">
+          <div class="panel-title" id="copa-chaveamento-title">🔀 Chaveamento</div>
+          <button class="btn-sm" id="copa-chaveamento-toggle" onclick="toggleCopaChaveamento()">Ver chaveamento</button>
+        </div>
+        <div class="panel-body" id="copa-chaveamento-body" style="display:none;overflow-x:auto"></div>
+      </div>
       <div class="panel">
         <div class="panel-head">
-          <div class="panel-title">🏆 Copa GR — Campeões por edição</div>
+          <div class="panel-title" id="copa-timeline-title">🏆 Copa GR — Campeões por edição</div>
           <span class="tag" style="background:rgba(201,168,76,0.12);color:var(--gold2)" id="copa-ed-count"></span>
         </div>
         <div class="panel-body" id="copa-timeline"></div>
@@ -1288,7 +1299,14 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         <div class="adm-page-title">Copa GR — Linha do tempo / edições</div>
         <button class="btn-primary" onclick="openAdmModal('copa-edicao')">+ Nova edição</button>
       </div>
-      <div class="adm-table-wrap" id="adm-copa-edicoes-list"></div>
+      <div class="adm-table-wrap" id="adm-copa-edicoes-list" style="margin-bottom:24px"></div>
+
+      <div class="adm-page-head">
+        <div class="adm-page-title">Copa GR — Chaveamento (copa vigente)</div>
+        <button class="btn-primary" onclick="openAdmModal('copa-chaveamento')">+ Novo chaveamento</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted2);margin:-8px 0 12px;line-height:1.6">Só um chaveamento pode ficar "ativo" por competição (Copa/Copinha) — ativar um novo desativa automaticamente o anterior do mesmo tipo. Sem nenhum ativo, a seção some pros colaboradores.</div>
+      <div class="adm-table-wrap" id="adm-copa-chaveamento-list"></div>
     </div>
 
     <!-- ══ ADM: BENEFÍCIOS ══ -->
@@ -1362,7 +1380,7 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 let CU = null, CUP = null;
 let allVendas=[], allMetas=[], allCampanhas=[], allBeneficios=[];
 let allAcademy=[], allNews=[], allSugestoes=[], allHallFama=[], allRegras=[];
-let allCopaEquipes=[], allCopaPartidas=[], allAvisos=[], allCarreira=[], allDestaques=[], allCopaEdicoes=[];
+let allCopaEquipes=[], allCopaPartidas=[], allAvisos=[], allCarreira=[], allDestaques=[], allCopaEdicoes=[], allCopaChaveamentos=[];
 // Resumo agregado de vendas vindo do CRM (contagens/somas por vendedor —
 // nunca dado de cliente/lead). Ver fetchCrmResumo(). null até carregar, ou
 // se o e-mail do usuário não bater com nenhum vendedor do CRM (ex: conta
@@ -1730,7 +1748,7 @@ async function loadAll(){
   // série — um round-trip inteiro de rede jogado fora à toa, já que nenhuma
   // dessas 13 consultas depende do perfil. Juntei tudo num Promise.allSettled
   // só, então roda tudo em paralelo e a tela carrega mais rápido.
-  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf,cer]=await Promise.allSettled([
+  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf,cer,chr]=await Promise.allSettled([
     sb.from('portal_vendas').select('*').eq('user_id',uid).order('data',{ascending:false}),
     sb.from('portal_metas').select('*').eq('user_id',uid),
     sb.from('portal_campanhas').select('*').order('criado_em',{ascending:false}),
@@ -1746,6 +1764,7 @@ async function loadAll(){
     sb.from('portal_destaques').select('*').order('referencia',{ascending:false}),
     sb.from('portal_users').select('*').eq('user_id',uid).maybeSingle(),
     sb.from('portal_copa_edicoes').select('*').order('ano',{ascending:false}).order('ordem',{ascending:false}),
+    sb.from('portal_copa_chaveamento').select('*'),
   ]);
   if(vr.value?.data)allVendas=vr.value.data;
   if(mr.value?.data)allMetas=mr.value.data;
@@ -1761,6 +1780,7 @@ async function loadAll(){
   if(carr.value?.data)allCarreira=carr.value.data;
   if(cer.value?.data)allCopaEdicoes=cer.value.data;
   if(der.value?.data)allDestaques=der.value.data;
+  if(chr.value?.data)allCopaChaveamentos=chr.value.data;
 
   CUP=prf.value?.data||null;
   if(CUP){
@@ -2096,10 +2116,58 @@ function renderDestaques(){
 }
 
 /* ═══ COPA ═══
-   A página só mostra a Linha do Tempo dos campeões — a classificação/
-   chaveamento (espelho do app externo COPAGR) foi removida a pedido. */
-function renderCopa(){
+   Duas abas (Copa / Copinha), cada uma com sua própria linha do tempo de
+   campeões. O chaveamento (removido antes por espelhar um app externo que
+   não existe mais) volta agora como dado próprio do Portal: só aparece
+   quando tem uma copa vigente cadastrada pro tipo da aba atual — sem copa
+   ativa, a seção nem é exibida. */
+let _copaTab='copa';
+function renderCopa(tab){
+  _copaTab = tab || _copaTab || 'copa';
+  el('copa-tab-copa')?.classList.toggle('btn-primary',_copaTab==='copa');
+  el('copa-tab-copa')?.classList.toggle('btn-outline',_copaTab!=='copa');
+  el('copa-tab-copinha')?.classList.toggle('btn-primary',_copaTab==='copinha');
+  el('copa-tab-copinha')?.classList.toggle('btn-outline',_copaTab!=='copinha');
+  el('copa-timeline-title').textContent = _copaTab==='copinha' ? '🏆 Copinha — Campeões por edição' : '🏆 Copa GR — Campeões por edição';
   renderCopaTimeline();
+  renderCopaChaveamento();
+}
+
+/* ── Copa GR: chaveamento da copa vigente ── */
+function toggleCopaChaveamento(){
+  const body=el('copa-chaveamento-body');
+  const btn=el('copa-chaveamento-toggle');
+  const showing = body.style.display!=='none';
+  body.style.display = showing?'none':'block';
+  btn.textContent = showing?'Ver chaveamento':'Ocultar chaveamento';
+}
+function renderCopaChaveamento(){
+  const panel=el('copa-chaveamento-panel');
+  const chav=(allCopaChaveamentos||[]).find(c=>c.tipo===_copaTab && c.ativo);
+  if(!chav){ panel.style.display='none'; return; }
+  panel.style.display='block';
+  el('copa-chaveamento-title').textContent = '🔀 ' + (chav.titulo||'Chaveamento') + ' — copa vigente';
+  const fases=chav.fases||[];
+  el('copa-chaveamento-body').innerHTML = fases.length===0
+    ? '<div class="empty" style="padding:16px"><div class="empty-line"></div><div class="empty-text">Chaveamento ainda sem confrontos cadastrados</div></div>'
+    : `<div style="display:flex;gap:20px;min-width:max-content">${fases.map(fase=>`
+        <div style="min-width:220px">
+          <div style="font-family:var(--font-d);font-weight:700;font-size:13px;color:var(--gold2);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">${fase.nome||''}</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            ${(fase.confrontos||[]).map(c=>{
+              const va=parseInt(c.placarA), vb=parseInt(c.placarB);
+              const temPlacar=!isNaN(va)&&!isNaN(vb);
+              return `<div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px">
+                <div style="display:flex;justify-content:space-between;padding:3px 0;${temPlacar&&va>vb?'font-weight:700;color:var(--gold2)':''}">
+                  <span>${c.equipeA||'?'}</span><span>${temPlacar?va:'-'}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:3px 0;${temPlacar&&vb>va?'font-weight:700;color:var(--gold2)':''}">
+                  <span>${c.equipeB||'?'}</span><span>${temPlacar?vb:'-'}</span>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`).join('')}</div>`;
 }
 
 /* ── Copa GR: Linha do tempo de edições/campeões ── */
@@ -2129,12 +2197,13 @@ const PAISES_COPA=[
 function renderCopaTimeline(){
   const wrap=el('copa-timeline'), countTag=el('copa-ed-count');
   if(!wrap) return;
-  countTag.textContent = allCopaEdicoes.length ? `${allCopaEdicoes.length} EDIÇÃO${allCopaEdicoes.length!==1?'ÕES':''}` : '';
-  if(!allCopaEdicoes.length){
+  const edicoes=allCopaEdicoes.filter(ed=>(ed.tipo||'copa')===_copaTab);
+  countTag.textContent = edicoes.length ? `${edicoes.length} EDIÇÃO${edicoes.length!==1?'ÕES':''}` : '';
+  if(!edicoes.length){
     wrap.innerHTML=`<div class="empty" style="padding:32px"><div class="empty-line"></div><div class="empty-text">Nenhuma edição registrada ainda${isAdminOrCoordOrSup()?' — adicione em Gestão → Copa GR':''}</div></div>`;
     return;
   }
-  const ordenadas=[...allCopaEdicoes].sort((a,b)=>(b.ano-a.ano)||((b.ordem||0)-(a.ordem||0)));
+  const ordenadas=[...edicoes].sort((a,b)=>(b.ano-a.ano)||((b.ordem||0)-(a.ordem||0)));
   wrap.innerHTML = `<div class="timeline-wrap">${ordenadas.map(ed=>`
     <div class="timeline-item">
       <div class="timeline-dot"></div>
@@ -2674,6 +2743,7 @@ function buildAdmForm(type, d={}){
       ${inp('pontos','Pontos',d.pontos,'number','0')}`;
 
     case 'copa-edicao': return `
+      ${sel('tipo','Competição',[{v:'copa',l:'Copa'},{v:'copinha',l:'Copinha'}],d.tipo||'copa')}
       ${g2(inp('ano','Ano',d.ano||new Date().getFullYear(),'number'),
            sel('pais_code','País',PAISES_COPA,d.pais_code||'BR'))}
       ${inp('equipe_campea','Equipe campeã',d.equipe_campea,'text','Ex: Equipe Luiz')}
@@ -2694,6 +2764,16 @@ function buildAdmForm(type, d={}){
       </div>
       ${ta('descricao','Descrição / destaque da edição',d.descricao,'Ex: Final decidida nos pênaltis...')}
       ${inp('ordem','Ordem de exibição (só se houver mais de uma no mesmo ano)',d.ordem,'number','0')}`;
+
+    case 'copa-chaveamento': return `
+      ${g2(inp('titulo','Título (opcional)',d.titulo,'text','Ex: Copa GR 2026'),
+           sel('tipo','Competição',[{v:'copa',l:'Copa'},{v:'copinha',l:'Copinha'}],d.tipo||'copa'))}
+      ${sel('ativo','Status',[{v:'true',l:'Ativo (copa vigente)'},{v:'false',l:'Inativo/arquivado'}],String(d.ativo!==false))}
+      <div class="adm-field">
+        <label class="adm-label">Fases e confrontos</label>
+        <textarea class="adm-textarea" id="af-fases_texto" rows="10" style="font-family:monospace;font-size:12px" placeholder="Quartas de Final&#10;Equipe Chis 2 x 1 Equipe Luiz&#10;Equipe A 0 x 0 Equipe B&#10;&#10;Semifinal&#10;Equipe Chis 3 x 2 Equipe A">${fasesParaTexto(d.fases)}</textarea>
+        <div style="font-size:10px;color:var(--muted2);margin-top:4px">Uma linha sem placar = título da fase. Linha "Equipe X &lt;placar&gt; x &lt;placar&gt; Equipe Y" = um confronto dessa fase. Deixe sem placar (ex: "Equipe X 0 x 0 Equipe Y") pra jogo ainda não realizado.</div>
+      </div>`;
 
     case 'beneficio': return `
       ${sel('user_id','Colaborador',[{v:'',l:'Todos / Geral'},..._scopedUsers().map(u=>({v:u.user_id,l:u.nome||u.user_id}))],d.user_id)}
@@ -2801,13 +2881,17 @@ async function saveAdmModal(){
     case 'copa-edicao':{
       const paisCode=asel('pais_code');
       const paisNome=(PAISES_COPA.find(p=>p.v===paisCode)?.l||'').replace(/^\S+\s/,''); // tira o emoji do rótulo
-      payload = { ano:parseInt(av('ano'))||new Date().getFullYear(), pais_code:paisCode, pais:paisNome,
+      payload = { tipo:asel('tipo')||'copa', ano:parseInt(av('ano'))||new Date().getFullYear(), pais_code:paisCode, pais:paisNome,
         equipe_campea:av('equipe_campea'), capitao:av('capitao'),
         pontos_finais:av('pontos_finais')?parseInt(av('pontos_finais')):null,
         titulo:av('titulo'), descricao:av('descricao'), ordem:parseInt(av('ordem'))||0,
         imagem_url:av('imagem_url')||null };
       break;
     }
+    case 'copa-chaveamento':
+      payload = { titulo:av('titulo')||null, tipo:asel('tipo')||'copa',
+        ativo:asel('ativo')==='true', fases:parseFasesChaveamento(av('fases_texto')) };
+      break;
     case 'beneficio':
       payload = { user_id:asel('user_id')||null, titulo:av('titulo'), tipo:asel('tipo'),
         descricao:av('descricao'), validade:av('validade')||null, status:asel('status'),
@@ -2832,8 +2916,16 @@ async function saveAdmModal(){
     campanha:'portal_campanhas', meta:'portal_metas', destaque:'portal_destaques',
     academy:'portal_academy', news:'portal_news', aviso:'portal_avisos',
     'copa-equipe':'portal_copa_equipes', 'copa-edicao':'portal_copa_edicoes', beneficio:'portal_beneficios',
+    'copa-chaveamento':'portal_copa_chaveamento',
     hallfama:'portal_hall_fama', regra:'portal_regras',
   };
+
+  // Só um chaveamento pode ficar "ativo" por competição — o índice único
+  // parcial no banco (uniq_chaveamento_ativo_por_tipo) bloquearia o save se
+  // já existisse outro ativo do mesmo tipo, então desativa os outros antes.
+  if(type==='copa-chaveamento' && payload.ativo){
+    await sb.from('portal_copa_chaveamento').update({ativo:false}).eq('tipo',payload.tipo).neq('id',editId||'00000000-0000-0000-0000-000000000000');
+  }
 
   const btn = el('adm-modal-save');
   btn.textContent = 'Salvando...'; btn.disabled = true;
@@ -2876,6 +2968,7 @@ async function reloadAdmData(type){
     'copa-equipe': async()=>{ const {data}=await sb.from('portal_copa_equipes').select('*'); if(data)allCopaEquipes=data; },
     'copa-edicao': async()=>{ const {data}=await sb.from('portal_copa_edicoes').select('*').order('ano',{ascending:false}); if(data)allCopaEdicoes=data; },
     beneficio:async()=>{ const {data}=await sb.from('portal_beneficios').select('*'); if(data)allBeneficios=data; },
+    'copa-chaveamento':async()=>{ const {data}=await sb.from('portal_copa_chaveamento').select('*'); if(data)allCopaChaveamentos=data; },
     hallfama: async()=>{ const {data}=await sb.from('portal_hall_fama').select('*').order('ano',{ascending:false}); if(data)allHallFama=data; },
     regra:    async()=>{ const {data}=await sb.from('portal_regras').select('*').order('ordem'); if(data)allRegras=data; },
     usuario:  async()=>{ const {data}=await sb.from('portal_users').select('*'); if(data){ _admAllUsers=data; } },
@@ -2889,6 +2982,7 @@ async function deleteAdmItem(type, id){
     campanha:'portal_campanhas', meta:'portal_metas', destaque:'portal_destaques',
     academy:'portal_academy', news:'portal_news', aviso:'portal_avisos',
     'copa-equipe':'portal_copa_equipes', 'copa-edicao':'portal_copa_edicoes', beneficio:'portal_beneficios',
+    'copa-chaveamento':'portal_copa_chaveamento',
     hallfama:'portal_hall_fama', regra:'portal_regras',
   };
   const {error} = await sb.from(tables[type]).delete().eq('id',id);
@@ -2991,6 +3085,44 @@ function renderAdmCopa(){
       <div class="adm-row-sub">Temp. ${e.temporada} · ${e.pontos} pts · ${e.vitorias}V ${e.empates}E ${e.derrotas}D · Gols ${e.gols_marcados}:${e.gols_sofridos}</div>
     </div>`);
   renderAdmCopaEdicoes();
+  renderAdmCopaChaveamento();
+}
+
+function renderAdmCopaChaveamento(){
+  const list=el('adm-copa-chaveamento-list');
+  if(!list) return;
+  const ordenados=[...allCopaChaveamentos].sort((a,b)=>(b.atualizado_em||'').localeCompare(a.atualizado_em||''));
+  list.innerHTML = admList(ordenados,'copa-chaveamento', c=>{
+    const nConfrontos=(c.fases||[]).reduce((s,f)=>s+(f.confrontos||[]).length,0);
+    return `<div class="adm-row-main">
+      <div class="adm-row-title">${c.titulo||'Chaveamento'} <span class="tag" style="background:${c.ativo?'rgba(62,201,154,0.12)':'rgba(107,107,136,0.12)'};color:${c.ativo?'var(--green2)':'var(--muted2)'};margin-left:6px">${c.ativo?'ATIVO':'inativo'}</span></div>
+      <div class="adm-row-sub">${c.tipo==='copinha'?'Copinha':'Copa'} · ${(c.fases||[]).length} fase(s) · ${nConfrontos} confronto(s)</div>
+    </div>`;
+  });
+}
+
+// "Nome A 2 x 1 Nome B" vira um confronto; qualquer outra linha vira o
+// título da fase seguinte — mesmo espírito do parser de texto livre já
+// usado pra importar leads no CRM, só que pra chaveamento.
+function parseFasesChaveamento(texto){
+  const linhas=(texto||'').split('\n').map(l=>l.trim()).filter(Boolean);
+  const fases=[];
+  let atual=null;
+  const reConfronto=/^(.+?)\s+(\d+)\s*x\s*(\d+)\s+(.+)$/i;
+  linhas.forEach(linha=>{
+    const m=linha.match(reConfronto);
+    if(m){
+      if(!atual){ atual={nome:'Fase 1',confrontos:[]}; fases.push(atual); }
+      atual.confrontos.push({equipeA:m[1].trim(),placarA:m[2],equipeB:m[4].trim(),placarB:m[3]});
+    } else {
+      atual={nome:linha,confrontos:[]};
+      fases.push(atual);
+    }
+  });
+  return fases;
+}
+function fasesParaTexto(fases){
+  return (fases||[]).map(f=>[f.nome, ...(f.confrontos||[]).map(c=>`${c.equipeA} ${c.placarA||0} x ${c.placarB||0} ${c.equipeB}`)].join('\n')).join('\n\n');
 }
 
 function renderAdmBeneficios(){
