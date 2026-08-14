@@ -519,13 +519,13 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
   --muted:#C3C8CE;
   --muted2:#4E545C;
   --shadow-card:0 6px 18px rgba(20,22,26,0.09),0 1px 4px rgba(20,22,26,0.05);
-  /* Pedido explícito: no tema claro, o dourado vira laranja e o vermelho
-     vira roxo — troca de acento completa, não um ajuste de tom. */
-  --gold:#CF5D00;
-  --gold2:#E6791E;
-  --gold-dim:#7A3A0D;
-  --gold-glow:rgba(207,93,0,0.10);
-  --gold-line:rgba(207,93,0,0.15);
+  /* Pedido explícito: no tema claro, o dourado/laranja vira azul (#0081C2)
+     e o vermelho vira roxo — troca de acento completa, não um ajuste de tom. */
+  --gold:#0081C2;
+  --gold2:#1C93D4;
+  --gold-dim:#045686;
+  --gold-glow:rgba(0,129,194,0.10);
+  --gold-line:rgba(0,129,194,0.15);
   --red:#4D05AB;
 }
 :root[data-theme="light"] .modal-bg{background:rgba(15,17,20,0.45)}
@@ -534,11 +534,11 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 :root[data-theme="light"] .auth-wrap{box-shadow:0 20px 60px rgba(0,0,0,0.12)}
 /* Alguns tons de dourado ficam gravados como rgba() literal (não var(--gold))
    em tags/glows pontuais — o token muda sozinho em tudo que usa var(--gold),
-   mas esses precisam de override manual pra acompanhar a troca pro laranja. */
-:root[data-theme="light"] .news-tag-empresa{background:rgba(207,93,0,0.12)}
-:root[data-theme="light"] .hall-hero::before{background:radial-gradient(ellipse at 50% 0%,rgba(207,93,0,0.06),transparent 70%)}
-:root[data-theme="light"] #copa-ed-count{background:rgba(207,93,0,0.12) !important}
-:root[data-theme="light"] .tag[style*="201,168,76"]{background:rgba(207,93,0,0.1) !important}
+   mas esses precisam de override manual pra acompanhar a troca de cor. */
+:root[data-theme="light"] .news-tag-empresa{background:rgba(0,129,194,0.12)}
+:root[data-theme="light"] .hall-hero::before{background:radial-gradient(ellipse at 50% 0%,rgba(0,129,194,0.06),transparent 70%)}
+:root[data-theme="light"] #copa-ed-count{background:rgba(0,129,194,0.12) !important}
+:root[data-theme="light"] .tag[style*="201,168,76"]{background:rgba(0,129,194,0.1) !important}
 /* Os ícones (menu lateral, sino, alternar tema, ...) usam stroke="currentColor"
    + opacity:0.6 pra ficarem discretos no tema escuro — no claro isso some
    quase por completo (cor já suave + opacidade reduzida = ícone apagado
