@@ -501,27 +501,38 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
    por JS antes do primeiro paint (ver script inline no <head>) pra
    não piscar o tema errado ao carregar. */
 :root[data-theme="light"]{
-  --bg:#F3F1EA;
+  /* Paleta neutra e fria — a versão anterior (creme #F3F1EA) lia como
+     "amarelada" e o texto/ícones em cima dela ficavam de baixo contraste.
+     Cinza-azulado bem claro no fundo, quase preto no texto: legibilidade
+     em primeiro lugar, o dourado continua sendo o único acento quente. */
+  --bg:#F4F5F7;
   --s1:#FFFFFF;
-  --s2:#F7F5EE;
-  --s3:#ECE7D9;
-  --border:#D9D2BC;
-  --border2:#C2B896;
-  --text:#18160F;
-  --muted:#C7BFA5;
-  --muted2:#4A4636;
+  --s2:#FAFBFC;
+  --s3:#ECEEF1;
+  --border:#DCE0E5;
+  --border2:#C6CCD3;
+  --text:#14161A;
+  --muted:#C3C8CE;
+  --muted2:#4E545C;
   --gold-glow:rgba(201,168,76,0.10);
-  --shadow-card:0 8px 24px rgba(35,28,10,0.10),0 2px 6px rgba(35,28,10,0.06);
+  --shadow-card:0 8px 24px rgba(20,22,26,0.10),0 2px 6px rgba(20,22,26,0.05);
   /* Vermelho um pouco mais "vinho" que o padrão do tema escuro — ao lado do
      dourado, o vermelho vivo original destoava (parecia dois acentos
      brigando); esse tom mais profundo lê como intencional, não um alerta
      genérico solto na paleta. */
   --red:#B23B4A;
 }
-:root[data-theme="light"] .modal-bg{background:rgba(30,26,10,0.45)}
+:root[data-theme="light"] .modal-bg{background:rgba(15,17,20,0.45)}
 :root[data-theme="light"] .adm-row:hover{background:rgba(0,0,0,0.025)}
 :root[data-theme="light"] .nav-item:hover{background:rgba(0,0,0,0.035)}
 :root[data-theme="light"] .auth-wrap{box-shadow:0 20px 60px rgba(0,0,0,0.12)}
+/* Os ícones (menu lateral, sino, alternar tema, ...) usam stroke="currentColor"
+   + opacity:0.6 pra ficarem discretos no tema escuro — no claro isso some
+   quase por completo (cor já suave + opacidade reduzida = ícone apagado
+   contra fundo claro). Só no tema claro, sobe a opacidade de base. */
+:root[data-theme="light"] .nav-icon{opacity:0.82}
+:root[data-theme="light"] .nav-item.on .nav-icon,
+:root[data-theme="light"] .nav-item:hover .nav-icon{opacity:1}
 
 /* "Balões"/colunas que ficavam brancas e achatadas no tema claro — as
    caixinhas de estatística, os selos de nível e o cabeçalho das tabelas
