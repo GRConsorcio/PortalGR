@@ -8,6 +8,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>
+  if(window['pdfjsLib']) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+</script>
 <script>
 // Define o tema (claro/escuro) ANTES do primeiro paint pra não piscar o
 // tema errado. Prioridade: escolha salva > preferência do sistema > escuro.
@@ -2204,13 +2208,14 @@ function openNewsReader(id){
   if(!n) return;
   const modal=document.createElement('div');
   modal.className='modal-bg on';
+  const readerId='pdf-reader-'+n.id;
   modal.innerHTML = n.pdf_url
     ? `<div class="modal" style="width:900px;max-width:96vw;height:90vh;padding:16px;display:flex;flex-direction:column">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-shrink:0">
           <div style="font-family:var(--font-d);font-weight:700;font-size:16px">${n.titulo}</div>
           <button class="modal-close" style="position:static" onclick="this.closest('.modal-bg').remove()">✕</button>
         </div>
-        <iframe src="${n.pdf_url}" style="flex:1;width:100%;border:0;border-radius:6px;background:#fff"></iframe>
+        <div id="${readerId}" style="flex:1;width:100%;overflow-y:auto;border-radius:6px;background:var(--panel2,#0a0a0a);display:flex;flex-direction:column;align-items:center;padding:8px"></div>
       </div>`
     : `<div class="modal" style="width:720px;max-width:96vw;max-height:85vh;padding:0;display:flex;flex-direction:column">
         <div style="padding:24px 28px 16px;flex-shrink:0;border-bottom:1px solid var(--border)">
@@ -2225,6 +2230,39 @@ function openNewsReader(id){
       </div>`;
   modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
   document.body.appendChild(modal);
+  if(n.pdf_url) renderPdfPages(n.pdf_url, el(readerId));
+}
+
+// Renderiza o PDF como imagens (uma por página, jornal inteiro visível de
+// cara) em vez do visualizador nativo do navegador, que vinha com sidebar
+// de miniaturas e paginação clicável — feio e confuso pro leitor.
+async function renderPdfPages(url, container){
+  if(!container) return;
+  container.innerHTML='<div style="margin:auto;color:var(--muted2);font-size:12px">Carregando jornal...</div>';
+  try{
+    const pdf=await pdfjsLib.getDocument(url).promise;
+    container.innerHTML='';
+    const targetWidth=Math.min(container.clientWidth||860,860);
+    for(let i=1;i<=pdf.numPages;i++){
+      const page=await pdf.getPage(i);
+      const baseViewport=page.getViewport({scale:1});
+      const scale=(targetWidth/baseViewport.width)*(window.devicePixelRatio||1);
+      const viewport=page.getViewport({scale});
+      const canvas=document.createElement('canvas');
+      canvas.width=viewport.width;
+      canvas.height=viewport.height;
+      canvas.style.width='100%';
+      canvas.style.maxWidth=targetWidth+'px';
+      canvas.style.display='block';
+      canvas.style.marginBottom='10px';
+      canvas.style.borderRadius='4px';
+      canvas.style.boxShadow='0 2px 16px rgba(0,0,0,.3)';
+      await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+      container.appendChild(canvas);
+    }
+  }catch(err){
+    container.innerHTML=`<div style="margin:auto;text-align:center;padding:24px;color:var(--muted)">Não foi possível carregar o PDF.<br><a href="${url}" target="_blank" style="color:var(--accent)">Abrir em nova aba</a></div>`;
+  }
 }
 
 function renderNews(){
