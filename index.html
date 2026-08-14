@@ -501,22 +501,47 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
    por JS antes do primeiro paint (ver script inline no <head>) pra
    não piscar o tema errado ao carregar. */
 :root[data-theme="light"]{
-  --bg:#F5F4F0;
+  --bg:#F3F1EA;
   --s1:#FFFFFF;
-  --s2:#FBFAF7;
-  --s3:#F0EEE7;
-  --border:#D8D2C2;
-  --border2:#C7BFA9;
-  --text:#1C1B17;
-  --muted:#D2CDBE;
-  --muted2:#5E5A4C;
+  --s2:#F7F5EE;
+  --s3:#ECE7D9;
+  --border:#D9D2BC;
+  --border2:#C2B896;
+  --text:#18160F;
+  --muted:#C7BFA5;
+  --muted2:#4A4636;
   --gold-glow:rgba(201,168,76,0.10);
-  --shadow-card:0 4px 20px rgba(30,26,10,0.08);
+  --shadow-card:0 8px 24px rgba(35,28,10,0.10),0 2px 6px rgba(35,28,10,0.06);
+  /* Vermelho um pouco mais "vinho" que o padrão do tema escuro — ao lado do
+     dourado, o vermelho vivo original destoava (parecia dois acentos
+     brigando); esse tom mais profundo lê como intencional, não um alerta
+     genérico solto na paleta. */
+  --red:#B23B4A;
 }
 :root[data-theme="light"] .modal-bg{background:rgba(30,26,10,0.45)}
 :root[data-theme="light"] .adm-row:hover{background:rgba(0,0,0,0.025)}
 :root[data-theme="light"] .nav-item:hover{background:rgba(0,0,0,0.035)}
 :root[data-theme="light"] .auth-wrap{box-shadow:0 20px 60px rgba(0,0,0,0.12)}
+
+/* "Balões"/colunas que ficavam brancas e achatadas no tema claro — as
+   caixinhas de estatística, os selos de nível e o cabeçalho das tabelas
+   dependiam só de sombra pra se destacar do fundo (quase a mesma cor).
+   Um azul-ardósia suave dá profundidade de verdade e cria um segundo
+   acento que conversa com o dourado em vez de competir com ele. */
+:root[data-theme="light"] .kpi-card,
+:root[data-theme="light"] .ph-stat{
+  background:linear-gradient(180deg,#EEF3F8,#E3EAF2);
+  border:1px solid #C9D6E4;
+}
+:root[data-theme="light"] .lc-mark{
+  background:#EEF3F8;
+  box-shadow:inset 0 0 0 1px rgba(62,102,144,0.14);
+}
+:root[data-theme="light"] .tbl th{
+  background:#EEF3F8;
+  color:#3E5A78;
+  border-bottom-color:#C9D6E4;
+}
 
 /* Cantos arredondados — suaviza o visual sem mudar a estrutura */
 .panel,.kpi-card,.destaque-card,.modal,.auth-wrap,.progress-hero,.ph-stat,
