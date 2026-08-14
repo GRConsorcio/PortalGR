@@ -518,18 +518,27 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
   --text:#14161A;
   --muted:#C3C8CE;
   --muted2:#4E545C;
-  --gold-glow:rgba(201,168,76,0.10);
   --shadow-card:0 6px 18px rgba(20,22,26,0.09),0 1px 4px rgba(20,22,26,0.05);
-  /* Vermelho um pouco mais "vinho" que o padrão do tema escuro — ao lado do
-     dourado, o vermelho vivo original destoava (parecia dois acentos
-     brigando); esse tom mais profundo lê como intencional, não um alerta
-     genérico solto na paleta. */
-  --red:#B23B4A;
+  /* Pedido explícito: no tema claro, o dourado vira laranja e o vermelho
+     vira roxo — troca de acento completa, não um ajuste de tom. */
+  --gold:#CF5D00;
+  --gold2:#E6791E;
+  --gold-dim:#7A3A0D;
+  --gold-glow:rgba(207,93,0,0.10);
+  --gold-line:rgba(207,93,0,0.15);
+  --red:#4D05AB;
 }
 :root[data-theme="light"] .modal-bg{background:rgba(15,17,20,0.45)}
 :root[data-theme="light"] .adm-row:hover{background:rgba(0,0,0,0.025)}
 :root[data-theme="light"] .nav-item:hover{background:rgba(0,0,0,0.035)}
 :root[data-theme="light"] .auth-wrap{box-shadow:0 20px 60px rgba(0,0,0,0.12)}
+/* Alguns tons de dourado ficam gravados como rgba() literal (não var(--gold))
+   em tags/glows pontuais — o token muda sozinho em tudo que usa var(--gold),
+   mas esses precisam de override manual pra acompanhar a troca pro laranja. */
+:root[data-theme="light"] .news-tag-empresa{background:rgba(207,93,0,0.12)}
+:root[data-theme="light"] .hall-hero::before{background:radial-gradient(ellipse at 50% 0%,rgba(207,93,0,0.06),transparent 70%)}
+:root[data-theme="light"] #copa-ed-count{background:rgba(207,93,0,0.12) !important}
+:root[data-theme="light"] .tag[style*="201,168,76"]{background:rgba(207,93,0,0.1) !important}
 /* Os ícones (menu lateral, sino, alternar tema, ...) usam stroke="currentColor"
    + opacity:0.6 pra ficarem discretos no tema escuro — no claro isso some
    quase por completo (cor já suave + opacidade reduzida = ícone apagado
