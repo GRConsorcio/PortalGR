@@ -567,6 +567,22 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
   border-bottom-color:#B9C7D6;
 }
 
+/* Tema escuro: os rótulos dos cards (COTAS VENDIDAS, INADIMPLÊNCIA...) e o
+   texto/ícones do menu lateral usam --muted2 (cinza-arroxeado), que lia como
+   "escuro"/apagado perto do branco dos valores ao lado. Um gelo claro no
+   lugar do branco puro mantém a hierarquia (ainda mais discreto que o texto
+   principal) mas com contraste real. */
+:root[data-theme="dark"] .kpi-label,
+:root[data-theme="dark"] .nav-item{
+  color:#D6E6EC;
+}
+:root[data-theme="dark"] .nav-item.on{
+  color:var(--gold2);
+}
+:root[data-theme="dark"] .nav-item:hover{
+  color:var(--text);
+}
+
 /* Cantos arredondados — suaviza o visual sem mudar a estrutura */
 .panel,.kpi-card,.destaque-card,.modal,.auth-wrap,.progress-hero,.ph-stat,
 .adm-table-wrap,.copa-bracket,.timeline-card{border-radius:var(--radius-card)}
