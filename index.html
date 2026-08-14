@@ -1675,7 +1675,7 @@ async function loadAll(){
     sb.from('portal_copa_equipes').select('*'),
     sb.from('portal_avisos').select('*').order('criado_em',{ascending:false}).limit(5),
     sb.from('portal_carreira').select('*').eq('user_id',uid).order('ordem'),
-    sb.from('portal_destaques').select('*').order('referencia',{ascending:false}).limit(1),
+    sb.from('portal_destaques').select('*').order('referencia',{ascending:false}),
     sb.from('portal_users').select('*').eq('user_id',uid).maybeSingle(),
     sb.from('portal_copa_edicoes').select('*').order('ano',{ascending:false}).order('ordem',{ascending:false}),
   ]);
@@ -3260,8 +3260,9 @@ async function renderOrganograma(){
   let html = `<ul class="org-tree">${roots.map(renderNode).join('')}</ul>`;
 
   if(_orgEditMode){
-    html += `<div style="text-align:center;margin-top:24px">
+    html += `<div style="text-align:center;margin-top:24px;display:flex;gap:10px;justify-content:center">
       <button class="btn-outline" onclick="addOrgNode()" style="font-size:11px">+ Adicionar cargo</button>
+      <button class="btn-outline" id="org-sync-btn" onclick="syncVendedoresRanking()" style="font-size:11px">🔄 Sincronizar vendedores (Chis/Luiz)</button>
     </div>`;
   }
 
