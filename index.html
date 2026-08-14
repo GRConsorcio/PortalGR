@@ -2088,7 +2088,7 @@ function renderDestaques(){
     : ranking.map((d,i)=>`
       <div class="destaque-card" style="--dc-color:${cores[d.posicao-1]||'var(--muted2)'}">
         <div class="dc-rank">${d.posicao}</div>
-        <div class="dc-av">${(d.nome||'?')[0].toUpperCase()}</div>
+        <div class="dc-av">${d.imagem_url?`<img src="${d.imagem_url}" alt="${d.nome||''}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit" onerror="this.parentNode.textContent='${(d.nome||'?')[0].toUpperCase()}'">`:(d.nome||'?')[0].toUpperCase()}</div>
         <div class="dc-name">${d.nome||'–'}</div>
         <div class="dc-role">${d.cargo||''}</div>
         <div class="dc-val">${d.valor||'–'}</div>
@@ -2098,9 +2098,12 @@ function renderDestaques(){
   const especiais=doMes.filter(d=>d.tipo==='especial');
   el('dest-especial').innerHTML=especiais.length===0
     ?'<div class="empty"><div class="empty-line"></div><div class="empty-text">Nenhum reconhecimento este mês</div></div>'
-    :especiais.map(d=>`<div style="padding:12px 0;border-bottom:1px solid var(--border);font-size:12.5px">
-        <div style="font-weight:600;margin-bottom:2px">${d.titulo||d.nome||'–'}</div>
-        <div style="color:var(--muted2);font-size:11.5px">${d.descricao||''}</div>
+    :especiais.map(d=>`<div style="padding:12px 0;border-bottom:1px solid var(--border);font-size:12.5px;display:flex;gap:12px;align-items:center">
+        ${d.imagem_url?`<img src="${d.imagem_url}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0">`:''}
+        <div>
+          <div style="font-weight:600;margin-bottom:2px">${d.titulo||d.nome||'–'}</div>
+          <div style="color:var(--muted2);font-size:11.5px">${d.descricao||''}</div>
+        </div>
       </div>`).join('');
 
   // Evolução: usa o histórico de referências existentes em allDestaques (ranking, posição 1)
@@ -2463,7 +2466,7 @@ function renderHallFama(){
     ?'<div class="empty" style="grid-column:1/-1"><div class="empty-line"></div><div class="empty-text">Em breve</div></div>'
     :allHallFama.map((h,i)=>`<div class="hall-card ${i===0?'gold-card':''}">
       <div class="hall-year">${h.categoria||'Campeão'}  ·  ${h.ano||new Date().getFullYear()}</div>
-      <div class="hall-av">${(h.nome||'?')[0].toUpperCase()}</div>
+      <div class="hall-av">${h.imagem_url?`<img src="${h.imagem_url}" alt="${h.nome||''}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit" onerror="this.parentNode.textContent='${(h.nome||'?')[0].toUpperCase()}'">`:(h.nome||'?')[0].toUpperCase()}</div>
       <div class="hall-name">${h.nome||'–'}</div>
       <div class="hall-stat">${h.valor||'–'}</div>
       <div class="hall-label">${h.descricao||''}</div>
@@ -2702,7 +2705,19 @@ function buildAdmForm(type, d={}){
         inp('valor_label','Rótulo do valor',d.valor_label||'cotas','text','cotas')
       )}
       ${inp('titulo','Título (só p/ reconhecimento especial)',d.titulo,'text','Ex: Prêmio Qualidade')}
-      ${ta('descricao','Descrição (só p/ reconhecimento especial)',d.descricao)}`;
+      ${ta('descricao','Descrição (só p/ reconhecimento especial)',d.descricao)}
+      <div class="adm-field">
+        <label class="adm-label">Foto (opcional)</label>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <div class="timeline-photo" id="dest-photo-preview" style="width:52px;height:52px">${d.imagem_url?`<img src="${d.imagem_url}" alt="">`:''}</div>
+          <div style="flex:1">
+            <input type="file" id="dest-photo-file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none" onchange="handleDestaquePhotoUpload(event)">
+            <button type="button" class="btn-outline" style="font-size:11px" onclick="document.getElementById('dest-photo-file').click()">📷 Enviar foto</button>
+            <span id="dest-photo-status" style="font-size:10px;color:var(--muted2);margin-left:8px"></span>
+          </div>
+        </div>
+        <input class="adm-input" id="af-imagem_url" value="${d.imagem_url||''}" placeholder="ou cole uma URL de imagem..." style="font-size:11px">
+      </div>`;
 
     case 'academy': return `
       ${inp('titulo','Título',d.titulo)}
@@ -2803,7 +2818,19 @@ function buildAdmForm(type, d={}){
       ${inp('nome','Nome',d.nome)}
       ${g2(inp('categoria','Categoria',d.categoria,'text','Ex: Maior Vendedor'),inp('ano','Ano',d.ano||new Date().getFullYear(),'number'))}
       ${inp('valor','Resultado',d.valor,'text','Ex: 87 cotas')}
-      ${ta('descricao','Descrição',d.descricao)}`;
+      ${ta('descricao','Descrição',d.descricao)}
+      <div class="adm-field">
+        <label class="adm-label">Foto (opcional)</label>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <div class="timeline-photo" id="hf-photo-preview" style="width:52px;height:52px">${d.imagem_url?`<img src="${d.imagem_url}" alt="">`:''}</div>
+          <div style="flex:1">
+            <input type="file" id="hf-photo-file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none" onchange="handleHallFamaPhotoUpload(event)">
+            <button type="button" class="btn-outline" style="font-size:11px" onclick="document.getElementById('hf-photo-file').click()">📷 Enviar foto</button>
+            <span id="hf-photo-status" style="font-size:10px;color:var(--muted2);margin-left:8px"></span>
+          </div>
+        </div>
+        <input class="adm-input" id="af-imagem_url" value="${d.imagem_url||''}" placeholder="ou cole uma URL de imagem..." style="font-size:11px">
+      </div>`;
 
     case 'regra': return `
       ${inp('titulo','Título',d.titulo)}
@@ -2856,7 +2883,8 @@ async function saveAdmModal(){
       payload = { referencia:av('referencia'), tipo:asel('tipo'), user_id:uid||null,
         nome:av('nome')||userVinc?.nome||'', cargo:av('cargo')||userVinc?.cargo||'',
         posicao:av('posicao')?parseInt(av('posicao')):null, valor:av('valor'),
-        valor_label:av('valor_label')||'cotas', titulo:av('titulo'), descricao:av('descricao') };
+        valor_label:av('valor_label')||'cotas', titulo:av('titulo'), descricao:av('descricao'),
+        imagem_url:av('imagem_url')||null };
       break;
     }
     case 'academy':
@@ -2899,7 +2927,7 @@ async function saveAdmModal(){
       break;
     case 'hallfama':
       payload = { nome:av('nome'), categoria:av('categoria'), ano:parseInt(av('ano'))||new Date().getFullYear(),
-        valor:av('valor'), descricao:av('descricao') };
+        valor:av('valor'), descricao:av('descricao'), imagem_url:av('imagem_url')||null };
       break;
     case 'regra':
       payload = { titulo:av('titulo'), conteudo:av('conteudo'),
@@ -3186,6 +3214,7 @@ async function renderAdmUsuarios(){
           ${u.email?`<button class="btn-outline" style="padding:4px 10px;font-size:10.5px" onclick="resetUserPassword('${u.email}')" title="Envia e-mail de redefinição de senha (depende do e-mail chegar)">🔑 E-mail</button>`:''}
           ${u.user_id?`<button class="btn-outline" style="padding:4px 10px;font-size:10.5px" onclick="openAdminSetPasswordModal('${u.user_id}','${(u.nome||'').replace(/'/g,"&#39;")}')" title="Define a senha na hora, sem depender de e-mail">🔒 Definir senha</button>`:''}
           <button class="btn-edit" onclick='openAdmModal("usuario",${JSON.stringify(u).replace(/'/g,"&#39;")})'>Editar</button>
+          ${u.user_id&&u.user_id!==CU.id?`<button class="btn-del" onclick="deletePortalUser('${u.user_id}','${(u.nome||'').replace(/'/g,"&#39;")}')" title="Excluir usuário">🗑️</button>`:''}
         </div>
       </div>`).join('');
 }
@@ -3193,6 +3222,31 @@ async function renderAdmUsuarios(){
 // Vínculo/gestão de conta: envia e-mail de redefinição de senha pro usuário —
 // não existia nenhuma opção de gestão de senha antes (admin não tinha como
 // ajudar alguém que esqueceu a senha, só existia auto-cadastro).
+// Exclusão real: remove o login do colaborador no Supabase Auth (não só o
+// perfil em portal_users). Precisa da service_role key, então passa pela
+// Edge Function 'delete-user', que confere de novo no servidor se quem
+// chamou é admin — mesmo padrão já usado pra 'admin-set-password'.
+async function deletePortalUser(uid,nome){
+  if(!isAdmin()){toast('Sem permissão','err');return;}
+  if(!confirm(`Excluir permanentemente o colaborador "${nome}"?\n\nIsso remove o login dele do sistema e não pode ser desfeito.`))return;
+  try{
+    const{data:{session}}=await sb.auth.getSession();
+    if(!session?.access_token){toast('Sessão expirada, faça login novamente','err');return;}
+    const resp=await fetch(SUPA_URL+'/functions/v1/delete-user',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
+      body:JSON.stringify({user_id:uid})
+    });
+    const out=await resp.json().catch(()=>({}));
+    if(!resp.ok||!out.success){toast(out.error||'Erro ao excluir usuário','err');return;}
+    _admAllUsers=_admAllUsers.filter(u=>u.user_id!==uid);
+    renderAdmUsuarios();
+    toast('Usuário excluído','ok');
+  }catch(e){
+    toast('Erro ao excluir usuário: '+e.message,'err');
+  }
+}
+
 async function resetUserPassword(email){
   if(!confirm(`Enviar e-mail de redefinição de senha para ${email}?`)) return;
   // redirectTo explícito: sem isso o Supabase usa a Site URL do projeto (raiz
@@ -3794,6 +3848,46 @@ async function handleBeneficioImagemUpload(e){
   urlInput.value = data2.publicUrl;
   statusEl.textContent = 'Enviada ✓';
   statusEl.style.color = 'var(--green2)';
+}
+
+// Foto de uma homenagem do Hall da Fama — mesmo padrão de upload direto
+// (bucket "portal-uploads") usado no organograma, copa e benefícios.
+async function handleHallFamaPhotoUpload(e){
+  const file = e.target.files?.[0];
+  if(!file) return;
+  const statusEl = document.getElementById('hf-photo-status');
+  const preview = document.getElementById('hf-photo-preview');
+  const urlInput = document.getElementById('af-imagem_url');
+  if(file.size > 5*1024*1024){ toast('Imagem muito grande (máx. 5MB)','err'); e.target.value=''; return; }
+  preview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="">`;
+  statusEl.textContent = 'Enviando...'; statusEl.style.color = 'var(--muted2)';
+  const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+  const path = `hall-fama/${Date.now()}.${ext}`;
+  const {error} = await sb.storage.from('portal-uploads').upload(path, file, {upsert:true});
+  if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast('Erro ao enviar imagem: '+error.message,'err'); return; }
+  const {data} = sb.storage.from('portal-uploads').getPublicUrl(path);
+  urlInput.value = data.publicUrl;
+  statusEl.textContent = 'Enviada ✓'; statusEl.style.color = 'var(--green2)';
+}
+
+// Foto de um destaque do mês (ranking ou reconhecimento especial) — mesmo
+// padrão de upload direto usado no resto do Portal.
+async function handleDestaquePhotoUpload(e){
+  const file = e.target.files?.[0];
+  if(!file) return;
+  const statusEl = document.getElementById('dest-photo-status');
+  const preview = document.getElementById('dest-photo-preview');
+  const urlInput = document.getElementById('af-imagem_url');
+  if(file.size > 5*1024*1024){ toast('Imagem muito grande (máx. 5MB)','err'); e.target.value=''; return; }
+  preview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="">`;
+  statusEl.textContent = 'Enviando...'; statusEl.style.color = 'var(--muted2)';
+  const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+  const path = `destaques/${Date.now()}.${ext}`;
+  const {error} = await sb.storage.from('portal-uploads').upload(path, file, {upsert:true});
+  if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast('Erro ao enviar imagem: '+error.message,'err'); return; }
+  const {data} = sb.storage.from('portal-uploads').getPublicUrl(path);
+  urlInput.value = data.publicUrl;
+  statusEl.textContent = 'Enviada ✓'; statusEl.style.color = 'var(--green2)';
 }
 
 // BUGFIX/AUTO-SAVE: antes, editar/adicionar/remover um cargo só mudava o
