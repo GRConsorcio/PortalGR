@@ -3800,3 +3800,128 @@ window.addEventListener('DOMContentLoaded', ()=>{
   setTimeout(()=>window.__pageEnter?.(document.querySelector('.page.on')), 200);
 });
 </script>
+
+<script type="module" id="org-ranking-sync-script">
+import{initializeApp,getApps}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import{getDatabase,ref,get}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+const chisApiKey = "AIzaSyCX7ocMbAK95WIKlTR-qSUojxEhDwb1mCo";
+const luizApiKey = "AIzaSyDV6UD6NqSkfDhFvtSSWsKWLeSSVy5z5Cg";
+const FB_CONFIGS = {
+  chis: {
+    config: {
+      apiKey: chisApiKey,
+      authDomain:"homegr-71157.firebaseapp.com",
+      databaseURL:"https://homegr-71157-default-rtdb.firebaseio.com",
+      projectId:"homegr-71157",
+      storageBucket:"homegr-71157.firebasestorage.app",
+      messagingSenderId:"353566889780",
+      appId:"1:353566889780:web:aa363de0a0c3986a243761"
+    },
+    raiz: 'equipe_danylo',
+    appName: 'portal-ranking-chis'
+  },
+  luiz: {
+    config: {
+      apiKey: luizApiKey,
+      authDomain:"luiz-6a2ba.firebaseapp.com",
+      databaseURL:"https://luiz-6a2ba-default-rtdb.firebaseio.com",
+      projectId:"luiz-6a2ba",
+      storageBucket:"luiz-6a2ba.firebasestorage.app",
+      messagingSenderId:"987843515396",
+      appId:"1:987843515396:web:9abb1eb9f7d7dd6b0d5151"
+    },
+    raiz: null,
+    appName: 'portal-ranking-luiz'
+  }
+};
+
+function getFbApp(key){
+  const cfg = FB_CONFIGS[key];
+  return getApps().find(a=>a.name===cfg.appName) || initializeApp(cfg.config, cfg.appName);
+}
+
+// Mesma normalização usada no CRM pra casar nomes entre sistemas — sem
+// acento, minúsculo, sem pontuação — pra "José Silva" e "jose  silva"
+// contarem como a mesma pessoa e não duplicar no organograma.
+function normNomeOrg(n){
+  return (n||'').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^a-z0-9]/g,' ').replace(/\s+/g,' ').trim();
+}
+
+async function buscarVendedoresChis(){
+  const db = getDatabase(getFbApp('chis'));
+  const snap = await get(ref(db, `${FB_CONFIGS.chis.raiz}/dados`));
+  return Object.values(snap.val()||{}).map(v=>v?.nome).filter(Boolean);
+}
+
+async function buscarVendedoresLuiz(){
+  const db = getDatabase(getFbApp('luiz'));
+  const equipesSnap = await get(ref(db, 'gr_equipes'));
+  const equipes = equipesSnap.val() || {};
+  const nomes = [];
+  for(const equipeKey of Object.keys(equipes)){
+    const dadosSnap = await get(ref(db, `${equipeKey}/dados`));
+    Object.values(dadosSnap.val()||{}).forEach(v=>{ if(v?.nome) nomes.push(v.nome); });
+  }
+  return nomes;
+}
+
+function garanteGrupoOrg(id, role){
+  let grupo = _orgData.nodes.find(n=>n.id===id);
+  if(!grupo){
+    const svExiste = _orgData.nodes.some(n=>n.id==='sv');
+    grupo = {id, name:'', role, parentId: svExiste?'sv':null, photo:''};
+    _orgData.nodes.push(grupo);
+  }
+  return grupo;
+}
+
+function processaVendedoresOrg(nomes, grupo, existentes, vistosNaSync){
+  let n=0;
+  nomes.forEach(nomeBruto=>{
+    const nome = (nomeBruto||'').trim();
+    const chave = normNomeOrg(nome);
+    if(!chave) return;
+    if(existentes.has(chave) || vistosNaSync.has(chave)) return;
+    vistosNaSync.add(chave);
+    existentes.add(chave);
+    _orgData.nodes.push({
+      id: 'vend_'+chave.replace(/\s+/g,'_')+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+      name: nome,
+      role: 'Vendedor(a)',
+      parentId: grupo.id,
+      photo: ''
+    });
+    n++;
+  });
+  return n;
+}
+
+window.syncVendedoresRanking = async function(){
+  const btn = document.getElementById('org-sync-btn');
+  const btnLabel = btn?.textContent;
+  if(btn){ btn.disabled = true; btn.textContent = '...'; }
+  try{
+    const chisNomes = await buscarVendedoresChis().catch(()=>[]);
+    const luizNomes = await buscarVendedoresLuiz().catch(()=>[]);
+    if(!_orgData) await loadOrgData();
+    const existentes = new Set(_orgData.nodes.map(n=>normNomeOrg(n.name)).filter(Boolean));
+    const grupoChis = garanteGrupoOrg('equipe-chis-grp', 'Equipe Comercial · Chis');
+    const grupoLuiz = garanteGrupoOrg('equipe-luiz-grp', 'Equipe Comercial · Luiz');
+    const vistos = new Set();
+    const n1 = processaVendedoresOrg(chisNomes, grupoChis, existentes, vistos);
+    const n2 = processaVendedoresOrg(luizNomes, grupoLuiz, existentes, vistos);
+    const total = n1+n2;
+    renderOrganograma();
+    if(total>0) _orgAutoSave();
+    toast(total+' vendedor(es) adicionado(s)', total>0?'ok':'err');
+  }catch(e){
+    console.error('[syncVendedoresRanking]', e);
+    toast('Falha ao sincronizar: '+e.message, 'err');
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = btnLabel; }
+  }
+};
+</script>
