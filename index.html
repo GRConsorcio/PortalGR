@@ -1191,17 +1191,24 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
     <!-- ══ ADM: VENDAS DA EQUIPE (dados agregados do CRM — nunca dado de cliente) ══ -->
     <div class="page" id="page-adm-vendas-equipe">
-      <div class="adm-page-head">
+      <div class="adm-page-head" style="flex-wrap:wrap;gap:10px">
         <div class="adm-page-title">Vendas da Equipe</div>
-        <span class="small-note" id="vendas-equipe-ref" style="font-size:11px;color:var(--muted2)"></span>
+        <div style="display:flex;align-items:center;gap:10px;margin-left:auto">
+          <select class="adm-select" id="vendas-equipe-mes-filter" onchange="renderAdmVendasEquipe()" style="font-size:11px;width:auto;min-width:150px">
+            <option value="">Mês atual</option>
+            <option value="todos">Todo período</option>
+          </select>
+          <span class="small-note" id="vendas-equipe-ref" style="font-size:11px;color:var(--muted2)"></span>
+        </div>
       </div>
+      <div style="margin:-4px 0 14px;font-size:12px;color:var(--muted2)" id="vendas-equipe-total-periodo"></div>
       <div id="vendas-equipe-loading" style="padding:32px;text-align:center;color:var(--muted2);font-size:12px">Carregando dados do CRM...</div>
       <div class="adm-table-wrap" id="vendas-equipe-wrap" style="display:none;overflow-x:auto">
         <table class="tbl">
           <thead><tr>
             <th>Vendedor</th><th>Equipe</th>
-            <th>Cotas (mês)</th><th>Volume (mês)</th><th>Vendas (mês)</th>
-            <th>Cotas (total)</th><th>Volume (total)</th>
+            <th id="vendas-equipe-th-cotas">Cotas (mês)</th><th id="vendas-equipe-th-volume">Volume (mês)</th><th id="vendas-equipe-th-vendas">Vendas (mês)</th>
+            <th id="vendas-equipe-th-cotas-total">Cotas (total)</th><th id="vendas-equipe-th-volume-total">Volume (total)</th>
           </tr></thead>
           <tbody id="vendas-equipe-body"></tbody>
         </table>
@@ -1612,15 +1619,32 @@ async function fetchCrmResumo(email){
 // — pra tela de Gestão → Vendas da Equipe. Continua só agregado por
 // vendedor: nunca nome, telefone ou qualquer dado de cliente/lead.
 const CRM_RESUMO_EQUIPE_SECRET='pgr_equipe_9f3a7c1e6b4d8025f9c3a1e7b5d90462c8f1a3e6';
-async function fetchCrmResumoEquipe(){
+async function fetchCrmResumoEquipe(pMes){
+  const body={p_secret:CRM_RESUMO_EQUIPE_SECRET};
+  if(pMes) body.p_mes=pMes;
   const resp=await fetch(CRM_SUPA_URL+'/rest/v1/rpc/portal_resumo_todos_vendedores',{
     method:'POST',
     headers:{'Content-Type':'application/json','apikey':CRM_ANON_KEY,'Authorization':'Bearer '+CRM_ANON_KEY},
-    body:JSON.stringify({p_secret:CRM_RESUMO_EQUIPE_SECRET})
+    body:JSON.stringify(body)
   });
   const data=await resp.json();
   if(!data||data.error) throw new Error(data?.error||'Falha ao buscar dados do CRM');
   return data;
+}
+
+// Preenche o filtro de mês só uma vez (na primeira carga) com os meses que
+// realmente têm venda aprovada no CRM — evita listar meses vazios.
+let _vendasEquipeMesesCarregados=false;
+function _popularFiltroMesesVendasEquipe(meses){
+  if(_vendasEquipeMesesCarregados || !meses?.length) return;
+  _vendasEquipeMesesCarregados=true;
+  const sel=el('vendas-equipe-mes-filter');
+  const todosOpt=sel.querySelector('option[value="todos"]');
+  meses.forEach(m=>{
+    const opt=document.createElement('option');
+    opt.value=m; opt.textContent=m;
+    sel.insertBefore(opt, todosOpt);
+  });
 }
 
 async function renderAdmVendasEquipe(){
@@ -1628,13 +1652,32 @@ async function renderAdmVendasEquipe(){
   loadEl.style.display='block'; loadEl.textContent='Carregando dados do CRM...';
   wrapEl.style.display='none';
   try{
-    const data=await fetchCrmResumoEquipe();
+    const filtro=el('vendas-equipe-mes-filter')?.value||'';
+    const data=await fetchCrmResumoEquipe(filtro||undefined);
+    _popularFiltroMesesVendasEquipe(data.meses_disponiveis);
     let vendedores=data.vendedores||[];
     // Supervisor só vê a própria equipe (mesmo escopo usado no resto do Portal
     // via myTeamScope()) — admin/coordenador continuam vendo todo mundo.
     const scope=myTeamScope();
     if(scope) vendedores=vendedores.filter(v=>v.equipe===scope);
-    el('vendas-equipe-ref').textContent=data.mes_referencia?`Referência: ${data.mes_referencia}`:'';
+
+    const todoPeriodo=!!data.todo_periodo;
+    el('vendas-equipe-ref').textContent=todoPeriodo?'':(data.mes_referencia?`Referência: ${data.mes_referencia}`:'');
+    // Rótulos e colunas mudam conforme o filtro: "todo período" fala a mesma
+    // coisa duas vezes se mostrar período E total lado a lado, então some
+    // com as colunas de total nesse caso.
+    el('vendas-equipe-th-cotas').textContent=todoPeriodo?'Cotas':'Cotas (mês)';
+    el('vendas-equipe-th-volume').textContent=todoPeriodo?'Volume':'Volume (mês)';
+    el('vendas-equipe-th-vendas').textContent=todoPeriodo?'Vendas':'Vendas (mês)';
+    ['vendas-equipe-th-cotas-total','vendas-equipe-th-volume-total'].forEach(id=>{
+      el(id).style.display=todoPeriodo?'none':'';
+    });
+
+    const totalVolumePeriodo=vendedores.reduce((s,v)=>s+(parseFloat(v.volume_mes)||0),0);
+    el('vendas-equipe-total-periodo').textContent=vendedores.length
+      ? `Total ${todoPeriodo?'do período':'do mês de referência'}: ${fmtBRL(totalVolumePeriodo)}`
+      : '';
+
     if(!vendedores.length){
       loadEl.textContent='Nenhum vendedor encontrado.';
       return;
@@ -1645,8 +1688,8 @@ async function renderAdmVendasEquipe(){
       <td style="font-family:var(--font-d);font-weight:700;color:var(--gold2)">${v.cotas_mes||0}</td>
       <td>${fmtBRL(v.volume_mes||0)}</td>
       <td>${v.vendas_mes||0}</td>
-      <td>${v.cotas_total||0}</td>
-      <td>${fmtBRL(v.volume_total||0)}</td>
+      <td style="${todoPeriodo?'display:none':''}">${v.cotas_total||0}</td>
+      <td style="${todoPeriodo?'display:none':''}">${fmtBRL(v.volume_total||0)}</td>
     </tr>`).join('');
     loadEl.style.display='none';
     wrapEl.style.display='block';
