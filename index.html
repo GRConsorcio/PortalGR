@@ -372,7 +372,12 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .org-tree li::after{ right:auto; left:50%; border-left:1px solid var(--border2); }
 .org-tree li:only-child{ padding-top:24px; }
 .org-tree li:only-child::before, .org-tree li:only-child::after{ display:none; }
-.org-tree li:first-child::before, .org-tree li:last-child::after{ border:0 none; }
+.org-tree li:first-child::before{ border:0 none; }
+/* BUGFIX: "border:0" no ::after do último irmão apagava a perninha vertical
+   junto com a linha horizontal sobrando — os dois vêm do mesmo pseudo-elemento
+   (::after acumula border-top + border-left). Zera só o border-top, mantém
+   o border-left pra essa carta continuar com a linha descendo até ela. */
+.org-tree li:last-child::after{ border-top:0 none; }
 .org-tree > li{ padding-top:0; }
 .org-tree > li::before, .org-tree > li::after{ display:none; }
 .org-tree ul::before{
