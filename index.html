@@ -47,7 +47,7 @@
   --bronze:#C8762A;
   --silver:#A8A8BC;
   --diamond:#6EC6F0;
-  --elite:#D040F0;
+  --elite:#8B2FE0;
   --font-d:'Barlow Condensed',sans-serif;
   --font-b:'DM Sans',sans-serif;
   --sidebar-w:236px;
@@ -232,10 +232,15 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 
 /* Beneficios */
 .benef-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border)}
-.benef-card{background:var(--s2);padding:20px}
+.benef-card{background:var(--s2);padding:20px;cursor:pointer}
 .benef-ico{width:36px;height:36px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
 .benef-title{font-family:var(--font-d);font-size:14px;font-weight:700;margin-bottom:4px}
 .benef-desc{font-size:11.5px;color:var(--muted2);line-height:1.6}
+.benef-more{font-size:10.5px;font-weight:700;letter-spacing:.3px;color:var(--gold2);margin-top:10px;display:flex;align-items:center;gap:4px}
+.benef-chevron{display:inline-block;transition:transform .2s ease}
+.benef-card.open .benef-chevron{transform:rotate(180deg)}
+.benef-extra{max-height:0;opacity:0;overflow:hidden;transition:max-height .25s ease,opacity .2s ease,margin-top .25s ease}
+.benef-card.open .benef-extra{max-height:200px;opacity:1;margin-top:10px}
 
 /* Academy */
 .acad-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
@@ -1039,6 +1044,10 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       <div class="panel">
         <div class="panel-head"><div class="panel-title">Como ganhar pontos</div></div>
         <div class="panel-body">
+          <div style="display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:var(--text)">
+            <span style="font-size:17px">🛍️</span>
+            <span>Seus pontos podem ser trocados por prêmios na <strong style="color:var(--gold2)">GR Store</strong>.</span>
+          </div>
           <table class="tbl">
             <thead><tr><th>Ação</th><th>Pontos</th><th>Limite</th></tr></thead>
             <tbody id="pontos-rules"></tbody>
@@ -1468,7 +1477,7 @@ const LEVELS = [
   },
   {
     id:'elite', name:'Elite GR',
-    minCotas:null, minVolume:1000000, color:'#E040FB',
+    minCotas:null, minVolume:1000000, color:'#8B2FE0',
     perks:['Brinde Elite','Folga bônus','Placa de reconhecimento','Campanha exclusiva Elite','Premiação Eletro'],
     premios:['Brinde Elite GR','Folga bônus','Placa de reconhecimento','Campanha exclusiva','Premiação Eletro']
   },
@@ -2308,16 +2317,29 @@ function renderCampanhas(status){
 const BENEF_TIPO_LABEL={beneficio:'Benefício',desconto:'Desconto',convenio:'Convênio',totalpass:'TotalPass',consulta:'Consulta',nutricionista:'Nutricionista'};
 function renderBeneficios(){
   const benef=allBeneficios.filter(b=>b.tipo!=='folga');
+  // Balões clicáveis: expande pra mostrar validade/status/escopo, informação que
+  // já existia no cadastro (via admin) mas nunca aparecia pro colaborador antes.
+  const statusColor=s=>s==='Expirado'?'var(--red)':s==='Usado'?'var(--muted2)':'var(--green2)';
+  const statusBg=s=>s==='Expirado'?'rgba(214,69,69,0.1)':s==='Usado'?'rgba(107,107,136,0.12)':'rgba(45,155,111,0.1)';
   el('benef-ativos').innerHTML=benef.length===0
     ?'<div class="empty"><div class="empty-line"></div><div class="empty-text">Nenhum benefício ativo</div></div>'
-    :benef.map(b=>`<div class="benef-card">
+    :benef.map(b=>{
+      const status=b.status||'Disponível';
+      return`<div class="benef-card" onclick="this.classList.toggle('open')">
       ${b.imagem_url
         ?`<div class="benef-ico" style="padding:0;overflow:hidden"><img src="${b.imagem_url}" alt="" style="width:100%;height:100%;object-fit:cover"></div>`
         :`<div class="benef-ico"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="var(--gold)" stroke-width="1.5"><circle cx="9" cy="9" r="7"/><path d="M9 5v4l3 2"/></svg></div>`}
       <div class="benef-title">${b.titulo}</div>
       ${b.tipo&&b.tipo!=='beneficio'?`<div style="font-size:9.5px;letter-spacing:0.5px;text-transform:uppercase;color:var(--gold2);margin:2px 0 4px">${BENEF_TIPO_LABEL[b.tipo]||b.tipo}</div>`:''}
       <div class="benef-desc">${b.descricao||''}</div>
-    </div>`).join('');
+      <div class="benef-more"><span>Ver detalhes</span><span class="benef-chevron">▾</span></div>
+      <div class="benef-extra">
+        ${b.validade?`<div style="font-size:11px;color:var(--muted2);margin-bottom:4px">Válido até: <strong style="color:var(--text)">${fmtDate(b.validade)}</strong></div>`:''}
+        <span class="tag" style="background:${statusBg(status)};color:${statusColor(status)}">${status}</span>
+        ${b.user_id?'<span class="tag" style="background:rgba(201,168,76,0.12);color:var(--gold2);margin-left:6px">Pessoal</span>':''}
+      </div>
+    </div>`;
+    }).join('');
 
   const folgas=allBeneficios.filter(b=>b.tipo==='folga');
   el('folgas-list').innerHTML=folgas.length===0
