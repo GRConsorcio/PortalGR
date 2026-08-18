@@ -1017,6 +1017,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         <div class="kpi-card"><div class="kpi-label">Volume vendido</div><div class="kpi-val gold" id="kpi-volume" style="color:var(--gold2)">–</div><div class="kpi-sub">Mês atual</div></div>
         <div class="kpi-card"><div class="kpi-label">Nível GR</div><div class="kpi-val" id="kpi-nivel" style="color:var(--gold2)">–</div><div class="kpi-sub" id="kpi-nivel-sub">–</div></div>
         <div class="kpi-card"><div class="kpi-label">Ranking equipe</div><div class="kpi-val" id="kpi-rank">–</div><div class="kpi-sub" id="kpi-rank-sub">–</div></div>
+        <div class="kpi-card" id="kpi-inadim-card" style="display:none"><div class="kpi-label">Inadimplência</div><div class="kpi-val" id="kpi-inadim" style="color:var(--red)">–</div><div class="kpi-sub" id="kpi-inadim-sub">–</div></div>
       </div>
       <div style="height:16px"></div>
 
@@ -1049,6 +1050,27 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         <div class="panel">
           <div class="panel-head"><div class="panel-title">Campanha Ativa</div><div class="camp-active-dot"></div></div>
           <div class="panel-body" id="dash-campanha"></div>
+        </div>
+      </div>
+
+      <!-- Visão geral de gestão (só admin) -->
+      <div id="dash-adm-gestao" style="display:none">
+        <div style="height:16px"></div>
+        <div class="panel-head" style="padding:0 0 10px"><div class="panel-title">Visão Geral (Gestão)</div></div>
+        <div class="kpi-grid" style="margin-bottom:16px">
+          <div class="kpi-card"><div class="kpi-label">Vendas do mês (equipe)</div><div class="kpi-val" id="adm-kpi-vendas-mes" style="color:var(--gold2)">–</div><div class="kpi-sub" id="adm-kpi-vendas-mes-sub">–</div></div>
+          <div class="kpi-card"><div class="kpi-label">Volume do mês (equipe)</div><div class="kpi-val" id="adm-kpi-volume-mes">–</div></div>
+          <div class="kpi-card"><div class="kpi-label">Inadimplência geral</div><div class="kpi-val" id="adm-kpi-inadim" style="color:var(--red)">–</div><div class="kpi-sub" id="adm-kpi-inadim-sub">–</div></div>
+          <div class="kpi-card"><div class="kpi-label">Crédito em carteira</div><div class="kpi-val" id="adm-kpi-credito">–</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Inadimplência por vendedor</div></div>
+          <div class="panel-body">
+            <table class="tbl">
+              <thead><tr><th>Vendedor</th><th>Clientes</th><th>Crédito</th><th>Inadimplência</th></tr></thead>
+              <tbody id="adm-gestao-vendedores"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -1719,6 +1741,7 @@ async function initApp(user){
   el('auth-screen').style.display='none';
   await loadAll();
   await fetchCrmResumo(CUP?.email||CU.email);
+  await fetchQualidadeResumo(CUP?.email||CU.email);
   renderSidebar();
   renderNav();
   renderDashboard();
@@ -1766,6 +1789,40 @@ async function fetchCrmResumoEquipe(pMes){
   });
   const data=await resp.json();
   if(!data||data.error) throw new Error(data?.error||'Falha ao buscar dados do CRM');
+  return data;
+}
+
+/* ═══ RESUMO DE INADIMPLÊNCIA (App Qualidade) ═══
+   Mesmo padrão de segredo compartilhado usado pro CRM acima — o app
+   Qualidade vive no mesmo projeto Supabase do CRM (schema "qualidade"), com
+   funções próprias que casam o vendedor pelo e-mail (via crm_users) e nunca
+   expõem nome/telefone de cliente, só contagens agregadas de parcela. */
+const QUALIDADE_RESUMO_SECRET='pgr_qualid_9c4130cc2181ffa69cbab78a072b8d92efdbb0da';
+const QUALIDADE_RESUMO_GERAL_SECRET='pgr_qualid_geral_c4875e642be83b62455774eeee176e52c3b28320';
+let _qualidadeResumo=null;
+async function fetchQualidadeResumo(email){
+  if(!email){ _qualidadeResumo=null; return; }
+  try{
+    const resp=await fetch(CRM_SUPA_URL+'/rest/v1/rpc/qualidade_resumo_vendedor',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':CRM_ANON_KEY,'Authorization':'Bearer '+CRM_ANON_KEY},
+      body:JSON.stringify({p_email:email,p_secret:QUALIDADE_RESUMO_SECRET})
+    });
+    const data=await resp.json();
+    _qualidadeResumo=(data&&!data.error&&!data.sem_dados)?data:null;
+  }catch(e){
+    console.warn('[fetchQualidadeResumo] erro:',e.message);
+    _qualidadeResumo=null;
+  }
+}
+async function fetchQualidadeResumoGeral(){
+  const resp=await fetch(CRM_SUPA_URL+'/rest/v1/rpc/qualidade_resumo_geral',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':CRM_ANON_KEY,'Authorization':'Bearer '+CRM_ANON_KEY},
+    body:JSON.stringify({p_secret:QUALIDADE_RESUMO_GERAL_SECRET})
+  });
+  const data=await resp.json();
+  if(!data||data.error) throw new Error(data?.error||'Falha ao buscar dados do app Qualidade');
   return data;
 }
 
@@ -2055,6 +2112,25 @@ function renderDashboard(){
   el('kpi-delta').textContent=cotas>=metaCotas?'✓ Meta atingida':`${metaCotas-cotas} cotas para a meta`;
   el('kpi-delta').className='kpi-delta '+(cotas>=metaCotas?'up':'dn');
 
+  // Inadimplência (app Qualidade) — só aparece pra quem tem cadastro lá
+  // (vendedores de verdade; admin/coordenador/supervisor não têm carteira).
+  if(_qualidadeResumo){
+    el('kpi-inadim-card').style.display='';
+    el('kpi-inadim').textContent=_qualidadeResumo.pct_inadimplencia_total+'%';
+    const snap=_qualidadeResumo.snapshot_mes_atual;
+    el('kpi-inadim-sub').textContent=snap?`${snap.pct_inadimplencia}% em ${snap.mes.charAt(0)+snap.mes.slice(1).toLowerCase()}`:'Total (sem snapshot deste mês)';
+  } else {
+    el('kpi-inadim-card').style.display='none';
+  }
+
+  // Visão de gestão — só admin
+  if(isAdmin()){
+    el('dash-adm-gestao').style.display='';
+    renderDashboardAdminGestao();
+  } else {
+    el('dash-adm-gestao').style.display='none';
+  }
+
   el('meta-pct').textContent=pct+'%';
   el('meta-bar').style.width=pct+'%';
   el('meta-realizado').textContent=cotas+' cotas';
@@ -2070,6 +2146,43 @@ function renderDashboard(){
   el('dash-campanha').innerHTML=campAtiva
     ?`<div class="camp-title" style="font-size:14px">${campAtiva.titulo}</div><div class="camp-dates" style="margin-bottom:8px">Até ${fmtDate(campAtiva.data_fim)}</div><div class="camp-prize-val">${fmtBRL(campAtiva.premio_valor)}</div><div class="camp-bar"><div class="camp-bar-fill" style="width:${campAtiva.progresso_pct||40}%"></div></div>`
     :'<div class="empty"><div class="empty-line"></div><div class="empty-text">Nenhuma campanha ativa</div></div>';
+}
+
+// Painel de gestão do admin: vendas totais da equipe (CRM) + inadimplência
+// geral (Qualidade) + ranking de risco por vendedor. Busca sob demanda (não
+// entra no Promise.allSettled de loadAll porque só o admin usa isso).
+let _admGestaoCarregando=false;
+async function renderDashboardAdminGestao(){
+  if(_admGestaoCarregando) return;
+  _admGestaoCarregando=true;
+  try{
+    const [equipeRes,geralRes]=await Promise.allSettled([
+      fetchCrmResumoEquipe(),
+      fetchQualidadeResumoGeral()
+    ]);
+    if(equipeRes.status==='fulfilled'){
+      const vs=equipeRes.value.vendedores||[];
+      const totalVendas=vs.reduce((s,v)=>s+(v.vendas_mes||0),0);
+      const totalVolume=vs.reduce((s,v)=>s+(parseFloat(v.volume_mes)||0),0);
+      el('adm-kpi-vendas-mes').textContent=totalVendas;
+      el('adm-kpi-vendas-mes-sub').textContent=vs.length+' vendedores ativos';
+      el('adm-kpi-volume-mes').textContent=fmtBRL(totalVolume);
+    }
+    if(geralRes.status==='fulfilled'){
+      const g=geralRes.value;
+      el('adm-kpi-inadim').textContent=g.pct_inadimplencia_total+'%';
+      el('adm-kpi-inadim-sub').textContent=g.total_clientes+' clientes em carteira';
+      el('adm-kpi-credito').textContent=fmtBRL(g.credito_total);
+      el('adm-gestao-vendedores').innerHTML=(g.por_vendedor||[]).filter(v=>v.total_clientes>0).map(v=>{
+        const cor=v.pct_inadimplencia>=15?'var(--red)':v.pct_inadimplencia>=5?'var(--gold2)':'var(--green2)';
+        return `<tr><td>${v.nome}</td><td>${v.total_clientes}</td><td>${fmtBRL(v.credito_total)}</td><td style="color:${cor};font-weight:700">${v.pct_inadimplencia}%</td></tr>`;
+      }).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--muted2)">Sem dados</td></tr>';
+    } else {
+      console.warn('[renderDashboardAdminGestao] qualidade geral falhou:',geralRes.reason?.message);
+    }
+  } finally {
+    _admGestaoCarregando=false;
+  }
 }
 
 /* ═══ NÍVEIS ═══ */
@@ -2129,7 +2242,7 @@ function renderPerformance(){
   const pct=Math.round((cotas/metaCotas)*100);
   el('perf-cotas').textContent=cotas;
   el('perf-volume').textContent=fmtBRL(volume);
-  el('perf-inadim').textContent=(CUP?.inadimplencia_pct||0)+'%';
+  el('perf-inadim').textContent=_qualidadeResumo?(_qualidadeResumo.pct_inadimplencia_total+'%'):'–';
   el('perf-meta-pct').textContent=pct+'%';
 
   // Evolução mensal — usa evolucao_6m do CRM quando disponível (só cotas por
