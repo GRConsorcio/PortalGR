@@ -2277,8 +2277,6 @@ function getSidebarLevel(){
   const {cotas,volume}=getMesAtualStats();
   return {lv:getLevelForStats(cotas,volume), cotas, volume};
 }
-function getLevelForPts(pts){ return LEVELS.find(l=>l.id==='bronze')||LEVELS[0]; } // legacy compat
-
 function renderSidebar(){
   const {lv,cotas,volume} = getSidebarLevel();
   const levelOrder = ['nao_classificado','bronze','prata','ouro','diamante','elite'];
@@ -3103,7 +3101,7 @@ function openBiblioReader(id){
           <div style="display:flex;align-items:center;gap:14px">
             <a href="${_biblioDownloadUrl(b)}" target="_blank" rel="noopener" style="font-size:11px;color:var(--gold2);text-decoration:none">⬇ Baixar</a>
             <a href="${b.arquivo_url}" target="_blank" rel="noopener" style="font-size:11px;color:var(--gold2);text-decoration:none">Abrir em nova aba ↗</a>
-            <button class="modal-close" style="position:static" onclick="this.closest('.modal-bg').remove()">✕</button>
+            <button class="modal-close" style="position:static" onclick="_fecharBiblioReader('${readerId}',this)">✕</button>
           </div>
         </div>
         <div id="${readerId}" class="biblio-reader-body"></div>
@@ -3115,9 +3113,16 @@ function openBiblioReader(id){
         <div style="font-size:11.5px;color:var(--muted2);text-align:center;margin-bottom:16px">${b.autor||''}</div>
         <div style="font-size:12.5px;color:var(--muted);line-height:1.6;text-align:center">${b.descricao||'Sem arquivo anexado ainda.'}</div>
       </div>`;
-  modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
+  modal.addEventListener('click', e=>{ if(e.target===modal) _fecharBiblioReader(b.arquivo_url?readerId:null, modal); });
   document.body.appendChild(modal);
   if(b.arquivo_url) renderBiblioPdfPages(b.arquivo_url, el(readerId), b.id);
+}
+// Fecha o modal do leitor desligando o IntersectionObserver de acompanhamento
+// de página antes — sem isso, cada livro aberto/fechado deixava um observer
+// pendurado observando nós de DOM já removidos, vazando memória aos poucos.
+function _fecharBiblioReader(readerId, elDentroDoModal){
+  if(readerId) document.getElementById(readerId)?._biblioObserver?.disconnect();
+  elDentroDoModal.closest('.modal-bg').remove();
 }
 // Salva/atualiza a última página lida (debounced no chamador) — upsert porque
 // cada usuário só tem UMA linha de progresso por livro (índice único
