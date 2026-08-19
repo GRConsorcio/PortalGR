@@ -303,6 +303,11 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .curso-content-body p{font-size:13.5px;line-height:1.8;color:var(--text);margin-bottom:14px;max-width:70ch}
 .curso-content-body ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
 .curso-content-body ul li{font-size:13px;line-height:1.6;color:var(--text);padding:12px 14px;background:var(--gold-glow);border-left:2px solid var(--gold);border-radius:6px}
+.curso-video{position:relative;padding-top:56.25%;background:#000;border-radius:var(--radius-sm);overflow:hidden;margin-bottom:20px}
+.curso-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.curso-video-link{display:inline-flex;align-items:center;gap:8px;padding:12px 16px;background:var(--s3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--gold2);text-decoration:none;font-size:12.5px;font-weight:600;margin-bottom:20px;transition:border-color .12s}
+.curso-video-link:hover{border-color:var(--gold)}
+.curso-aula-video-ic{flex-shrink:0;opacity:.7}
 .curso-content-foot{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--border);gap:12px;flex-wrap:wrap}
 .curso-nav-btns{display:flex;gap:8px}
 .curso-mark-btn{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;padding:9px 16px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;font-family:var(--font-b);transition:all .12s}
@@ -2724,6 +2729,7 @@ function renderCursoSidebar(a,p){
         return `<div class="curso-aula ${isOn?'on':''} ${isDone?'done':''}" onclick="selecionarAula(${mi},${ai})">
           <span class="curso-aula-check"><svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#08160F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <span class="curso-aula-title">${au.titulo}</span>
+          ${au.video?'<span class="curso-aula-video-ic" title="Tem vídeo">🎥</span>':''}
         </div>`;
       }).join('')}`;
   }).join('');
@@ -2735,6 +2741,13 @@ function renderCursoContent(a,p){
   const corpoHtml=au.tipo==='lista'
     ? `<ul>${(au.corpo||[]).map(t=>`<li>${t}</li>`).join('')}</ul>`
     : (au.corpo||[]).map(t=>`<p>${t}</p>`).join('');
+  // Vídeo é opcional por aula. Link do YouTube (qualquer formato) embute
+  // player direto na página, igual já acontece em openAcad; qualquer outro
+  // link (Vimeo, Drive, etc) vira um botão que abre em nova aba.
+  const embed=au.video?_youtubeEmbedUrl(au.video):null;
+  const videoHtml=!au.video?'':embed
+    ?`<div class="curso-video"><iframe src="${embed}" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>`
+    :`<a class="curso-video-link" href="${au.video}" target="_blank" rel="noopener">▶ Assistir vídeo</a>`;
   // navegação sequencial (anterior/próxima) atravessando os módulos, como se
   // o curso inteiro fosse uma lista única de aulas
   const flat=[]; (a.modulos||[]).forEach((mm,mi)=>(mm.aulas||[]).forEach((aa,ai)=>flat.push({mi,ai})));
@@ -2743,6 +2756,7 @@ function renderCursoContent(a,p){
   el('curso-content').innerHTML=`
     <div class="curso-content-eyebrow">${m.titulo}</div>
     <div class="curso-content-title">${au.titulo}</div>
+    ${videoHtml}
     <div class="curso-content-body">${corpoHtml}</div>
     <div class="curso-content-foot">
       <button class="curso-mark-btn ${isDone?'done':''}" onclick="toggleAulaConcluida()">${isDone?'✓ Aula concluída':'Marcar como concluída'}</button>
@@ -3193,8 +3207,8 @@ function buildAdmForm(type, d={}){
       ${sel('tem_certificado','Certificado',[{v:'false',l:'Não'},{v:'true',l:'Sim'}],String(d.tem_certificado))}
       <div class="adm-field">
         <label class="adm-label">Módulos e aulas (opcional — transforma este item num curso com barra de progresso)</label>
-        <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;line-height:1.5">Linha começando com <b>##</b> = novo módulo. Linha começando com <b>###</b> = nova aula dentro do módulo atual. Linhas em branco separam parágrafos. Comece uma linha com <b>%%</b> pra virar lista de tópicos (bom pra "Resumo") em vez de parágrafos.</div>
-        <textarea class="adm-textarea" id="af-modulos_texto" rows="12" style="font-family:monospace;font-size:11.5px" placeholder="## Módulo 1 — Introdução&#10;### O que é isso?&#10;Primeiro parágrafo da aula.&#10;&#10;Segundo parágrafo.&#10;&#10;### Outra aula&#10;%%&#10;Tópico 1 em formato de lista&#10;Tópico 2 em formato de lista">${modulosParaTexto(d.modulos)}</textarea>
+        <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;line-height:1.5">Linha começando com <b>##</b> = novo módulo. Linha começando com <b>###</b> = nova aula dentro do módulo atual. Linhas em branco separam parágrafos. Comece uma linha com <b>%%</b> pra virar lista de tópicos (bom pra "Resumo") em vez de parágrafos. Linha <b>video: URL</b> logo abaixo do título da aula adiciona um vídeo a ela (link do YouTube toca embutido na página; qualquer outro link vira um botão "Assistir vídeo").</div>
+        <textarea class="adm-textarea" id="af-modulos_texto" rows="12" style="font-family:monospace;font-size:11.5px" placeholder="## Módulo 1 — Introdução&#10;### O que é isso?&#10;video: https://youtube.com/watch?v=...&#10;&#10;Primeiro parágrafo da aula.&#10;&#10;Segundo parágrafo.&#10;&#10;### Outra aula&#10;%%&#10;Tópico 1 em formato de lista&#10;Tópico 2 em formato de lista">${modulosParaTexto(d.modulos)}</textarea>
       </div>`;
 
     case 'news': return `
@@ -3667,6 +3681,8 @@ function parseModulosTexto(texto, modulosAntigos){
       flushPar();
       if(aulaAtual) aulaAtual.tipo='lista';
       modoLista=true;
+    } else if(/^video\s*:/i.test(linha)){
+      if(aulaAtual) aulaAtual.video=linha.replace(/^video\s*:/i,'').trim()||null;
     } else if(!linha){
       flushPar();
     } else {
@@ -3680,7 +3696,8 @@ function modulosParaTexto(modulos){
   return (modulos||[]).map(m=>
     [`## ${m.titulo}`, ...(m.aulas||[]).map(a=>{
       const corpo = a.tipo==='lista' ? ['%%', ...(a.corpo||[])].join('\n') : (a.corpo||[]).join('\n\n');
-      return `### ${a.titulo}\n${corpo}`;
+      const cabecalho = a.video ? `### ${a.titulo}\nvideo: ${a.video}\n` : `### ${a.titulo}`;
+      return `${cabecalho}\n${corpo}`;
     })].join('\n\n')
   ).join('\n\n');
 }
