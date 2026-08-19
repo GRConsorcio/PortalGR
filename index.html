@@ -327,6 +327,45 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .biblio-text-layer{position:absolute;inset:0;overflow:hidden;line-height:1;opacity:1}
 .biblio-text-layer span{position:absolute;white-space:pre;color:transparent;transform-origin:0% 0%;cursor:text;user-select:text}
 .biblio-text-layer ::selection{background:rgba(201,168,76,.45);color:transparent}
+
+/* Meus Certificados */
+.cert-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.cert-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--radius-card);padding:22px;text-align:center;cursor:pointer;transition:border-color .15s}
+.cert-card:hover{border-color:var(--gold-dim)}
+.cert-card-seal{font-size:32px;margin-bottom:10px}
+.cert-card-title{font-family:var(--font-d);font-weight:700;font-size:15px;margin-bottom:6px;line-height:1.3}
+.cert-card-meta{font-size:10.5px;color:var(--muted2)}
+
+/* Certificado imprimível — sempre nas mesmas cores (papel claro + dourado),
+   independente do tema do portal, porque é um documento pra imprimir/salvar,
+   não uma tela do app. */
+.cert-print{background:#fdfbf3;color:#1a1a1a;border-radius:6px;padding:56px 40px}
+.cert-print-border{border:2px solid #c9a84c;outline:1px solid #c9a84c;outline-offset:8px;padding:48px 32px;text-align:center}
+.cert-print-kicker{font-family:var(--font-d);font-size:13px;letter-spacing:3px;color:#8a6f30;font-weight:700;margin-bottom:28px;text-transform:uppercase}
+.cert-print-name{font-family:var(--font-d);font-size:38px;font-weight:800;margin-bottom:18px;color:#1a1a1a}
+.cert-print-text{font-size:14px;color:#444;margin-bottom:6px}
+.cert-print-curso{font-family:var(--font-d);font-size:20px;font-weight:700;color:#8a6f30;margin:10px 0 24px}
+.cert-print-date{font-size:11px;color:#777}
+@media print{
+  body *{visibility:hidden}
+  .cert-print, .cert-print *{visibility:visible}
+  .cert-print{position:fixed;inset:0;margin:auto;height:fit-content}
+}
+
+/* Prova do curso */
+.prova-locked{text-align:center;padding:60px 20px;color:var(--muted2)}
+.prova-q{margin-bottom:26px;padding-bottom:22px;border-bottom:1px solid var(--border)}
+.prova-q:last-child{border-bottom:none}
+.prova-q-text{font-family:var(--font-d);font-size:15px;font-weight:700;margin-bottom:12px;line-height:1.4}
+.prova-opt{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:7px;cursor:pointer;font-size:13px;transition:border-color .12s}
+.prova-opt:hover{border-color:var(--border2)}
+.prova-opt input{accent-color:var(--gold)}
+.prova-aberta{width:100%;background:var(--s1);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:10px 12px;font-family:inherit;font-size:13px;min-height:70px;resize:vertical}
+.prova-result{text-align:center;padding:30px 20px}
+.prova-result-pct{font-family:var(--font-d);font-size:44px;font-weight:800}
+.prova-result-pct.aprovado{color:var(--green2)}
+.prova-result-pct.reprovado{color:var(--red)}
+.prova-aula-ic{flex-shrink:0}
 .curso-content-foot{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--border);gap:12px;flex-wrap:wrap}
 .curso-nav-btns{display:flex;gap:8px}
 .curso-mark-btn{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;padding:9px 16px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;font-family:var(--font-b);transition:all .12s}
@@ -1001,6 +1040,10 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2h5a2 2 0 012 2v12a2 2 0 00-2-2H2V2z"/><path d="M16 2h-5a2 2 0 00-2 2v12a2 2 0 012-2h5V2z"/></svg>
       Biblioteca
     </div>
+    <div class="nav-item" data-page="certificados" onclick="nav('certificados')">
+      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="6.5" r="5"/><path d="M6 10.5L4.5 17l4.5-2.5 4.5 2.5-1.5-6.5"/></svg>
+      Meus Certificados
+    </div>
     <div class="nav-sect">Cultura</div>
     <div class="nav-item" data-page="news" onclick="nav('news')">
       <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="16" height="13" rx="1"/><line x1="1" y1="7" x2="17" y2="7"/><line x1="5" y1="11" x2="13" y2="11"/></svg>
@@ -1372,6 +1415,11 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       <div class="biblio-grid" id="biblio-grid"></div>
     </div>
 
+    <!-- MEUS CERTIFICADOS -->
+    <div class="page" id="page-certificados">
+      <div class="cert-grid" id="cert-grid"></div>
+    </div>
+
     <!-- GR NEWS -->
     <div class="page" id="page-news">
       <div class="news-grid" id="news-layout"></div>
@@ -1650,7 +1698,7 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 /* ═══ STATE ═══ */
 let CU = null, CUP = null;
 let allVendas=[], allMetas=[], allCampanhas=[], allBeneficios=[];
-let allAcademy=[], allNews=[], allSugestoes=[], allHallFama=[], allRegras=[], allAcademyProgresso=[], allBiblioteca=[], allBiblioProgresso=[];
+let allAcademy=[], allNews=[], allSugestoes=[], allHallFama=[], allRegras=[], allAcademyProgresso=[], allBiblioteca=[], allBiblioProgresso=[], allProvaRespostas=[], allCertificados=[];
 let allCopaEquipes=[], allCopaPartidas=[], allAvisos=[], allCarreira=[], allDestaques=[], allCopaEdicoes=[], allCopaChaveamentos=[];
 // Resumo agregado de vendas vindo do CRM (contagens/somas por vendedor —
 // nunca dado de cliente/lead). Ver fetchCrmResumo(). null até carregar, ou
@@ -2054,7 +2102,7 @@ async function loadAll(){
   // série — um round-trip inteiro de rede jogado fora à toa, já que nenhuma
   // dessas 13 consultas depende do perfil. Juntei tudo num Promise.allSettled
   // só, então roda tudo em paralelo e a tela carrega mais rápido.
-  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf,cer,chr,apr,bibr,bpr]=await Promise.allSettled([
+  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf,cer,chr,apr,bibr,bpr,pvr,certr]=await Promise.allSettled([
     sb.from('portal_vendas').select('*').eq('user_id',uid).order('data',{ascending:false}),
     sb.from('portal_metas').select('*').eq('user_id',uid),
     sb.from('portal_campanhas').select('*').order('criado_em',{ascending:false}),
@@ -2074,6 +2122,8 @@ async function loadAll(){
     sb.from('portal_academy_progresso').select('*').eq('user_id',uid),
     sb.from('portal_biblioteca').select('*').order('criado_em',{ascending:false}),
     sb.from('portal_biblioteca_progresso').select('*').eq('user_id',uid),
+    sb.from('portal_prova_respostas').select('*').eq('user_id',uid),
+    sb.from('portal_certificados').select('*').eq('user_id',uid).order('emitido_em',{ascending:false}),
   ]);
   if(vr.value?.data)allVendas=vr.value.data;
   if(mr.value?.data)allMetas=mr.value.data;
@@ -2093,6 +2143,8 @@ async function loadAll(){
   if(apr.value?.data)allAcademyProgresso=apr.value.data;
   if(bibr.value?.data)allBiblioteca=bibr.value.data;
   if(bpr.value?.data)allBiblioProgresso=bpr.value.data;
+  if(pvr.value?.data)allProvaRespostas=pvr.value.data;
+  if(certr.value?.data)allCertificados=certr.value.data;
 
   CUP=prf.value?.data||null;
   if(CUP){
@@ -2109,7 +2161,7 @@ async function loadAll(){
 }
 
 /* ═══ NAV ═══ */
-const PAGE_TITLES={dashboard:'Dashboard',niveis:'GR Níveis',performance:'Performance',destaques:'Destaques do Mês',copa:'Copa GR',campanhas:'Campanhas',beneficios:'Benefícios',academy:'GR Academy',news:'GR News',sugestoes:'Caixinha de Sugestões',hallfama:'Hall da Fama',regras:'Regras GR',carreira:'Carreira',biblioteca:'Biblioteca'};
+const PAGE_TITLES={dashboard:'Dashboard',niveis:'GR Níveis',performance:'Performance',destaques:'Destaques do Mês',copa:'Copa GR',campanhas:'Campanhas',beneficios:'Benefícios',academy:'GR Academy',news:'GR News',sugestoes:'Caixinha de Sugestões',hallfama:'Hall da Fama',regras:'Regras GR',carreira:'Carreira',biblioteca:'Biblioteca',certificados:'Meus Certificados'};
 function nav(page){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
@@ -2118,7 +2170,7 @@ function nav(page){
   document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('on');
   el('topbar-title').textContent=PAGE_TITLES[page]||page;
   _currentPage=page;
-  const renderers={dashboard:renderDashboard,niveis:renderNiveis,performance:renderPerformance,destaques:renderDestaques,copa:renderCopa,campanhas:()=>renderCampanhas('ativa'),beneficios:renderBeneficios,academy:()=>renderAcademy('todos'),news:renderNews,sugestoes:renderSugestoes,hallfama:renderHallFama,regras:renderRegras,carreira:renderCarreira,biblioteca:()=>renderBiblioteca('todos')};
+  const renderers={dashboard:renderDashboard,niveis:renderNiveis,performance:renderPerformance,destaques:renderDestaques,copa:renderCopa,campanhas:()=>renderCampanhas('ativa'),beneficios:renderBeneficios,academy:()=>renderAcademy('todos'),news:renderNews,sugestoes:renderSugestoes,hallfama:renderHallFama,regras:renderRegras,carreira:renderCarreira,biblioteca:()=>renderBiblioteca('todos'),certificados:renderCertificados};
   renderers[page]?.();
   toggleMobileNav(false); // fecha a gaveta ao trocar de página no celular
   window.__pageEnter?.(pageEl);
@@ -2742,13 +2794,13 @@ function openAcad(id){
    Cada aula concluída é salva em portal_academy_progresso.aulas_concluidas
    (array de ids de aula) — a % de conclusão é sempre derivada desse array,
    nunca guardada solta, pra nunca desincronizar dos módulos/aulas reais. */
-let _cursoAtualId=null, _cursoModIdx=0, _cursoAulaIdx=0;
+let _cursoAtualId=null, _cursoModIdx=0, _cursoAulaIdx=0, _cursoView='aula';
 
 function openCurso(id){
   const a=allAcademy.find(x=>x.id===id);
   if(!a||!(a.modulos||[]).length) return;
   _cursoAtualId=id;
-  _cursoModIdx=0; _cursoAulaIdx=0;
+  _cursoModIdx=0; _cursoAulaIdx=0; _cursoView='aula'; _provaRefazendo=false;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
   el('page-curso-detalhe').classList.add('on');
@@ -2773,12 +2825,12 @@ function renderCurso(){
   renderCursoContent(a,p);
 }
 function renderCursoSidebar(a,p){
-  el('curso-sidebar').innerHTML=(a.modulos||[]).map((m,mi)=>{
+  let html=(a.modulos||[]).map((m,mi)=>{
     const aulas=m.aulas||[];
     const doneCount=aulas.filter(au=>p.concluidas.has(au.id)).length;
     return `<div class="curso-mod-head"><span>${m.titulo}</span><span class="curso-mod-count">${doneCount}/${aulas.length}</span></div>
       ${aulas.map((au,ai)=>{
-        const isOn=mi===_cursoModIdx&&ai===_cursoAulaIdx;
+        const isOn=_cursoView==='aula'&&mi===_cursoModIdx&&ai===_cursoAulaIdx;
         const isDone=p.concluidas.has(au.id);
         return `<div class="curso-aula ${isOn?'on':''} ${isDone?'done':''}" onclick="selecionarAula(${mi},${ai})">
           <span class="curso-aula-check"><svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#08160F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
@@ -2787,8 +2839,25 @@ function renderCursoSidebar(a,p){
         </div>`;
       }).join('')}`;
   }).join('');
+  if((a.prova||[]).length){
+    const resp=allProvaRespostas.find(r=>r.academy_id===a.id);
+    const trancada=p.pct<100;
+    const icone = resp ? (resp.aprovado?'✅':'❌') : (trancada?'🔒':'📝');
+    html+=`<div class="curso-mod-head"><span>Avaliação</span></div>
+      <div class="curso-aula ${_cursoView==='prova'?'on':''}" onclick="${trancada?'':'abrirProva()'}" style="${trancada?'opacity:.5;cursor:default':''}">
+        <span class="prova-aula-ic">${icone}</span>
+        <span class="curso-aula-title">Prova Final${resp?` — ${resp.nota_pct}%`:''}</span>
+      </div>`;
+  }
+  el('curso-sidebar').innerHTML=html;
+}
+function abrirProva(){
+  _cursoView='prova';
+  renderCurso();
+  el('curso-content')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function renderCursoContent(a,p){
+  if(_cursoView==='prova'){ renderProvaContent(a,p); return; }
   const m=a.modulos[_cursoModIdx]; const au=m?.aulas?.[_cursoAulaIdx];
   if(!au){ el('curso-content').innerHTML='<div class="empty"><div class="empty-line"></div><div class="empty-text">Aula não encontrada</div></div>'; return; }
   const isDone=p.concluidas.has(au.id);
@@ -2821,9 +2890,79 @@ function renderCursoContent(a,p){
     </div>`;
 }
 function selecionarAula(mi,ai){
-  _cursoModIdx=mi; _cursoAulaIdx=ai;
+  _cursoModIdx=mi; _cursoAulaIdx=ai; _cursoView='aula';
   renderCurso();
   el('curso-content')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+// Prova final do curso — só destrancada com o curso 100% concluído. A nota e
+// aprovação de verdade são calculadas no banco (trigger portal_corrigir_prova),
+// isso aqui só monta o formulário e manda as respostas cruas.
+function renderProvaContent(a,p){
+  const respAnterior=allProvaRespostas.find(r=>r.academy_id===a.id);
+  if(p.pct<100){
+    el('curso-content').innerHTML=`<div class="prova-locked"><div style="font-size:32px;margin-bottom:10px">🔒</div>Conclua todas as aulas do curso pra liberar a prova final.</div>`;
+    return;
+  }
+  if(respAnterior && !_provaRefazendo){
+    el('curso-content').innerHTML=`
+      <div class="curso-content-eyebrow">Avaliação</div>
+      <div class="curso-content-title">Resultado da Prova Final</div>
+      <div class="prova-result">
+        <div class="prova-result-pct ${respAnterior.aprovado?'aprovado':'reprovado'}">${respAnterior.nota_pct}%</div>
+        <div style="margin:10px 0 22px;font-size:13.5px;color:var(--muted2)">${respAnterior.aprovado?'Aprovado! Seu certificado já está em "Meus Certificados".':'Não atingiu os 70% necessários — pode tentar de novo.'}</div>
+        ${respAnterior.aprovado?`<button class="btn-primary" onclick="nav('certificados')">Ver meu certificado</button>`:`<button class="btn-outline" onclick="_provaRefazendo=true;renderCurso()">Refazer prova</button>`}
+      </div>`;
+    return;
+  }
+  const perguntas=(a.prova||[]);
+  el('curso-content').innerHTML=`
+    <div class="curso-content-eyebrow">Avaliação</div>
+    <div class="curso-content-title">Prova Final</div>
+    <div id="prova-form">
+      ${perguntas.map((q,qi)=>`<div class="prova-q">
+        <div class="prova-q-text">${qi+1}. ${q.pergunta}</div>
+        ${q.tipo==='aberta'
+          ? `<textarea class="prova-aberta" data-qid="${q.id}" placeholder="Sua resposta..."></textarea>`
+          : (q.opcoes||[]).map(o=>`<label class="prova-opt">
+              <input type="radio" name="prova-${q.id}" value="${o.id}"> ${o.texto}
+            </label>`).join('')}
+      </div>`).join('')}
+    </div>
+    <div class="curso-content-foot">
+      <button class="btn-primary" onclick="submeterProva()">Enviar prova</button>
+      <span style="font-size:11px;color:var(--muted2)">Precisa acertar 70% das de múltipla escolha pra ser aprovado.</span>
+    </div>`;
+}
+let _provaRefazendo=false;
+async function submeterProva(){
+  const a=allAcademy.find(x=>x.id===_cursoAtualId);
+  if(!a) return;
+  const perguntas=(a.prova||[]);
+  const respostas=[];
+  for(const q of perguntas){
+    if(q.tipo==='aberta'){
+      const val=document.querySelector(`textarea[data-qid="${q.id}"]`)?.value.trim()||'';
+      if(!val){ toast('Responda todas as perguntas antes de enviar','err'); return; }
+      respostas.push({questao_id:q.id, resposta:val});
+    } else {
+      const checked=document.querySelector(`input[name="prova-${q.id}"]:checked`);
+      if(!checked){ toast('Responda todas as perguntas antes de enviar','err'); return; }
+      respostas.push({questao_id:q.id, resposta:checked.value});
+    }
+  }
+  const payload={user_id:CU.id, academy_id:a.id, respostas};
+  const{data,error}=await sb.from('portal_prova_respostas').upsert(payload,{onConflict:'user_id,academy_id'}).select().maybeSingle();
+  if(error){ toast('Erro ao enviar prova: '+error.message,'err'); return; }
+  _provaRefazendo=false;
+  const idx=allProvaRespostas.findIndex(r=>r.academy_id===a.id);
+  if(idx>-1) allProvaRespostas[idx]=data; else allProvaRespostas.push(data);
+  // A nota veio calculada pelo trigger — se aprovado, o certificado já foi
+  // emitido no mesmo INSERT/UPDATE (trigger portal_emitir_certificado).
+  // Recarrega certificados pra já refletir na hora.
+  const{data:certs}=await sb.from('portal_certificados').select('*').eq('user_id',CU.id).order('emitido_em',{ascending:false});
+  if(certs) allCertificados=certs;
+  toast(data.aprovado?`Aprovado com ${data.nota_pct}%! Certificado emitido.`:`Nota: ${data.nota_pct}% — não atingiu os 70%.`, data.aprovado?'ok':'err');
+  renderCurso();
 }
 async function toggleAulaConcluida(){
   const a=allAcademy.find(x=>x.id===_cursoAtualId);
@@ -3120,6 +3259,42 @@ async function handleBiblioArquivoUpload(e){
   const {data} = sb.storage.from('portal-uploads').getPublicUrl(path);
   urlInput.value = data.publicUrl;
   statusEl.textContent = 'Enviado ✓'; statusEl.style.color = 'var(--green2)';
+}
+
+/* ═══ MEUS CERTIFICADOS ═══ */
+function renderCertificados(){
+  el('cert-grid').innerHTML = allCertificados.length===0
+    ? '<div class="empty" style="grid-column:1/-1"><div class="empty-line"></div><div class="empty-text">Nenhum certificado ainda — conclua um curso da Academy e passe na prova pra desbloquear</div></div>'
+    : allCertificados.map(c=>`<div class="cert-card" onclick="abrirCertificado('${c.id}')">
+        <div class="cert-card-seal">🏅</div>
+        <div class="cert-card-title">${c.titulo_curso}</div>
+        <div class="cert-card-meta">${c.nota_pct}% de aproveitamento · ${fmtDate(c.emitido_em)}</div>
+      </div>`).join('');
+}
+function abrirCertificado(id){
+  const c=allCertificados.find(x=>x.id===id);
+  if(!c) return;
+  const nome=CUP?.nome||CU?.email||'Colaborador(a)';
+  const modal=document.createElement('div');
+  modal.className='modal-bg on';
+  modal.innerHTML=`
+    <div class="modal" style="width:820px;max-width:96vw;padding:0;background:transparent;box-shadow:none">
+      <div class="cert-print">
+        <div class="cert-print-border">
+          <div class="cert-print-kicker">GR Consórcio · Certificado de Conclusão</div>
+          <div class="cert-print-name">${nome}</div>
+          <div class="cert-print-text">concluiu com aproveitamento de <b>${c.nota_pct}%</b> o curso</div>
+          <div class="cert-print-curso">${c.titulo_curso}</div>
+          <div class="cert-print-date">Emitido em ${fmtDate(c.emitido_em)}</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:10px;margin-top:16px">
+        <button class="btn-primary" onclick="window.print()">🖨 Imprimir / Salvar PDF</button>
+        <button class="btn-outline" onclick="this.closest('.modal-bg').remove()">Fechar</button>
+      </div>
+    </div>`;
+  modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
 }
 
 function renderNews(){
@@ -3475,6 +3650,11 @@ function buildAdmForm(type, d={}){
         <label class="adm-label">Módulos e aulas (opcional — transforma este item num curso com barra de progresso)</label>
         <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;line-height:1.5">Linha começando com <b>##</b> = novo módulo. Linha começando com <b>###</b> = nova aula dentro do módulo atual. Linhas em branco separam parágrafos. Comece uma linha com <b>%%</b> pra virar lista de tópicos (bom pra "Resumo") em vez de parágrafos. Linha <b>video: URL</b> logo abaixo do título da aula adiciona um vídeo a ela (link do YouTube toca embutido na página; qualquer outro link vira um botão "Assistir vídeo").</div>
         <textarea class="adm-textarea" id="af-modulos_texto" rows="12" style="font-family:monospace;font-size:11.5px" placeholder="## Módulo 1 — Introdução&#10;### O que é isso?&#10;video: https://youtube.com/watch?v=...&#10;&#10;Primeiro parágrafo da aula.&#10;&#10;Segundo parágrafo.&#10;&#10;### Outra aula&#10;%%&#10;Tópico 1 em formato de lista&#10;Tópico 2 em formato de lista">${modulosParaTexto(d.modulos)}</textarea>
+      </div>
+      <div class="adm-field">
+        <label class="adm-label">Prova (obrigatória pra emitir certificado — deixe em branco pra não exigir prova)</label>
+        <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;line-height:1.5"><b>?</b> pergunta = múltipla escolha, com opções <b>a) texto</b> nas linhas seguintes — marque a certa com <b>*</b> no final. <b>??</b> pergunta = aberta (não entra na nota, só precisa ser respondida). Precisa acertar 70% das de múltipla escolha pra ser aprovado e ganhar o certificado — a correção é feita pelo banco, não dá pra forjar pelo navegador.</div>
+        <textarea class="adm-textarea" id="af-prova_texto" rows="8" style="font-family:monospace;font-size:11.5px" placeholder="? Qual a taxa de administração cobra?&#10;a) Juros sobre o crédito&#10;b) O preço do serviço da administradora *&#10;c) Multa por atraso&#10;&#10;?? Explique com suas palavras por que consórcio não é financiamento.">${provaParaTexto(d.prova)}</textarea>
       </div>`;
 
     case 'news': return `
@@ -3668,7 +3848,8 @@ async function saveAdmModal(){
       payload = { titulo:av('titulo'), tipo:asel('tipo'), duracao:av('duracao'),
         url:av('url'), instrutor:av('instrutor'), descricao:av('descricao'),
         tem_certificado: asel('tem_certificado')==='true',
-        modulos: parseModulosTexto(av('modulos_texto'), academyAntigo?.modulos) };
+        modulos: parseModulosTexto(av('modulos_texto'), academyAntigo?.modulos),
+        prova: parseProvaTexto(av('prova_texto'), academyAntigo?.prova) };
       break;
     }
     case 'biblioteca':
@@ -3998,6 +4179,47 @@ function modulosParaTexto(modulos){
       return `${cabecalho}\n${corpo}`;
     })].join('\n\n')
   ).join('\n\n');
+}
+
+// Prova do curso — mesmo espírito de DSL de texto simples. "?" = pergunta de
+// múltipla escolha (opções "a) texto" nas linhas seguintes, "*" no fim marca
+// a correta); "??" = pergunta aberta (sem opções, não entra na nota — só
+// precisa estar respondida). A correção de verdade roda no banco
+// (portal_corrigir_prova, trigger), isso aqui é só pra edição no admin.
+function parseProvaTexto(texto, provaAntiga){
+  const perguntaParaId=new Map((provaAntiga||[]).map(q=>[(q.pergunta||'').trim().toLowerCase(),q.id]));
+  const linhas=(texto||'').split('\n');
+  const prova=[];
+  let atual=null;
+  linhas.forEach(linhaBruta=>{
+    const linha=linhaBruta.trim();
+    if(!linha) return;
+    if(linha.startsWith('??')){
+      const pergunta=linha.slice(2).trim();
+      atual={id:perguntaParaId.get(pergunta.toLowerCase())||uidCurso(), tipo:'aberta', pergunta};
+      prova.push(atual);
+    } else if(linha.startsWith('?')){
+      const pergunta=linha.slice(1).trim();
+      atual={id:perguntaParaId.get(pergunta.toLowerCase())||uidCurso(), tipo:'multipla', pergunta, opcoes:[], correta:null};
+      prova.push(atual);
+    } else if(/^[a-zA-Z]\)/.test(linha) && atual?.tipo==='multipla'){
+      const m=linha.match(/^([a-zA-Z])\)\s*(.*)$/);
+      let txt=(m[2]||'').trim();
+      const correta=/\*\s*$/.test(txt);
+      if(correta) txt=txt.replace(/\*\s*$/,'').trim();
+      const opcaoId=m[1].toLowerCase();
+      atual.opcoes.push({id:opcaoId, texto:txt});
+      if(correta) atual.correta=opcaoId;
+    }
+  });
+  return prova;
+}
+function provaParaTexto(prova){
+  return (prova||[]).map(q=>{
+    if(q.tipo==='aberta') return `?? ${q.pergunta}`;
+    const opcoesTxt=(q.opcoes||[]).map(o=>`${o.id}) ${o.texto}${q.correta===o.id?' *':''}`).join('\n');
+    return `? ${q.pergunta}\n${opcoesTxt}`;
+  }).join('\n\n');
 }
 
 function renderAdmBeneficios(){
