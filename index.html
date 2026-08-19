@@ -308,6 +308,19 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .curso-video-link{display:inline-flex;align-items:center;gap:8px;padding:12px 16px;background:var(--s3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--gold2);text-decoration:none;font-size:12.5px;font-weight:600;margin-bottom:20px;transition:border-color .12s}
 .curso-video-link:hover{border-color:var(--gold)}
 .curso-aula-video-ic{flex-shrink:0;opacity:.7}
+
+/* Biblioteca */
+.biblio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px}
+.biblio-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--radius-card);overflow:hidden;cursor:pointer;transition:border-color .15s,transform .15s}
+.biblio-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.biblio-cover{aspect-ratio:2/3;background:linear-gradient(160deg,var(--s3),var(--s1));display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.biblio-cover img{width:100%;height:100%;object-fit:cover}
+.biblio-cover-fallback{font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--gold-dim);text-align:center;padding:14px;line-height:1.25}
+.biblio-tag{position:absolute;top:8px;left:8px;font-size:8.5px;font-weight:700;letter-spacing:1.2px;padding:3px 7px;background:var(--s1);border:1px solid var(--border);color:var(--gold2);border-radius:3px;text-transform:uppercase}
+.biblio-info{padding:12px}
+.biblio-title{font-family:var(--font-d);font-size:12.5px;font-weight:700;line-height:1.3;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.biblio-autor{font-size:10px;color:var(--muted2)}
+.biblio-reader-body{overflow-y:auto;flex:1;width:100%;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;padding:8px;border-radius:6px}
 .curso-content-foot{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--border);gap:12px;flex-wrap:wrap}
 .curso-nav-btns{display:flex;gap:8px}
 .curso-mark-btn{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;padding:9px 16px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;font-family:var(--font-b);transition:all .12s}
@@ -978,6 +991,10 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16V8M9 16V4M15 16V10"/><line x1="1" y1="16" x2="17" y2="16"/></svg>
       Carreira
     </div>
+    <div class="nav-item" data-page="biblioteca" onclick="nav('biblioteca')">
+      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2h5a2 2 0 012 2v12a2 2 0 00-2-2H2V2z"/><path d="M16 2h-5a2 2 0 00-2 2v12a2 2 0 012-2h5V2z"/></svg>
+      Biblioteca
+    </div>
     <div class="nav-sect">Cultura</div>
     <div class="nav-item" data-page="news" onclick="nav('news')">
       <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="16" height="13" rx="1"/><line x1="1" y1="7" x2="17" y2="7"/><line x1="5" y1="11" x2="13" y2="11"/></svg>
@@ -1023,6 +1040,10 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         <div class="nav-item admin-only" data-page="adm-academy" onclick="nav('adm-academy')">
           <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 1L1 5l8 4 8-4-8-4z"/><path d="M5 7v5a4 4 0 008 0V7"/></svg>
           Academy
+        </div>
+        <div class="nav-item admin-only" data-page="adm-biblioteca" onclick="nav('adm-biblioteca')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2h5a2 2 0 012 2v12a2 2 0 00-2-2H2V2z"/><path d="M16 2h-5a2 2 0 00-2 2v12a2 2 0 012-2h5V2z"/></svg>
+          Biblioteca
         </div>
         <div class="nav-item admin-only" data-page="adm-news" onclick="nav('adm-news')">
           <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="16" height="13" rx="1"/><line x1="1" y1="7" x2="17" y2="7"/></svg>
@@ -1331,6 +1352,20 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       </div>
     </div>
 
+    <!-- BIBLIOTECA -->
+    <div class="page" id="page-biblioteca">
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+        <button class="btn-primary" onclick="filterBiblio('todos',this)">Todos</button>
+        <button class="btn-outline" onclick="filterBiblio('Negócios',this)">Negócios</button>
+        <button class="btn-outline" onclick="filterBiblio('Persuasão',this)">Persuasão</button>
+        <button class="btn-outline" onclick="filterBiblio('Comunicação',this)">Comunicação</button>
+        <button class="btn-outline" onclick="filterBiblio('Neurolinguagem',this)">Neurolinguagem</button>
+        <button class="btn-outline" onclick="filterBiblio('Retórica',this)">Retórica</button>
+        <button class="btn-outline" onclick="filterBiblio('Outros',this)">Outros</button>
+      </div>
+      <div class="biblio-grid" id="biblio-grid"></div>
+    </div>
+
     <!-- GR NEWS -->
     <div class="page" id="page-news">
       <div class="news-grid" id="news-layout"></div>
@@ -1490,6 +1525,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       <div class="adm-table-wrap" id="adm-acad-list"></div>
     </div>
 
+    <!-- ══ ADM: BIBLIOTECA ══ -->
+    <div class="page" id="page-adm-biblioteca">
+      <div class="adm-page-head">
+        <div class="adm-page-title">Biblioteca</div>
+        <button class="btn-primary" onclick="openAdmModal('biblioteca')">+ Novo livro</button>
+      </div>
+      <div class="adm-table-wrap" id="adm-biblio-list"></div>
+    </div>
+
     <!-- ══ ADM: NEWS ══ -->
     <div class="page" id="page-adm-news">
       <div class="adm-page-head">
@@ -1600,7 +1644,7 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 /* ═══ STATE ═══ */
 let CU = null, CUP = null;
 let allVendas=[], allMetas=[], allCampanhas=[], allBeneficios=[];
-let allAcademy=[], allNews=[], allSugestoes=[], allHallFama=[], allRegras=[], allAcademyProgresso=[];
+let allAcademy=[], allNews=[], allSugestoes=[], allHallFama=[], allRegras=[], allAcademyProgresso=[], allBiblioteca=[];
 let allCopaEquipes=[], allCopaPartidas=[], allAvisos=[], allCarreira=[], allDestaques=[], allCopaEdicoes=[], allCopaChaveamentos=[];
 // Resumo agregado de vendas vindo do CRM (contagens/somas por vendedor —
 // nunca dado de cliente/lead). Ver fetchCrmResumo(). null até carregar, ou
@@ -2004,7 +2048,7 @@ async function loadAll(){
   // série — um round-trip inteiro de rede jogado fora à toa, já que nenhuma
   // dessas 13 consultas depende do perfil. Juntei tudo num Promise.allSettled
   // só, então roda tudo em paralelo e a tela carrega mais rápido.
-  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf,cer,chr,apr]=await Promise.allSettled([
+  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf,cer,chr,apr,bibr]=await Promise.allSettled([
     sb.from('portal_vendas').select('*').eq('user_id',uid).order('data',{ascending:false}),
     sb.from('portal_metas').select('*').eq('user_id',uid),
     sb.from('portal_campanhas').select('*').order('criado_em',{ascending:false}),
@@ -2022,6 +2066,7 @@ async function loadAll(){
     sb.from('portal_copa_edicoes').select('*').order('ano',{ascending:false}).order('ordem',{ascending:false}),
     sb.from('portal_copa_chaveamento').select('*'),
     sb.from('portal_academy_progresso').select('*').eq('user_id',uid),
+    sb.from('portal_biblioteca').select('*').order('criado_em',{ascending:false}),
   ]);
   if(vr.value?.data)allVendas=vr.value.data;
   if(mr.value?.data)allMetas=mr.value.data;
@@ -2055,7 +2100,7 @@ async function loadAll(){
 }
 
 /* ═══ NAV ═══ */
-const PAGE_TITLES={dashboard:'Dashboard',niveis:'GR Níveis',performance:'Performance',destaques:'Destaques do Mês',copa:'Copa GR',campanhas:'Campanhas',beneficios:'Benefícios',academy:'GR Academy',news:'GR News',sugestoes:'Caixinha de Sugestões',hallfama:'Hall da Fama',regras:'Regras GR',carreira:'Carreira'};
+const PAGE_TITLES={dashboard:'Dashboard',niveis:'GR Níveis',performance:'Performance',destaques:'Destaques do Mês',copa:'Copa GR',campanhas:'Campanhas',beneficios:'Benefícios',academy:'GR Academy',news:'GR News',sugestoes:'Caixinha de Sugestões',hallfama:'Hall da Fama',regras:'Regras GR',carreira:'Carreira',biblioteca:'Biblioteca'};
 function nav(page){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
@@ -2064,7 +2109,7 @@ function nav(page){
   document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('on');
   el('topbar-title').textContent=PAGE_TITLES[page]||page;
   _currentPage=page;
-  const renderers={dashboard:renderDashboard,niveis:renderNiveis,performance:renderPerformance,destaques:renderDestaques,copa:renderCopa,campanhas:()=>renderCampanhas('ativa'),beneficios:renderBeneficios,academy:()=>renderAcademy('todos'),news:renderNews,sugestoes:renderSugestoes,hallfama:renderHallFama,regras:renderRegras,carreira:renderCarreira};
+  const renderers={dashboard:renderDashboard,niveis:renderNiveis,performance:renderPerformance,destaques:renderDestaques,copa:renderCopa,campanhas:()=>renderCampanhas('ativa'),beneficios:renderBeneficios,academy:()=>renderAcademy('todos'),news:renderNews,sugestoes:renderSugestoes,hallfama:renderHallFama,regras:renderRegras,carreira:renderCarreira,biblioteca:()=>renderBiblioteca('todos')};
   renderers[page]?.();
   toggleMobileNav(false); // fecha a gaveta ao trocar de página no celular
   window.__pageEnter?.(pageEl);
@@ -2858,6 +2903,96 @@ async function renderPdfPages(url, container){
   }
 }
 
+/* ═══ BIBLIOTECA ═══ */
+function filterBiblio(cat,btn){
+  document.querySelectorAll('#page-biblioteca > div:first-child button').forEach(b=>b.className='btn-outline');
+  btn.className='btn-primary';
+  renderBiblioteca(cat);
+}
+function renderBiblioteca(cat){
+  const list=cat==='todos'?allBiblioteca:allBiblioteca.filter(b=>b.categoria===cat);
+  el('biblio-grid').innerHTML=list.length===0
+    ?'<div class="empty" style="grid-column:1/-1"><div class="empty-line"></div><div class="empty-text">Nenhum livro cadastrado ainda</div></div>'
+    :list.map(b=>`<div class="biblio-card" onclick="openBiblioReader('${b.id}')">
+      <div class="biblio-cover">
+        ${b.categoria?`<span class="biblio-tag">${b.categoria}</span>`:''}
+        ${b.capa_url?`<img src="${b.capa_url}" alt="">`:`<div class="biblio-cover-fallback">${b.titulo}</div>`}
+      </div>
+      <div class="biblio-info">
+        <div class="biblio-title">${b.titulo}</div>
+        <div class="biblio-autor">${b.autor||''}</div>
+      </div>
+    </div>`).join('');
+}
+// Abre o leitor do livro: se tiver PDF, mostra embutido página por página
+// (reaproveita renderPdfPages, já usado pelo leitor de PDF do GR News); se o
+// link não for um PDF direto (ex: link de compartilhamento do Drive, que o
+// pdf.js não consegue abrir por causa de CORS/autenticação), o próprio
+// renderPdfPages já cai no fallback "Abrir em nova aba" sozinho.
+function openBiblioReader(id){
+  const b=allBiblioteca.find(x=>x.id===id);
+  if(!b) return;
+  const modal=document.createElement('div');
+  modal.className='modal-bg on';
+  const readerId='biblio-reader-'+b.id;
+  modal.innerHTML = b.arquivo_url
+    ? `<div class="modal" style="width:900px;max-width:96vw;height:90vh;padding:16px;display:flex;flex-direction:column">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-shrink:0">
+          <div>
+            <div style="font-family:var(--font-d);font-weight:700;font-size:16px">${b.titulo}</div>
+            <div style="font-size:11px;color:var(--muted2)">${b.autor||''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <a href="${b.arquivo_url}" target="_blank" rel="noopener" style="font-size:11px;color:var(--gold2);text-decoration:none">Abrir em nova aba ↗</a>
+            <button class="modal-close" style="position:static" onclick="this.closest('.modal-bg').remove()">✕</button>
+          </div>
+        </div>
+        <div id="${readerId}" class="biblio-reader-body"></div>
+      </div>`
+    : `<div class="modal" style="width:520px;max-width:94vw;padding:28px">
+        <button class="modal-close" onclick="this.closest('.modal-bg').remove()">✕</button>
+        ${b.capa_url?`<div style="width:110px;aspect-ratio:2/3;margin:0 auto 16px;border-radius:6px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.3)"><img src="${b.capa_url}" style="width:100%;height:100%;object-fit:cover" alt=""></div>`:''}
+        <div style="font-family:var(--font-d);font-weight:700;font-size:18px;text-align:center;margin-bottom:2px">${b.titulo}</div>
+        <div style="font-size:11.5px;color:var(--muted2);text-align:center;margin-bottom:16px">${b.autor||''}</div>
+        <div style="font-size:12.5px;color:var(--muted);line-height:1.6;text-align:center">${b.descricao||'Sem arquivo anexado ainda.'}</div>
+      </div>`;
+  modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
+  if(b.arquivo_url) renderPdfPages(b.arquivo_url, el(readerId));
+}
+async function handleBiblioCapaUpload(e){
+  const file = e.target.files?.[0];
+  if(!file) return;
+  const statusEl = document.getElementById('bib-capa-status');
+  const preview = document.getElementById('bib-capa-preview');
+  const urlInput = document.getElementById('af-capa_url');
+  if(file.size > 5*1024*1024){ toast('Imagem muito grande (máx. 5MB)','err'); e.target.value=''; return; }
+  preview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="" style="width:100%;height:100%;object-fit:cover">`;
+  statusEl.textContent = 'Enviando...'; statusEl.style.color = 'var(--muted2)';
+  const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+  const path = `biblioteca/capas/${Date.now()}.${ext}`;
+  const {error} = await sb.storage.from('portal-uploads').upload(path, file, {upsert:true});
+  if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast('Erro ao enviar capa: '+error.message,'err'); return; }
+  const {data} = sb.storage.from('portal-uploads').getPublicUrl(path);
+  urlInput.value = data.publicUrl;
+  statusEl.textContent = 'Enviada ✓'; statusEl.style.color = 'var(--green2)';
+}
+async function handleBiblioArquivoUpload(e){
+  const file = e.target.files?.[0];
+  if(!file) return;
+  const statusEl = document.getElementById('bib-arquivo-status');
+  const urlInput = document.getElementById('af-arquivo_url');
+  if(file.type!=='application/pdf'){ toast('Selecione um arquivo PDF','err'); e.target.value=''; return; }
+  if(file.size > 30*1024*1024){ toast('Arquivo muito grande (máx. 30MB) — nesse caso, cole um link do Drive em vez de enviar','err'); e.target.value=''; return; }
+  statusEl.textContent = 'Enviando...'; statusEl.style.color = 'var(--muted2)';
+  const path = `biblioteca/arquivos/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+  const {error} = await sb.storage.from('portal-uploads').upload(path, file, {upsert:true});
+  if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast('Erro ao enviar arquivo: '+error.message,'err'); return; }
+  const {data} = sb.storage.from('portal-uploads').getPublicUrl(path);
+  urlInput.value = data.publicUrl;
+  statusEl.textContent = 'Enviado ✓'; statusEl.style.color = 'var(--green2)';
+}
+
 function renderNews(){
   const featured=allNews[0];
   const rest=allNews.slice(1,7);
@@ -3006,6 +3141,7 @@ const ADM_PAGE_TITLES = {
   'adm-academy':'GR Academy','adm-news':'GR News','adm-avisos':'Avisos',
   'adm-copa':'Copa GR','adm-beneficios':'Benefícios','adm-hallfama':'Hall da Fama',
   'adm-regras':'Regras GR','adm-usuarios':'Usuários','adm-sugestoes':'Sugestões',
+  'adm-biblioteca':'Biblioteca',
 };
 
 // Extend existing nav function
@@ -3026,6 +3162,7 @@ window.nav = function(page){
       'adm-copa':renderAdmCopa,'adm-beneficios':renderAdmBeneficios,
       'adm-hallfama':renderAdmHallFama,'adm-regras':renderAdmRegras,
       'adm-usuarios':renderAdmUsuarios,'adm-sugestoes':renderAdmSugestoes,
+      'adm-biblioteca':renderAdmBiblioteca,
     };
     admRenderers[page]?.();
     toggleMobileNav(false); // fecha a gaveta ao trocar de página no celular
@@ -3102,7 +3239,7 @@ function openAdmModal(type, data=null){
     campanha:'Campanha', meta:'Meta', destaque:'Destaque',
     academy:'Conteúdo Academy', news:'Notícia', aviso:'Aviso',
     'copa-equipe':'Equipe Copa', 'copa-edicao':'Edição da Copa', beneficio:'Benefício',
-    hallfama:'Hall da Fama', regra:'Regra', usuario:'Usuário',
+    hallfama:'Hall da Fama', regra:'Regra', usuario:'Usuário', biblioteca:'Livro',
   };
   el('adm-modal-title').textContent = (data ? 'Editar ' : 'Nova ') + (titles[type]||type);
   el('adm-modal-body').innerHTML = buildAdmForm(type, data)
@@ -3297,6 +3434,33 @@ function buildAdmForm(type, d={}){
       ${g2(inp('validade','Válido até',d.validade,'date'),
            sel('status','Status',[{v:'Disponível',l:'Disponível'},{v:'Usado',l:'Usado'},{v:'Expirado',l:'Expirado'}],d.status))}`;
 
+    case 'biblioteca': return `
+      ${inp('titulo','Título',d.titulo)}
+      ${g2(inp('autor','Autor',d.autor),
+           sel('categoria','Categoria',[{v:'Negócios',l:'Negócios'},{v:'Persuasão',l:'Persuasão'},{v:'Comunicação',l:'Comunicação'},{v:'Neurolinguagem',l:'Neurolinguagem'},{v:'Retórica',l:'Retórica'},{v:'Outros',l:'Outros'}],d.categoria||'Negócios'))}
+      ${ta('descricao','Descrição (opcional)',d.descricao)}
+      <div class="adm-field">
+        <label class="adm-label">Capa (opcional)</label>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <div id="bib-capa-preview" style="width:44px;height:66px;border-radius:4px;overflow:hidden;background:var(--s3);flex-shrink:0">${d.capa_url?`<img src="${d.capa_url}" alt="" style="width:100%;height:100%;object-fit:cover">`:''}</div>
+          <div style="flex:1">
+            <input type="file" id="bib-capa-file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none" onchange="handleBiblioCapaUpload(event)">
+            <button type="button" class="btn-outline" style="font-size:11px" onclick="document.getElementById('bib-capa-file').click()">📷 Enviar capa</button>
+            <span id="bib-capa-status" style="font-size:10px;color:var(--muted2);margin-left:8px"></span>
+          </div>
+        </div>
+        <input class="adm-input" id="af-capa_url" value="${d.capa_url||''}" placeholder="ou cole uma URL de imagem..." style="font-size:11px">
+      </div>
+      <div class="adm-field">
+        <label class="adm-label">Arquivo (PDF ou link — Drive, audiobook, etc.)</label>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <input type="file" id="bib-arquivo-file" accept="application/pdf" style="display:none" onchange="handleBiblioArquivoUpload(event)">
+          <button type="button" class="btn-outline" style="font-size:11px" onclick="document.getElementById('bib-arquivo-file').click()">📄 Enviar PDF</button>
+          <span id="bib-arquivo-status" style="font-size:10px;color:var(--muted2)"></span>
+        </div>
+        <input class="adm-input" id="af-arquivo_url" type="url" value="${d.arquivo_url||''}" placeholder="ou cole um link (Google Drive, etc.)...">
+      </div>`;
+
     case 'hallfama': return `
       ${inp('nome','Nome',d.nome)}
       ${g2(inp('categoria','Categoria',d.categoria,'text','Ex: Maior Vendedor'),inp('ano','Ano',d.ano||new Date().getFullYear(),'number'))}
@@ -3378,6 +3542,10 @@ async function saveAdmModal(){
         modulos: parseModulosTexto(av('modulos_texto'), academyAntigo?.modulos) };
       break;
     }
+    case 'biblioteca':
+      payload = { titulo:av('titulo'), autor:av('autor'), categoria:asel('categoria')||'Negócios',
+        descricao:av('descricao'), capa_url:av('capa_url')||null, arquivo_url:av('arquivo_url')||null };
+      break;
     case 'news':
       payload = { titulo:av('titulo'), categoria:asel('categoria'),
         resumo:av('resumo'), conteudo:av('conteudo'), autor:av('autor'), pdf_url:av('pdf_url')||null };
@@ -3431,7 +3599,7 @@ async function saveAdmModal(){
     academy:'portal_academy', news:'portal_news', aviso:'portal_avisos',
     'copa-equipe':'portal_copa_equipes', 'copa-edicao':'portal_copa_edicoes', beneficio:'portal_beneficios',
     'copa-chaveamento':'portal_copa_chaveamento',
-    hallfama:'portal_hall_fama', regra:'portal_regras',
+    hallfama:'portal_hall_fama', regra:'portal_regras', biblioteca:'portal_biblioteca',
   };
 
   // Só um chaveamento pode ficar "ativo" por competição — o índice único
@@ -3485,6 +3653,7 @@ async function reloadAdmData(type){
     'copa-chaveamento':async()=>{ const {data}=await sb.from('portal_copa_chaveamento').select('*'); if(data)allCopaChaveamentos=data; },
     hallfama: async()=>{ const {data}=await sb.from('portal_hall_fama').select('*').order('ano',{ascending:false}); if(data)allHallFama=data; },
     regra:    async()=>{ const {data}=await sb.from('portal_regras').select('*').order('ordem'); if(data)allRegras=data; },
+    biblioteca: async()=>{ const {data}=await sb.from('portal_biblioteca').select('*').order('criado_em',{ascending:false}); if(data)allBiblioteca=data; },
     usuario:  async()=>{ const {data}=await sb.from('portal_users').select('*'); if(data){ _admAllUsers=data; } },
   };
   await reloads[type]?.();
@@ -3497,7 +3666,7 @@ async function deleteAdmItem(type, id){
     academy:'portal_academy', news:'portal_news', aviso:'portal_avisos',
     'copa-equipe':'portal_copa_equipes', 'copa-edicao':'portal_copa_edicoes', beneficio:'portal_beneficios',
     'copa-chaveamento':'portal_copa_chaveamento',
-    hallfama:'portal_hall_fama', regra:'portal_regras',
+    hallfama:'portal_hall_fama', regra:'portal_regras', biblioteca:'portal_biblioteca',
   };
   const {error} = await sb.from(tables[type]).delete().eq('id',id);
   if(error){ toast('Erro: '+error.message,'err'); return; }
@@ -3713,6 +3882,13 @@ function renderAdmBeneficios(){
   });
 }
 
+function renderAdmBiblioteca(){
+  el('adm-biblio-list').innerHTML = admList(allBiblioteca,'biblioteca', b=>`
+    <div class="adm-row-main">
+      <div class="adm-row-title">${b.titulo}</div>
+      <div class="adm-row-sub">${b.autor||'–'} · ${b.categoria||'–'}${b.arquivo_url?' · 📄 arquivo':''}</div>
+    </div>`);
+}
 function renderAdmHallFama(){
   el('adm-hall-list').innerHTML = admList(allHallFama,'hallfama', h=>`
     <div class="adm-row-main">
