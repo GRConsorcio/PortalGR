@@ -321,6 +321,12 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .biblio-title{font-family:var(--font-d);font-size:12.5px;font-weight:700;line-height:1.3;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .biblio-autor{font-size:10px;color:var(--muted2)}
 .biblio-reader-body{overflow-y:auto;flex:1;width:100%;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;padding:8px;border-radius:6px}
+.biblio-page{position:relative;margin-bottom:10px;flex-shrink:0}
+/* Camada de texto invisível em cima do canvas — permite selecionar/marcar/
+   copiar o texto do PDF (o canvas sozinho é só uma imagem estática). */
+.biblio-text-layer{position:absolute;inset:0;overflow:hidden;line-height:1;opacity:1}
+.biblio-text-layer span{position:absolute;white-space:pre;color:transparent;transform-origin:0% 0%;cursor:text;user-select:text}
+.biblio-text-layer ::selection{background:rgba(201,168,76,.45);color:transparent}
 .curso-content-foot{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--border);gap:12px;flex-wrap:wrap}
 .curso-nav-btns{display:flex;gap:8px}
 .curso-mark-btn{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;padding:9px 16px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;font-family:var(--font-b);transition:all .12s}
@@ -1644,7 +1650,7 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 /* ═══ STATE ═══ */
 let CU = null, CUP = null;
 let allVendas=[], allMetas=[], allCampanhas=[], allBeneficios=[];
-let allAcademy=[], allNews=[], allSugestoes=[], allHallFama=[], allRegras=[], allAcademyProgresso=[], allBiblioteca=[];
+let allAcademy=[], allNews=[], allSugestoes=[], allHallFama=[], allRegras=[], allAcademyProgresso=[], allBiblioteca=[], allBiblioProgresso=[];
 let allCopaEquipes=[], allCopaPartidas=[], allAvisos=[], allCarreira=[], allDestaques=[], allCopaEdicoes=[], allCopaChaveamentos=[];
 // Resumo agregado de vendas vindo do CRM (contagens/somas por vendedor —
 // nunca dado de cliente/lead). Ver fetchCrmResumo(). null até carregar, ou
@@ -2048,7 +2054,7 @@ async function loadAll(){
   // série — um round-trip inteiro de rede jogado fora à toa, já que nenhuma
   // dessas 13 consultas depende do perfil. Juntei tudo num Promise.allSettled
   // só, então roda tudo em paralelo e a tela carrega mais rápido.
-  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf,cer,chr,apr,bibr]=await Promise.allSettled([
+  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf,cer,chr,apr,bibr,bpr]=await Promise.allSettled([
     sb.from('portal_vendas').select('*').eq('user_id',uid).order('data',{ascending:false}),
     sb.from('portal_metas').select('*').eq('user_id',uid),
     sb.from('portal_campanhas').select('*').order('criado_em',{ascending:false}),
@@ -2067,6 +2073,7 @@ async function loadAll(){
     sb.from('portal_copa_chaveamento').select('*'),
     sb.from('portal_academy_progresso').select('*').eq('user_id',uid),
     sb.from('portal_biblioteca').select('*').order('criado_em',{ascending:false}),
+    sb.from('portal_biblioteca_progresso').select('*').eq('user_id',uid),
   ]);
   if(vr.value?.data)allVendas=vr.value.data;
   if(mr.value?.data)allMetas=mr.value.data;
@@ -2084,6 +2091,8 @@ async function loadAll(){
   if(der.value?.data)allDestaques=der.value.data;
   if(chr.value?.data)allCopaChaveamentos=chr.value.data;
   if(apr.value?.data)allAcademyProgresso=apr.value.data;
+  if(bibr.value?.data)allBiblioteca=bibr.value.data;
+  if(bpr.value?.data)allBiblioProgresso=bpr.value.data;
 
   CUP=prf.value?.data||null;
   if(CUP){
@@ -2924,11 +2933,21 @@ function renderBiblioteca(cat){
       </div>
     </div>`).join('');
 }
-// Abre o leitor do livro: se tiver PDF, mostra embutido página por página
-// (reaproveita renderPdfPages, já usado pelo leitor de PDF do GR News); se o
-// link não for um PDF direto (ex: link de compartilhamento do Drive, que o
-// pdf.js não consegue abrir por causa de CORS/autenticação), o próprio
-// renderPdfPages já cai no fallback "Abrir em nova aba" sozinho.
+// Abre o leitor do livro: se tiver PDF, mostra embutido página por página com
+// texto selecionável (dá pra marcar/copiar) e retoma na última página lida.
+// Se o link não for um PDF direto (ex: link de compartilhamento do Drive, que
+// o pdf.js não consegue abrir por causa de CORS/autenticação), cai sozinho no
+// fallback "Abrir em nova aba" — ver renderBiblioPdfPages.
+function _biblioDownloadUrl(b){
+  if(!b.arquivo_url) return null;
+  // Supabase Storage entende ?download na própria URL pública e força o
+  // Content-Disposition: attachment — sem isso o navegador só abriria o PDF
+  // numa aba em vez de baixar. Só faz sentido pra arquivo hospedado lá; um
+  // link colado manualmente (Drive etc.) fica como está.
+  if(!b.arquivo_url.includes('/storage/v1/object/public/')) return b.arquivo_url;
+  const sep = b.arquivo_url.includes('?') ? '&' : '?';
+  return `${b.arquivo_url}${sep}download=${encodeURIComponent((b.titulo||'livro')+'.pdf')}`;
+}
 function openBiblioReader(id){
   const b=allBiblioteca.find(x=>x.id===id);
   if(!b) return;
@@ -2942,7 +2961,8 @@ function openBiblioReader(id){
             <div style="font-family:var(--font-d);font-weight:700;font-size:16px">${b.titulo}</div>
             <div style="font-size:11px;color:var(--muted2)">${b.autor||''}</div>
           </div>
-          <div style="display:flex;align-items:center;gap:10px">
+          <div style="display:flex;align-items:center;gap:14px">
+            <a href="${_biblioDownloadUrl(b)}" target="_blank" rel="noopener" style="font-size:11px;color:var(--gold2);text-decoration:none">⬇ Baixar</a>
             <a href="${b.arquivo_url}" target="_blank" rel="noopener" style="font-size:11px;color:var(--gold2);text-decoration:none">Abrir em nova aba ↗</a>
             <button class="modal-close" style="position:static" onclick="this.closest('.modal-bg').remove()">✕</button>
           </div>
@@ -2958,7 +2978,116 @@ function openBiblioReader(id){
       </div>`;
   modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
   document.body.appendChild(modal);
-  if(b.arquivo_url) renderPdfPages(b.arquivo_url, el(readerId));
+  if(b.arquivo_url) renderBiblioPdfPages(b.arquivo_url, el(readerId), b.id);
+}
+// Salva/atualiza a última página lida (debounced no chamador) — upsert porque
+// cada usuário só tem UMA linha de progresso por livro (índice único
+// user_id+livro_id já garantido no banco).
+async function _salvarProgressoLeitura(livroId, pagina){
+  const payload={user_id:CU.id, livro_id:livroId, ultima_pagina:pagina, atualizado_em:new Date().toISOString()};
+  const{data,error}=await sb.from('portal_biblioteca_progresso').upsert(payload,{onConflict:'user_id,livro_id'}).select().maybeSingle();
+  if(error){ console.warn('[biblioteca] erro ao salvar progresso:',error.message); return; }
+  const prog=allBiblioProgresso.find(p=>p.livro_id===livroId);
+  if(prog) Object.assign(prog,payload); else allBiblioProgresso.push(data||payload);
+}
+// Renderiza o PDF página por página (canvas, igual renderPdfPages do GR News)
+// e, em cima de cada página, uma camada de texto invisível posicionada
+// exatamente sobre as palavras do canvas — é a técnica padrão do pdf.js pra
+// permitir selecionar/copiar/marcar o texto (o canvas sozinho é só uma
+// imagem, não tem texto de verdade pra selecionar). Também guarda em qual
+// página o usuário está (via IntersectionObserver) e volta pra última página
+// lida automaticamente ao reabrir o livro.
+async function renderBiblioPdfPages(url, container, livroId){
+  if(!container) return;
+  container.innerHTML='<div style="margin:auto;color:var(--muted2);font-size:12px">Carregando livro...</div>';
+  let pdf;
+  try{
+    pdf=await pdfjsLib.getDocument(url).promise;
+  }catch(err){
+    container.innerHTML=`<div style="margin:auto;text-align:center;padding:24px;color:var(--muted)">Não foi possível carregar o PDF.<br><a href="${url}" target="_blank" style="color:var(--accent)">Abrir em nova aba</a></div>`;
+    return;
+  }
+  container.innerHTML='';
+  const targetWidth=Math.min(container.clientWidth||860,860);
+  const pageEls=[];
+  for(let i=1;i<=pdf.numPages;i++){
+    const page=await pdf.getPage(i);
+    const baseViewport=page.getViewport({scale:1});
+    const cssScale=targetWidth/baseViewport.width;
+    const scale=cssScale*(window.devicePixelRatio||1);
+    const viewport=page.getViewport({scale});
+    const cssViewport=page.getViewport({scale:cssScale});
+
+    const pageWrap=document.createElement('div');
+    pageWrap.className='biblio-page';
+    pageWrap.dataset.page=i;
+    pageWrap.style.width=cssViewport.width+'px';
+    pageWrap.style.height=cssViewport.height+'px';
+
+    const canvas=document.createElement('canvas');
+    canvas.width=viewport.width;
+    canvas.height=viewport.height;
+    canvas.style.width='100%';
+    canvas.style.height='100%';
+    canvas.style.display='block';
+    canvas.style.borderRadius='4px';
+    canvas.style.boxShadow='0 2px 16px rgba(0,0,0,.3)';
+    await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+    pageWrap.appendChild(canvas);
+
+    try{
+      const textLayer=document.createElement('div');
+      textLayer.className='biblio-text-layer';
+      const textContent=await page.getTextContent();
+      textContent.items.forEach(item=>{
+        if(!item.str) return;
+        const tx=pdfjsLib.Util.transform(cssViewport.transform, item.transform);
+        const angle=Math.atan2(tx[1],tx[0]);
+        const fontHeight=Math.hypot(tx[2],tx[3]);
+        const span=document.createElement('span');
+        span.textContent=item.str;
+        span.style.left=tx[4]+'px';
+        span.style.top=(tx[5]-fontHeight)+'px';
+        span.style.fontSize=fontHeight+'px';
+        span.style.fontFamily=textContent.styles?.[item.fontName]?.fontFamily||'sans-serif';
+        if(angle) span.style.transform=`rotate(${angle}rad)`;
+        textLayer.appendChild(span);
+        if(item.width){
+          const targetW=item.width*cssViewport.scale;
+          const actualW=span.getBoundingClientRect().width||span.offsetWidth;
+          if(actualW>0){
+            const scaleX=targetW/actualW;
+            span.style.transform=(span.style.transform?span.style.transform+' ':'')+`scaleX(${scaleX})`;
+          }
+        }
+      });
+      pageWrap.appendChild(textLayer);
+    }catch(e){ console.warn('[biblioteca] texto não selecionável nesta página:',e.message); }
+
+    container.appendChild(pageWrap);
+    pageEls.push(pageWrap);
+  }
+
+  // Retoma na última página lida (se já tiver progresso salvo pra esse livro)
+  const prog=allBiblioProgresso.find(p=>p.livro_id===livroId);
+  if(prog?.ultima_pagina>1){
+    const alvo=pageEls[prog.ultima_pagina-1];
+    if(alvo) setTimeout(()=>alvo.scrollIntoView({block:'start'}),50);
+  }
+
+  // Marca a página atual conforme o usuário rola, salvando com debounce (não
+  // a cada pixel de scroll, só quando ele fica parado numa página por um
+  // instante) — evita gravar no banco a cada frame de scroll.
+  let _debounce=null;
+  const observer=new IntersectionObserver(entries=>{
+    const visivel=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+    if(!visivel) return;
+    const pagina=parseInt(visivel.target.dataset.page,10);
+    clearTimeout(_debounce);
+    _debounce=setTimeout(()=>_salvarProgressoLeitura(livroId,pagina),800);
+  },{root:container,threshold:[0.5]});
+  pageEls.forEach(p=>observer.observe(p));
+  container._biblioObserver=observer; // fica pendurado no elemento só pra não sumir no GC antes da hora
 }
 async function handleBiblioCapaUpload(e){
   const file = e.target.files?.[0];
