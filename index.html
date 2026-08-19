@@ -269,6 +269,46 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .acad-progress-fill{height:100%;background:var(--gold)}
 .acad-cert{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green2);margin-top:6px;font-weight:600}
 
+/* Curso (item de Academy com módulos/aulas) */
+.acad-progress-lbl{font-size:9.5px;color:var(--muted2);margin-top:9px;display:flex;justify-content:space-between}
+.acad-progress-lg{height:5px;background:var(--border);border-radius:3px;margin-top:4px;overflow:hidden}
+.acad-progress-lg-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:3px;transition:width .3s}
+
+.curso-back{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted2);cursor:pointer;margin-bottom:16px;background:none;border:none;font-family:var(--font-b);padding:0}
+.curso-back:hover{color:var(--gold2)}
+.curso-hero{background:var(--s2);border:1px solid var(--border);border-radius:var(--radius-card);padding:20px 22px;margin-bottom:18px}
+.curso-hero-title{font-family:var(--font-d);font-size:24px;font-weight:700;letter-spacing:.2px;margin-bottom:10px;line-height:1.15}
+.curso-hero-meta{font-size:11px;color:var(--muted2);margin-bottom:14px}
+.curso-hero-bar-wrap{display:flex;align-items:center;gap:12px}
+.curso-hero-bar{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.curso-hero-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:4px;transition:width .35s}
+.curso-hero-pct{font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--gold2);white-space:nowrap;min-width:76px;text-align:right}
+
+.curso-wrap{display:grid;grid-template-columns:272px 1fr;gap:20px;align-items:start}
+.curso-sidebar{background:var(--s2);border:1px solid var(--border);border-radius:var(--radius-card);padding:8px;position:sticky;top:calc(var(--topbar-h) + 16px);max-height:calc(100vh - var(--topbar-h) - 32px);overflow-y:auto}
+.curso-mod-head{font-family:var(--font-d);font-size:12.5px;font-weight:700;letter-spacing:.3px;color:var(--text);padding:12px 10px 6px;display:flex;justify-content:space-between;align-items:baseline}
+.curso-mod-count{font-size:9.5px;color:var(--muted2);font-weight:400;font-family:var(--font-b)}
+.curso-aula{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;font-size:12px;color:var(--muted2);transition:background .12s,color .12s}
+.curso-aula:hover{background:var(--s3);color:var(--text)}
+.curso-aula.on{background:var(--gold-glow);color:var(--gold2)}
+.curso-aula-check{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;background:var(--s1)}
+.curso-aula.done .curso-aula-check{background:var(--green2);border-color:var(--green2)}
+.curso-aula-check svg{opacity:0;transition:opacity .15s}
+.curso-aula.done .curso-aula-check svg{opacity:1}
+.curso-aula-title{flex:1;line-height:1.3}
+
+.curso-content{background:var(--s2);border:1px solid var(--border);border-radius:var(--radius-card);padding:28px 32px;min-height:400px}
+.curso-content-eyebrow{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:8px}
+.curso-content-title{font-family:var(--font-d);font-size:26px;font-weight:700;margin-bottom:20px;letter-spacing:.2px;line-height:1.15}
+.curso-content-body p{font-size:13.5px;line-height:1.8;color:var(--text);margin-bottom:14px;max-width:70ch}
+.curso-content-body ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.curso-content-body ul li{font-size:13px;line-height:1.6;color:var(--text);padding:12px 14px;background:var(--gold-glow);border-left:2px solid var(--gold);border-radius:6px}
+.curso-content-foot{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--border);gap:12px;flex-wrap:wrap}
+.curso-nav-btns{display:flex;gap:8px}
+.curso-mark-btn{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;padding:9px 16px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;font-family:var(--font-b);transition:all .12s}
+.curso-mark-btn:hover{border-color:var(--gold)}
+.curso-mark-btn.done{background:var(--green2);border-color:var(--green2);color:#08160F}
+
 /* News */
 .news-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
 .news-featured{background:var(--s2);border:1px solid var(--border);padding:24px;cursor:pointer;transition:border-color .15s}
@@ -558,6 +598,9 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
   .kpi-val{font-size:32px}
   .levels-grid,.hall-grid{grid-template-columns:1fr 1fr}
   .grid-2,.grid-3,.acad-grid,.benef-grid{grid-template-columns:1fr}
+  .curso-wrap{grid-template-columns:1fr}
+  .curso-sidebar{position:static;max-height:none}
+  .curso-content{padding:20px}
   .news-grid{grid-template-columns:1fr}
   .progress-hero{grid-template-columns:1fr}
   .ph-left{border-right:none;border-bottom:1px solid var(--border)}
@@ -1266,6 +1309,23 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       <div class="acad-grid" id="acad-grid"></div>
     </div>
 
+    <!-- CURSO (detalhe de um item de Academy com módulos/aulas) -->
+    <div class="page" id="page-curso-detalhe">
+      <button class="curso-back" onclick="voltarAcademy()">← Voltar pra Academy</button>
+      <div class="curso-hero">
+        <div class="curso-hero-title" id="curso-hero-titulo"></div>
+        <div class="curso-hero-meta" id="curso-hero-meta"></div>
+        <div class="curso-hero-bar-wrap">
+          <div class="curso-hero-bar"><div class="curso-hero-bar-fill" id="curso-hero-bar-fill" style="width:0%"></div></div>
+          <div class="curso-hero-pct" id="curso-hero-pct">0%</div>
+        </div>
+      </div>
+      <div class="curso-wrap">
+        <div class="curso-sidebar" id="curso-sidebar"></div>
+        <div class="curso-content" id="curso-content"></div>
+      </div>
+    </div>
+
     <!-- GR NEWS -->
     <div class="page" id="page-news">
       <div class="news-grid" id="news-layout"></div>
@@ -1535,7 +1595,7 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 /* ═══ STATE ═══ */
 let CU = null, CUP = null;
 let allVendas=[], allMetas=[], allCampanhas=[], allBeneficios=[];
-let allAcademy=[], allNews=[], allSugestoes=[], allHallFama=[], allRegras=[];
+let allAcademy=[], allNews=[], allSugestoes=[], allHallFama=[], allRegras=[], allAcademyProgresso=[];
 let allCopaEquipes=[], allCopaPartidas=[], allAvisos=[], allCarreira=[], allDestaques=[], allCopaEdicoes=[], allCopaChaveamentos=[];
 // Resumo agregado de vendas vindo do CRM (contagens/somas por vendedor —
 // nunca dado de cliente/lead). Ver fetchCrmResumo(). null até carregar, ou
@@ -1939,7 +1999,7 @@ async function loadAll(){
   // série — um round-trip inteiro de rede jogado fora à toa, já que nenhuma
   // dessas 13 consultas depende do perfil. Juntei tudo num Promise.allSettled
   // só, então roda tudo em paralelo e a tela carrega mais rápido.
-  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf,cer,chr]=await Promise.allSettled([
+  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf,cer,chr,apr]=await Promise.allSettled([
     sb.from('portal_vendas').select('*').eq('user_id',uid).order('data',{ascending:false}),
     sb.from('portal_metas').select('*').eq('user_id',uid),
     sb.from('portal_campanhas').select('*').order('criado_em',{ascending:false}),
@@ -1956,6 +2016,7 @@ async function loadAll(){
     sb.from('portal_users').select('*').eq('user_id',uid).maybeSingle(),
     sb.from('portal_copa_edicoes').select('*').order('ano',{ascending:false}).order('ordem',{ascending:false}),
     sb.from('portal_copa_chaveamento').select('*'),
+    sb.from('portal_academy_progresso').select('*').eq('user_id',uid),
   ]);
   if(vr.value?.data)allVendas=vr.value.data;
   if(mr.value?.data)allMetas=mr.value.data;
@@ -1972,6 +2033,7 @@ async function loadAll(){
   if(cer.value?.data)allCopaEdicoes=cer.value.data;
   if(der.value?.data)allDestaques=der.value.data;
   if(chr.value?.data)allCopaChaveamentos=chr.value.data;
+  if(apr.value?.data)allAcademyProgresso=apr.value.data;
 
   CUP=prf.value?.data||null;
   if(CUP){
@@ -2550,24 +2612,39 @@ function filterAcad(tipo,btn){
   btn.className='btn-primary';
   renderAcademy(tipo);
 }
+// Calcula o progresso de um item de Academy que tem módulos/aulas (curso),
+// combinando o conteúdo (allAcademy) com o progresso pessoal salvo em
+// portal_academy_progresso (aulas_concluidas: array de ids de aula).
+function progressoCurso(a){
+  const totalAulas=(a.modulos||[]).reduce((s,m)=>s+(m.aulas||[]).length,0);
+  const prog=allAcademyProgresso.find(p=>p.academy_id===a.id);
+  const concluidas=new Set(prog?.aulas_concluidas||[]);
+  const pct=totalAulas?Math.round((concluidas.size/totalAulas)*100):0;
+  return {totalAulas,concluidas,pct,totalModulos:(a.modulos||[]).length};
+}
 function renderAcademy(tipo){
   const list=tipo==='todos'?allAcademy:allAcademy.filter(a=>a.tipo===tipo||(tipo==='certificado'&&a.tem_certificado));
   const typeLabel={video:'VIDEO',live:'LIVE',material:'DOC'};
   const typeCls={video:'acad-label-video',live:'acad-label-live',material:'acad-label-doc'};
   el('acad-grid').innerHTML=list.length===0
     ?'<div class="empty" style="grid-column:1/-1"><div class="empty-line"></div><div class="empty-text">Nenhum conteúdo disponível</div></div>'
-    :list.map(a=>`<div class="acad-card" onclick="openAcad('${a.id}')">
+    :list.map(a=>{
+      const isCurso=(a.modulos||[]).length>0;
+      const p=isCurso?progressoCurso(a):null;
+      return `<div class="acad-card" onclick="openAcad('${a.id}')">
       <div class="acad-thumb">
         <div class="acad-play"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><polygon points="3,1 13,7 3,13"/></svg></div>
-        <span class="acad-thumb-label ${typeCls[a.tipo]||'acad-label-doc'}">${typeLabel[a.tipo]||a.tipo?.toUpperCase()}</span>
+        <span class="acad-thumb-label ${isCurso?'acad-label-video':(typeCls[a.tipo]||'acad-label-doc')}">${isCurso?'CURSO':(typeLabel[a.tipo]||a.tipo?.toUpperCase())}</span>
       </div>
       <div class="acad-info">
         <div class="acad-title">${a.titulo}</div>
-        <div class="acad-meta">${a.duracao||''} ${a.instrutor?'· '+a.instrutor:''}</div>
-        ${a.progresso?`<div class="acad-progress"><div class="acad-progress-fill" style="width:${a.progresso}%"></div></div>`:''}
+        <div class="acad-meta">${isCurso?`${p.totalModulos} módulo${p.totalModulos!==1?'s':''} · ${p.totalAulas} aula${p.totalAulas!==1?'s':''}`:`${a.duracao||''} ${a.instrutor?'· '+a.instrutor:''}`}</div>
+        ${isCurso?`<div class="acad-progress-lbl"><span>${p.concluidas.size} de ${p.totalAulas} concluídas</span><span>${p.pct}%</span></div><div class="acad-progress-lg"><div class="acad-progress-lg-fill" style="width:${p.pct}%"></div></div>`
+          :(a.progresso?`<div class="acad-progress"><div class="acad-progress-fill" style="width:${a.progresso}%"></div></div>`:'')}
         ${a.tem_certificado?'<div class="acad-cert">Certificado disponível</div>':''}
       </div>
-    </div>`).join('');
+    </div>`;
+    }).join('');
 }
 // BUGFIX/MELHORIA: antes só dava window.open(url) — saía do portal pra assistir
 // no YouTube direto. Agora, se for link do YouTube, abre embutido dentro do
@@ -2580,7 +2657,9 @@ function _youtubeEmbedUrl(url){
 }
 function openAcad(id){
   const a=allAcademy.find(x=>x.id===id);
-  if(!a?.url) return;
+  if(!a) return;
+  if((a.modulos||[]).length){ openCurso(id); return; }
+  if(!a.url) return;
   const embed=_youtubeEmbedUrl(a.url);
   if(!embed){ window.open(a.url,'_blank'); return; }
   const modal=document.createElement('div');
@@ -2598,6 +2677,102 @@ function openAcad(id){
   // pausa o vídeo ao fechar (remove o iframe do DOM em vez de só escondê-lo)
   modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
   document.body.appendChild(modal);
+}
+
+/* ═══ CURSO (item de Academy com módulos/aulas) ═══
+   Cada aula concluída é salva em portal_academy_progresso.aulas_concluidas
+   (array de ids de aula) — a % de conclusão é sempre derivada desse array,
+   nunca guardada solta, pra nunca desincronizar dos módulos/aulas reais. */
+let _cursoAtualId=null, _cursoModIdx=0, _cursoAulaIdx=0;
+
+function openCurso(id){
+  const a=allAcademy.find(x=>x.id===id);
+  if(!a||!(a.modulos||[]).length) return;
+  _cursoAtualId=id;
+  _cursoModIdx=0; _cursoAulaIdx=0;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
+  el('page-curso-detalhe').classList.add('on');
+  el('topbar-title').textContent=a.titulo;
+  _currentPage='curso-detalhe';
+  renderCurso();
+  toggleMobileNav(false);
+}
+function voltarAcademy(){
+  _cursoAtualId=null;
+  nav('academy');
+}
+function renderCurso(){
+  const a=allAcademy.find(x=>x.id===_cursoAtualId);
+  if(!a) return;
+  const p=progressoCurso(a);
+  el('curso-hero-titulo').textContent=a.titulo;
+  el('curso-hero-meta').textContent=`${p.totalModulos} módulo${p.totalModulos!==1?'s':''} · ${p.totalAulas} aula${p.totalAulas!==1?'s':''}${a.tem_certificado?' · 🎓 Certificado ao concluir':''}`;
+  el('curso-hero-bar-fill').style.width=p.pct+'%';
+  el('curso-hero-pct').textContent=`${p.pct}% concluído`;
+  renderCursoSidebar(a,p);
+  renderCursoContent(a,p);
+}
+function renderCursoSidebar(a,p){
+  el('curso-sidebar').innerHTML=(a.modulos||[]).map((m,mi)=>{
+    const aulas=m.aulas||[];
+    const doneCount=aulas.filter(au=>p.concluidas.has(au.id)).length;
+    return `<div class="curso-mod-head"><span>${m.titulo}</span><span class="curso-mod-count">${doneCount}/${aulas.length}</span></div>
+      ${aulas.map((au,ai)=>{
+        const isOn=mi===_cursoModIdx&&ai===_cursoAulaIdx;
+        const isDone=p.concluidas.has(au.id);
+        return `<div class="curso-aula ${isOn?'on':''} ${isDone?'done':''}" onclick="selecionarAula(${mi},${ai})">
+          <span class="curso-aula-check"><svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#08160F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="curso-aula-title">${au.titulo}</span>
+        </div>`;
+      }).join('')}`;
+  }).join('');
+}
+function renderCursoContent(a,p){
+  const m=a.modulos[_cursoModIdx]; const au=m?.aulas?.[_cursoAulaIdx];
+  if(!au){ el('curso-content').innerHTML='<div class="empty"><div class="empty-line"></div><div class="empty-text">Aula não encontrada</div></div>'; return; }
+  const isDone=p.concluidas.has(au.id);
+  const corpoHtml=au.tipo==='lista'
+    ? `<ul>${(au.corpo||[]).map(t=>`<li>${t}</li>`).join('')}</ul>`
+    : (au.corpo||[]).map(t=>`<p>${t}</p>`).join('');
+  // navegação sequencial (anterior/próxima) atravessando os módulos, como se
+  // o curso inteiro fosse uma lista única de aulas
+  const flat=[]; (a.modulos||[]).forEach((mm,mi)=>(mm.aulas||[]).forEach((aa,ai)=>flat.push({mi,ai})));
+  const curFlatIdx=flat.findIndex(f=>f.mi===_cursoModIdx&&f.ai===_cursoAulaIdx);
+  const prev=flat[curFlatIdx-1], next=flat[curFlatIdx+1];
+  el('curso-content').innerHTML=`
+    <div class="curso-content-eyebrow">${m.titulo}</div>
+    <div class="curso-content-title">${au.titulo}</div>
+    <div class="curso-content-body">${corpoHtml}</div>
+    <div class="curso-content-foot">
+      <button class="curso-mark-btn ${isDone?'done':''}" onclick="toggleAulaConcluida()">${isDone?'✓ Aula concluída':'Marcar como concluída'}</button>
+      <div class="curso-nav-btns">
+        ${prev?`<button class="btn-outline" onclick="selecionarAula(${prev.mi},${prev.ai})">← Anterior</button>`:''}
+        ${next?`<button class="btn-primary" onclick="selecionarAula(${next.mi},${next.ai})">Próxima →</button>`:''}
+      </div>
+    </div>`;
+}
+function selecionarAula(mi,ai){
+  _cursoModIdx=mi; _cursoAulaIdx=ai;
+  renderCurso();
+  el('curso-content')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function toggleAulaConcluida(){
+  const a=allAcademy.find(x=>x.id===_cursoAtualId);
+  if(!a) return;
+  const au=a.modulos[_cursoModIdx]?.aulas?.[_cursoAulaIdx];
+  if(!au) return;
+  const prog=allAcademyProgresso.find(p=>p.academy_id===a.id);
+  const concluidas=new Set(prog?.aulas_concluidas||[]);
+  if(concluidas.has(au.id)) concluidas.delete(au.id); else concluidas.add(au.id);
+  const arr=[...concluidas];
+  const totalAulas=(a.modulos||[]).reduce((s,m)=>s+(m.aulas||[]).length,0);
+  const pctNovo=totalAulas?Math.round((arr.length/totalAulas)*100):0;
+  const payload={user_id:CU.id,academy_id:a.id,aulas_concluidas:arr,progresso:pctNovo,concluido:pctNovo>=100};
+  const{data,error}=await sb.from('portal_academy_progresso').upsert(payload,{onConflict:'user_id,academy_id'}).select().maybeSingle();
+  if(error){ toast('Erro ao salvar progresso: '+error.message,'err'); return; }
+  if(prog){ Object.assign(prog,payload); } else { allAcademyProgresso.push(data||payload); }
+  renderCurso();
 }
 
 /* ═══ NEWS ═══ */
@@ -3015,7 +3190,12 @@ function buildAdmForm(type, d={}){
       ${inp('url','URL / Link',d.url,'url','https://')}
       ${inp('instrutor','Instrutor',d.instrutor)}
       ${ta('descricao','Descrição',d.descricao)}
-      ${sel('tem_certificado','Certificado',[{v:'false',l:'Não'},{v:'true',l:'Sim'}],String(d.tem_certificado))}`;
+      ${sel('tem_certificado','Certificado',[{v:'false',l:'Não'},{v:'true',l:'Sim'}],String(d.tem_certificado))}
+      <div class="adm-field">
+        <label class="adm-label">Módulos e aulas (opcional — transforma este item num curso com barra de progresso)</label>
+        <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;line-height:1.5">Linha começando com <b>##</b> = novo módulo. Linha começando com <b>###</b> = nova aula dentro do módulo atual. Linhas em branco separam parágrafos. Comece uma linha com <b>%%</b> pra virar lista de tópicos (bom pra "Resumo") em vez de parágrafos.</div>
+        <textarea class="adm-textarea" id="af-modulos_texto" rows="12" style="font-family:monospace;font-size:11.5px" placeholder="## Módulo 1 — Introdução&#10;### O que é isso?&#10;Primeiro parágrafo da aula.&#10;&#10;Segundo parágrafo.&#10;&#10;### Outra aula&#10;%%&#10;Tópico 1 em formato de lista&#10;Tópico 2 em formato de lista">${modulosParaTexto(d.modulos)}</textarea>
+      </div>`;
 
     case 'news': return `
       ${inp('titulo','Título',d.titulo)}
@@ -3176,11 +3356,14 @@ async function saveAdmModal(){
         imagem_url:av('imagem_url')||null };
       break;
     }
-    case 'academy':
+    case 'academy':{
+      const academyAntigo = editId ? allAcademy.find(x=>x.id===editId) : null;
       payload = { titulo:av('titulo'), tipo:asel('tipo'), duracao:av('duracao'),
         url:av('url'), instrutor:av('instrutor'), descricao:av('descricao'),
-        tem_certificado: asel('tem_certificado')==='true' };
+        tem_certificado: asel('tem_certificado')==='true',
+        modulos: parseModulosTexto(av('modulos_texto'), academyAntigo?.modulos) };
       break;
+    }
     case 'news':
       payload = { titulo:av('titulo'), categoria:asel('categoria'),
         resumo:av('resumo'), conteudo:av('conteudo'), autor:av('autor'), pdf_url:av('pdf_url')||null };
@@ -3371,11 +3554,14 @@ function renderAdmDestaques(){
 }
 
 function renderAdmAcademy(){
-  el('adm-acad-list').innerHTML = admList(allAcademy,'academy', a=>`
-    <div class="adm-row-main">
+  el('adm-acad-list').innerHTML = admList(allAcademy,'academy', a=>{
+    const nMod=(a.modulos||[]).length;
+    const nAulas=(a.modulos||[]).reduce((s,m)=>s+(m.aulas||[]).length,0);
+    return `<div class="adm-row-main">
       <div class="adm-row-title">${a.titulo}</div>
-      <div class="adm-row-sub">${a.tipo?.toUpperCase()} · ${a.duracao||'–'} · ${a.instrutor||'–'}${a.tem_certificado?' · 🎓 Certificado':''}</div>
-    </div>`);
+      <div class="adm-row-sub">${a.tipo?.toUpperCase()} · ${nMod?`📚 ${nMod} módulo${nMod!==1?'s':''} · ${nAulas} aula${nAulas!==1?'s':''}`:(a.duracao||'–')+' · '+(a.instrutor||'–')}${a.tem_certificado?' · 🎓 Certificado':''}</div>
+    </div>`;
+  });
 }
 
 function renderAdmNews(){
@@ -3440,6 +3626,63 @@ function parseFasesChaveamento(texto){
 }
 function fasesParaTexto(fases){
   return (fases||[]).map(f=>[f.nome, ...(f.confrontos||[]).map(c=>`${c.equipeA} ${c.placarA||0} x ${c.placarB||0} ${c.equipeB}`)].join('\n')).join('\n\n');
+}
+
+function uidCurso(){ return 'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+// Curso (módulos/aulas de Academy) — DSL de texto simples, mesmo espírito do
+// parseFasesChaveamento/fasesParaTexto acima. IDs de módulo/aula são
+// preservados por TÍTULO (comparados com a versão anterior), não regenerados
+// a cada save — porque o progresso de cada usuário (aulas_concluidas) referencia
+// esses ids; regenerar do zero a cada edição apagaria o progresso de todo mundo.
+function parseModulosTexto(texto, modulosAntigos){
+  const modTituloParaId=new Map((modulosAntigos||[]).map(m=>[(m.titulo||'').trim().toLowerCase(),m.id]));
+  const aulaTituloParaId=new Map();
+  (modulosAntigos||[]).forEach(m=>(m.aulas||[]).forEach(a=>aulaTituloParaId.set((a.titulo||'').trim().toLowerCase(),a.id)));
+  const linhas=(texto||'').split('\n');
+  const modulos=[];
+  let modAtual=null, aulaAtual=null, modoLista=false, bufferPar=[];
+  function flushPar(){
+    if(aulaAtual){
+      if(modoLista) bufferPar.forEach(l=>{ if(l.trim()) aulaAtual.corpo.push(l.trim()); });
+      else { const p=bufferPar.join(' ').trim(); if(p) aulaAtual.corpo.push(p); }
+    }
+    bufferPar=[];
+  }
+  linhas.forEach(linhaBruta=>{
+    const linha=linhaBruta.trim();
+    if(linha.startsWith('## ')){
+      flushPar();
+      const titulo=linha.slice(3).trim();
+      modAtual={id:modTituloParaId.get(titulo.toLowerCase())||uidCurso(), titulo, aulas:[]};
+      modulos.push(modAtual);
+      aulaAtual=null; modoLista=false;
+    } else if(linha.startsWith('### ')){
+      flushPar();
+      if(!modAtual){ modAtual={id:uidCurso(),titulo:'Módulo',aulas:[]}; modulos.push(modAtual); }
+      const titulo=linha.slice(4).trim();
+      aulaAtual={id:aulaTituloParaId.get(titulo.toLowerCase())||uidCurso(), titulo, tipo:'texto', corpo:[]};
+      modAtual.aulas.push(aulaAtual);
+      modoLista=false;
+    } else if(linha==='%%'){
+      flushPar();
+      if(aulaAtual) aulaAtual.tipo='lista';
+      modoLista=true;
+    } else if(!linha){
+      flushPar();
+    } else {
+      bufferPar.push(linha);
+    }
+  });
+  flushPar();
+  return modulos;
+}
+function modulosParaTexto(modulos){
+  return (modulos||[]).map(m=>
+    [`## ${m.titulo}`, ...(m.aulas||[]).map(a=>{
+      const corpo = a.tipo==='lista' ? ['%%', ...(a.corpo||[])].join('\n') : (a.corpo||[]).join('\n\n');
+      return `### ${a.titulo}\n${corpo}`;
+    })].join('\n\n')
+  ).join('\n\n');
 }
 
 function renderAdmBeneficios(){
