@@ -327,7 +327,7 @@ html.sidebar-mini .nav-badge{display:none}
 .curso-content-body ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
 .curso-content-body ul li{font-size:13px;line-height:1.6;color:var(--text);padding:12px 14px;background:var(--gold-glow);border-left:2px solid var(--gold);border-radius:6px}
 .curso-video{position:relative;padding-top:56.25%;background:#000;border-radius:var(--radius-sm);overflow:hidden;margin-bottom:20px}
-.curso-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.curso-video iframe,.curso-video video{position:absolute;inset:0;width:100%;height:100%;border:0}
 .curso-imagens{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
 .curso-imagens a{display:block;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border2);cursor:zoom-in}
 .curso-imagens img{display:block;width:100%;height:auto}
@@ -3209,14 +3209,19 @@ function renderCursoContent(a,p){
     ? `<ul>${(au.corpo||[]).map(t=>`<li>${t}</li>`).join('')}</ul>`
     : (au.corpo||[]).map(t=>`<p>${t}</p>`).join('');
   // Vídeo é opcional por aula. Link do YouTube (qualquer formato) embute
-  // player direto na página, igual já acontece em openAcad; qualquer outro
-  // link (Vimeo, Drive, etc) vira um botão que abre em nova aba. Se ainda não
-  // foi concluída, o vídeo do YouTube entra com a API do player habilitada
-  // (enablejsapi=1) pra saber quando acabou de assistir (evento "ended") —
-  // enquanto isso, o botão de concluir fica travado (ver bloco abaixo).
+  // player direto na página, igual já acontece em openAcad; arquivo de vídeo
+  // hospedado direto (Supabase Storage, .mp4/.webm/.ogg/.mov) também toca
+  // embutido, com o <video> nativo do navegador — sem abrir aba nenhuma;
+  // qualquer outro link (Vimeo, Drive, etc) vira um botão que abre em nova
+  // aba, único caso em que não dá pra embutir. Se ainda não foi concluída, o
+  // vídeo do YouTube entra com a API do player habilitada (enablejsapi=1) e o
+  // vídeo nativo escuta o evento "ended" — os dois pra saber quando acabou de
+  // assistir; enquanto isso, o botão de concluir fica travado (bloco abaixo).
   const embed=au.video?_youtubeEmbedUrl(au.video):null;
-  const videoHtml=!au.video?'':embed
-    ?`<div class="curso-video"><iframe id="curso-video-iframe" src="${embed}${embed.includes('?')?'&':'?'}enablejsapi=1" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>`
+  const direto=!embed&&au.video&&/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(au.video);
+  const videoHtml=!au.video?''
+    :embed?`<div class="curso-video"><iframe id="curso-video-iframe" src="${embed}${embed.includes('?')?'&':'?'}enablejsapi=1" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>`
+    :direto?`<div class="curso-video"><video id="curso-video-native" src="${au.video}" controls preload="metadata" playsinline></video></div>`
     :`<a class="curso-video-link" href="${au.video}" target="_blank" rel="noopener" onclick="_marcarVideoAssistido('${au.id}')">▶ Assistir vídeo</a>`;
   // Imagens/prints da plataforma (útil pros cursos de CRM/Demandas) — clicáveis
   // pra abrir em tamanho real numa aba nova, sem precisar de lightbox custom.
@@ -3244,6 +3249,19 @@ function renderCursoContent(a,p){
       </div>
     </div>`;
   if(embed && !isDone) _iniciarRastreioVideo(au.id);
+  if(direto && !isDone) _iniciarRastreioVideoNativo(au.id);
+}
+// Mesma lógica de _iniciarRastreioVideo, mas pro <video> nativo do navegador
+// (arquivo hospedado direto, não-YouTube): escuta o evento "ended" do próprio
+// elemento, sem precisar de API externa nenhuma.
+function _iniciarRastreioVideoNativo(auId){
+  const v=document.getElementById('curso-video-native');
+  if(!v) return;
+  v.addEventListener('ended',()=>{
+    _aulasVideoAssistido.add(auId);
+    const btn=document.querySelector('.curso-mark-btn');
+    if(btn){ btn.disabled=false; btn.title=''; }
+  });
 }
 // Marca um vídeo externo (não-YouTube) como "assistido" assim que a pessoa
 // clica pra abrir — é o melhor sinal disponível, já que não dá pra saber se
