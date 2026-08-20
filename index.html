@@ -3104,7 +3104,21 @@ let _cursoAtualId=null, _cursoModIdx=0, _cursoAulaIdx=0, _cursoView='aula';
 // curso. Chave é o id do curso em portal_academy; cursos fora dessa lista
 // continuam com o dourado de sempre (fallback nos var(...) do CSS).
 const _CURSO_TEMAS={
-  '70e68637-e1f0-4f8c-a216-3363c3749ae0':{accent:'#c99f7c',accent2:'#a9cbe0',glow:'rgba(169,203,224,0.14)'}
+  '70e68637-e1f0-4f8c-a216-3363c3749ae0':{accent:'#c99f7c',accent2:'#a9cbe0',glow:'rgba(169,203,224,0.14)'}, // Racismo e Preconceito — pastel azul bebê + marrom
+  '568c1b81-3965-4a5d-b84d-16904b658553':{accent:'#7fa8c9',accent2:'#a9c5dd',glow:'rgba(127,168,201,0.14)'}, // Ética Profissional
+  'e17ca1a4-020f-4e58-ad9c-1dfe266f0250':{accent:'#2fa5a5',accent2:'#6ec9c9',glow:'rgba(47,165,165,0.14)'}, // LGPD
+  'dc5bc46b-4c40-459b-b66c-22eaf04127c6':{accent:'#c9a06b',accent2:'#ddbb8e',glow:'rgba(201,160,107,0.14)'}, // Normas Internas
+  '99e9295d-c25c-4e15-8d27-288e38771833':{accent:'#d9785a',accent2:'#e8a488',glow:'rgba(217,120,90,0.14)'}, // Direitos Humanos
+  '50571e19-1b32-4f7e-854c-8053ae60c317':{accent:'#9c4f6b',accent2:'#c07f97',glow:'rgba(156,79,107,0.14)'}, // Prevenção ao Assédio
+  '8b5a6bb3-196a-471c-a00f-511c662c7afd':{accent:'#5b6fd6',accent2:'#8fa0e8',glow:'rgba(91,111,214,0.14)'}, // CRM Vendedor
+  '0f3697ae-364f-423f-89f1-9e73ebcee97b':{accent:'#5b6fd6',accent2:'#8fa0e8',glow:'rgba(91,111,214,0.14)'}, // CRM Supervisor
+  'e0248050-1aa0-4f5f-b1b7-b66db8856c31':{accent:'#5b6fd6',accent2:'#8fa0e8',glow:'rgba(91,111,214,0.14)'}, // CRM Coordenador
+  '9ec41a42-4030-4fa5-80c1-5a692f6104de':{accent:'#d99a3f',accent2:'#f0c47a',glow:'rgba(217,154,63,0.14)'}, // Demandas GR
+  '711338f2-ec5c-4720-863e-8a97f726dd49':{accent:'#c9a45c',accent2:'#ddc088',glow:'rgba(201,164,92,0.14)'}, // Mercado Financeiro
+  '35a3adc5-c6c9-4ba0-9a0f-e9d5ca035474':{accent:'#3fae6a',accent2:'#7ecb9a',glow:'rgba(63,174,106,0.14)'}, // Excel na Prática
+  '38857e58-be41-4dc9-9e26-72fd3ccc3587':{accent:'#4a86c8',accent2:'#8fb4e0',glow:'rgba(74,134,200,0.14)'}, // Word na Prática
+  '6f72fb3d-5c1e-47aa-b805-ea41f7989cba':{accent:'#2a8f7a',accent2:'#6ec2ac',glow:'rgba(42,143,122,0.14)'}, // Pós-Vendas e Qualidade
+  'dc7176e1-8e5a-4809-a46e-f3e3d7bf986b':{accent:'#c94f4f',accent2:'#e08080',glow:'rgba(201,79,79,0.14)'} // Prevenção a Golpes e Fraudes
 };
 function _aplicarTemaCurso(id){
   const el2=el('page-curso-detalhe');
