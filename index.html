@@ -3930,10 +3930,14 @@ function renderCarreira(){
   el('carr-tempo').textContent=admissao?(anos>0?anos+'a ':'')+meses+'m':'–';
   el('carr-cotas').textContent=allVendas.reduce((s,v)=>s+(v.cotas||0),0);
   el('carr-volume').textContent=fmtBRL(allVendas.reduce((s,v)=>s+(parseFloat(v.valor)||0),0));
-  const certs=allCarreira.filter(c=>c.tipo==='certificado'&&c.concluido);
-  el('carr-certs').textContent=certs.length;
+  // Certificados de verdade vêm de portal_certificados (emitido automaticamente
+  // ao passar numa prova da Academy) — portal_carreira é uma trilha à parte,
+  // de marcos de carreira cadastrados manualmente, e fica sempre vazia se
+  // ninguém preencher; usar ela aqui fazia o card de Certificados mostrar 0
+  // mesmo pra quem já tinha certificados reais emitidos.
+  el('carr-certs').textContent=allCertificados.length;
 
-  // Timeline
+  // Timeline (marcos de carreira, cadastro manual — separado dos certificados)
   el('carr-timeline').innerHTML=allCarreira.length===0
     ?'<div class="empty"><div class="empty-line"></div><div class="empty-text">Nenhuma etapa registrada</div></div>'
     :allCarreira.map(c=>`<div class="ct-item">
@@ -3944,11 +3948,11 @@ function renderCarreira(){
     </div>`).join('');
 
   // Certs list
-  el('carr-certs-list').innerHTML=certs.length===0
+  el('carr-certs-list').innerHTML=allCertificados.length===0
     ?'<div class="empty"><div class="empty-line"></div><div class="empty-text">Nenhum certificado ainda</div></div>'
-    :certs.map(c=>`<div style="padding:12px 0;border-bottom:1px solid var(--border)">
-      <div style="font-family:var(--font-d);font-size:13px;font-weight:700;margin-bottom:3px">${c.titulo}</div>
-      <div style="font-size:11px;color:var(--muted2)">${fmtDate(c.data_conclusao)}</div>
+    :allCertificados.map(c=>`<div style="padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="abrirCertificado('${c.id}')">
+      <div style="font-family:var(--font-d);font-size:13px;font-weight:700;margin-bottom:3px">${c.titulo_curso}</div>
+      <div style="font-size:11px;color:var(--muted2)">${c.nota_pct}% de aproveitamento · ${fmtDate(c.emitido_em)}</div>
     </div>`).join('');
 }
 </script>
@@ -5191,6 +5195,7 @@ async function renderAdmSugestoes(){
           <option value="analisada" ${s.status==='analisada'?'selected':''}>Analisada</option>
           <option value="implementada" ${s.status==='implementada'?'selected':''}>Implementada</option>
         </select>
+        <button class="btn-del" onclick="deletarSugestao('${s.id}')" title="Excluir">✕</button>
       </div>`).join('');
 }
 
@@ -5198,6 +5203,14 @@ async function updateSugStatus(id, status){
   const {error} = await sb.from('portal_sugestoes').update({status}).eq('id',id);
   if(error){ toast('Erro: '+error.message,'err'); return; }
   toast('Status atualizado','ok');
+}
+
+async function deletarSugestao(id){
+  if(!confirm('Excluir esta sugestão? Essa ação não pode ser desfeita.')) return;
+  const {error} = await sb.from('portal_sugestoes').delete().eq('id',id);
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  toast('Sugestão excluída','ok');
+  renderAdmSugestoes();
 }
 
 /* ── Load users when admin loads ── */
