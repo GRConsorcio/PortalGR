@@ -305,6 +305,9 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .curso-content-body ul li{font-size:13px;line-height:1.6;color:var(--text);padding:12px 14px;background:var(--gold-glow);border-left:2px solid var(--gold);border-radius:6px}
 .curso-video{position:relative;padding-top:56.25%;background:#000;border-radius:var(--radius-sm);overflow:hidden;margin-bottom:20px}
 .curso-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.curso-imagens{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.curso-imagens a{display:block;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border2);cursor:zoom-in}
+.curso-imagens img{display:block;width:100%;height:auto}
 .curso-video-link{display:inline-flex;align-items:center;gap:8px;padding:12px 16px;background:var(--s3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--gold2);text-decoration:none;font-size:12.5px;font-weight:600;margin-bottom:20px;transition:border-color .12s}
 .curso-video-link:hover{border-color:var(--gold)}
 .curso-aula-video-ic{flex-shrink:0;opacity:.7}
@@ -332,26 +335,26 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .cert-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
 .cert-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--radius-card);padding:22px;text-align:center;cursor:pointer;transition:border-color .15s}
 .cert-card:hover{border-color:var(--gold-dim)}
-.cert-card-seal{font-size:32px;margin-bottom:10px}
+.cert-card-seal{margin-bottom:10px;color:var(--gold2);display:flex;justify-content:center}
 .cert-card-title{font-family:var(--font-d);font-weight:700;font-size:15px;margin-bottom:6px;line-height:1.3}
 .cert-card-meta{font-size:10.5px;color:var(--muted2)}
 
-/* Certificado imprimível — sempre nas mesmas cores (fundo escuro + dourado),
-   independente do tema do portal, porque é um documento pra imprimir/salvar,
-   não uma tela do app. Rebranding: fundo escuro + moldura dupla dourada +
-   brasão em CSS (sem depender do PNG de 130KB usado só na tela de login —
-   consistente com o .logo-mark leve já usado na sidebar). */
-.cert-print{background:#0b0b0d;color:#f2ede0;border-radius:8px;padding:52px 40px}
-.cert-print-border{border:2px solid #c9a84c;outline:1px solid #c9a84c;outline-offset:8px;padding:46px 32px;text-align:center}
-.cert-print-crest{width:64px;height:64px;margin:0 auto 22px;border-radius:50%;background:linear-gradient(135deg,#d4af37,#f4d97a);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:22px;color:#1a1508;box-shadow:0 4px 18px rgba(212,175,55,.35)}
-.cert-print-kicker{font-family:var(--font-d);font-size:12px;letter-spacing:3px;color:#c9a84c;font-weight:700;margin-bottom:6px;text-transform:uppercase}
-.cert-print-title{font-family:var(--font-d);font-size:26px;letter-spacing:2px;font-weight:800;color:#e9cf7a;margin-bottom:26px;text-transform:uppercase}
-.cert-print-name{font-family:var(--font-d);font-size:36px;font-weight:800;margin-bottom:16px;color:#fff}
-.cert-print-text{font-size:14px;color:#c9c4b6;margin-bottom:6px}
-.cert-print-curso{font-family:var(--font-d);font-size:20px;font-weight:700;color:#e9cf7a;margin:10px 0 18px}
-.cert-print-meta{font-size:11.5px;color:#c9a84c;font-weight:700;letter-spacing:.5px;margin-bottom:22px}
-.cert-print-date{font-size:11px;color:#8f8a7c}
-.cert-print-tagline{font-size:10.5px;letter-spacing:2px;color:#8a6f30;font-weight:700;margin-top:26px;text-transform:uppercase}
+/* Certificado imprimível — sempre nas mesmas cores (fundo branco + letras
+   pretas + moldura dourada), independente do tema do portal, porque é um
+   documento pra imprimir/salvar, não uma tela do app. O brasão usa a logo GR
+   de verdade (o mesmo PNG já embutido na tela de login, referenciado ao vivo
+   via DOM em vez de duplicado no CSS — ver .auth-logo-img em abrirCertificado). */
+.cert-print{background:#ffffff;color:#18140c;border-radius:8px;padding:52px 40px}
+.cert-print-border{border:2px solid #b98a2e;outline:1px solid #b98a2e;outline-offset:8px;padding:46px 32px;text-align:center}
+.cert-print-crest{width:72px;height:auto;margin:0 auto 20px;display:block}
+.cert-print-kicker{font-family:var(--font-d);font-size:12px;letter-spacing:3px;color:#3a352b;font-weight:700;margin-bottom:6px;text-transform:uppercase}
+.cert-print-title{font-family:var(--font-d);font-size:26px;letter-spacing:2px;font-weight:800;color:#18140c;margin-bottom:26px;text-transform:uppercase}
+.cert-print-name{font-family:var(--font-d);font-size:36px;font-weight:800;margin-bottom:16px;color:#18140c}
+.cert-print-text{font-size:14px;color:#3a352b;margin-bottom:6px}
+.cert-print-curso{font-family:var(--font-d);font-size:20px;font-weight:700;color:#18140c;margin:10px 0 18px}
+.cert-print-meta{font-size:11.5px;color:#8a6f30;font-weight:700;letter-spacing:.5px;margin-bottom:22px}
+.cert-print-date{font-size:11px;color:#777}
+.cert-print-tagline{font-size:10.5px;letter-spacing:2px;color:#3a352b;font-weight:700;margin-top:26px;text-transform:uppercase}
 @media print{
   body *{visibility:hidden}
   .cert-print, .cert-print *{visibility:visible}
@@ -1176,11 +1179,19 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     <!-- DASHBOARD -->
     <div class="page on" id="page-dashboard">
       <div class="kpi-grid" id="dash-kpis">
-        <div class="kpi-card"><div class="kpi-label">Cotas este mês</div><div class="kpi-val" id="kpi-cotas">–</div><div class="kpi-sub">Meta: <span id="kpi-meta">–</span></div><div class="kpi-delta up" id="kpi-delta">–</div></div>
-        <div class="kpi-card"><div class="kpi-label">Volume vendido</div><div class="kpi-val gold" id="kpi-volume" style="color:var(--gold2)">–</div><div class="kpi-sub">Mês atual</div></div>
-        <div class="kpi-card"><div class="kpi-label">Nível GR</div><div class="kpi-val" id="kpi-nivel" style="color:var(--gold2)">–</div><div class="kpi-sub" id="kpi-nivel-sub">–</div></div>
-        <div class="kpi-card"><div class="kpi-label">Ranking equipe</div><div class="kpi-val" id="kpi-rank">–</div><div class="kpi-sub" id="kpi-rank-sub">–</div></div>
+        <div class="kpi-card"><div class="kpi-label" id="kpi-cotas-label">Cotas este mês</div><div class="kpi-val" id="kpi-cotas">–</div><div class="kpi-sub" id="kpi-cotas-sub">Meta: <span id="kpi-meta">–</span></div><div class="kpi-delta up" id="kpi-delta">–</div></div>
+        <div class="kpi-card"><div class="kpi-label" id="kpi-volume-label">Volume vendido</div><div class="kpi-val gold" id="kpi-volume" style="color:var(--gold2)">–</div><div class="kpi-sub" id="kpi-volume-sub">Mês atual</div></div>
+        <div class="kpi-card" id="kpi-nivel-card"><div class="kpi-label">Nível GR</div><div class="kpi-val" id="kpi-nivel" style="color:var(--gold2)">–</div><div class="kpi-sub" id="kpi-nivel-sub">–</div></div>
+        <div class="kpi-card" id="kpi-rank-card"><div class="kpi-label">Ranking equipe</div><div class="kpi-val" id="kpi-rank">–</div><div class="kpi-sub" id="kpi-rank-sub">–</div></div>
         <div class="kpi-card" id="kpi-inadim-card" style="display:none"><div class="kpi-label">Inadimplência</div><div class="kpi-val" id="kpi-inadim" style="color:var(--red)">–</div><div class="kpi-sub" id="kpi-inadim-sub">–</div></div>
+      </div>
+      <!-- Coordenador/admin não vendem pessoalmente — em vez das métricas de
+           venda individual, veem pontos acumulados na Academy e certificados
+           concluídos; o desempenho da operação como um todo já vem logo abaixo
+           no painel de gestão (#dash-adm-gestao). -->
+      <div class="kpi-grid" id="dash-kpis-gestao" style="display:none">
+        <div class="kpi-card"><div class="kpi-label">Pontos GR Nível</div><div class="kpi-val gold" id="kpi-gestao-pontos" style="color:var(--gold2)">–</div><div class="kpi-sub">Acumulados</div></div>
+        <div class="kpi-card"><div class="kpi-label">Certificados Academy</div><div class="kpi-val" id="kpi-gestao-certs">–</div><div class="kpi-sub">Cursos concluídos</div></div>
       </div>
       <div style="height:16px"></div>
 
@@ -1192,7 +1203,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
       <div class="grid-2">
         <!-- Meta mensal -->
-        <div class="panel">
+        <div class="panel" id="meta-mensal-panel">
           <div class="panel-head"><div class="panel-title">Meta Mensal</div></div>
           <div class="panel-body">
             <div style="display:flex;justify-content:space-between;margin-bottom:10px">
@@ -1216,7 +1227,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         </div>
       </div>
 
-      <!-- Visão geral de gestão (só admin) -->
+      <!-- Visão geral de gestão (admin e coordenador) -->
       <div id="dash-adm-gestao" style="display:none">
         <div style="height:16px"></div>
         <div class="panel-head" style="padding:0 0 10px"><div class="panel-title">Visão Geral (Gestão)</div></div>
@@ -1268,6 +1279,10 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       <div class="panel">
         <div class="panel-head"><div class="panel-title">Como ganhar pontos</div></div>
         <div class="panel-body">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--s2);border:1px solid var(--gold-dim);border-radius:10px;padding:14px 18px;margin-bottom:14px">
+            <div style="font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em">Meus pontos</div>
+            <div id="meus-pontos-val" style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--gold2)">0</div>
+          </div>
           <div style="display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:var(--text)">
             <span style="font-size:17px">🛍️</span>
             <span>Seus pontos podem ser trocados por prêmios na <strong style="color:var(--gold2)">GR Store</strong>.</span>
@@ -1964,6 +1979,7 @@ async function initApp(user){
 const CRM_SUPA_URL='https://prquggwhjcvenzuziaox.supabase.co';
 const CRM_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBycXVnZ3doamN2ZW56dXppYW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMTUzMDUsImV4cCI6MjA5Mzc5MTMwNX0.vjbVhGIUowS6AGE1Uf5uDutCMI193mhgra3GSwlqMec';
 const CRM_RESUMO_SECRET='pgr_resumo_a71f9c3e5b8d2467a0f1c9e3b6d8f452a17c9e04';
+const CRM_NOME_SECRET='pgr_nome_3b8f1a9c7e2d5601a4c8f2e9b7d3a650f1c8e9a2';
 async function fetchCrmResumo(email){
   if(!email){ _crmResumo=null; return; }
   try{
@@ -2308,6 +2324,88 @@ function renderSidebar(){
 
 /* ═══ DASHBOARD ═══ */
 function renderDashboard(){
+  // Admin e coordenador não vendem pessoalmente — cotas/volume/nível/ranking
+  // individuais não fazem sentido pra eles (por isso apareciam zerados/"Não
+  // Classificado"). Em vez disso veem pontos da Academy + o painel de gestão
+  // (vendas da equipe toda, inadimplência, crédito). Supervisor também não é
+  // vendedor, mas gerencia um time real no CRM — pra ele, as duas primeiras
+  // métricas viram "da equipe" (soma de fetchCrmResumoEquipe filtrado pela
+  // equipe dele, mesmo padrão de myTeamScope()) em vez de sumir de vez.
+  const souGestor=isAdmin()||isCoord();
+  const souSup=isSup()&&!souGestor;
+  el('dash-kpis').style.display=souGestor?'none':'';
+  el('dash-kpis-gestao').style.display=souGestor?'':'none';
+  // Meta Mensal é uma meta pessoal de venda (allMetas é por vendedor) — não
+  // faz sentido pra quem não vende pessoalmente, então some pros dois casos.
+  el('meta-mensal-panel').style.display=(souGestor||souSup)?'none':'';
+
+  if(souGestor){
+    el('kpi-gestao-pontos').textContent=(CUP?.pontos||0).toLocaleString('pt-BR');
+    el('kpi-gestao-certs').textContent=allCertificados.length;
+    el('dash-adm-gestao').style.display='';
+    renderDashboardAdminGestao();
+  } else {
+    el('dash-adm-gestao').style.display='none';
+    _renderDashKpisVendaOuEquipe();
+  }
+
+  // Avisos e campanha continuam iguais pra todo mundo — não dependem de venda
+  // pessoal, então não entram na separação acima.
+
+  // Avisos
+  el('avisos-list').innerHTML=allAvisos.length===0
+    ?'<div class="empty"><div class="empty-line"></div><div class="empty-text">Nenhum aviso no momento</div></div>'
+    :allAvisos.map(a=>`<div style="padding:12px 0;border-bottom:1px solid var(--border);font-size:12.5px"><div style="font-weight:600;margin-bottom:2px">${a.titulo}</div><div style="color:var(--muted2);font-size:11.5px">${a.conteudo||''}</div><div style="font-size:10px;color:var(--muted);margin-top:4px">${fmtDate(a.criado_em)}</div></div>`).join('');
+
+  // Campanha destaque
+  const campAtiva=allCampanhas.find(c=>c.status==='ativa');
+  el('dash-campanha').innerHTML=campAtiva
+    ?`<div class="camp-title" style="font-size:14px">${campAtiva.titulo}</div><div class="camp-dates" style="margin-bottom:8px">Até ${fmtDate(campAtiva.data_fim)}</div><div class="camp-prize-val">${fmtBRL(campAtiva.premio_valor)}</div><div class="camp-bar"><div class="camp-bar-fill" style="width:${campAtiva.progresso_pct||40}%"></div></div>`
+    :'<div class="empty"><div class="empty-line"></div><div class="empty-text">Nenhuma campanha ativa</div></div>';
+}
+
+// Preenche os 4 cards de #dash-kpis pra quem não é gestor (admin/coordenador):
+// vendedor vê as próprias cotas/volume/nível/ranking (como sempre); supervisor
+// vê cotas/volume somados da própria equipe (mesmo texto de myTeamScope() —
+// compara portal_users.equipe com o campo "equipe" que fetchCrmResumoEquipe()
+// já traz por vendedor) e não vê nível/ranking individual, que não existe pra
+// quem não vende.
+let _supKpisCarregando=false;
+async function _renderDashKpisVendaOuEquipe(){
+  const souSup=isSup()&&!isAdminOrCoord();
+  el('kpi-nivel-card').style.display=souSup?'none':'';
+  el('kpi-rank-card').style.display=souSup?'none':'';
+
+  if(souSup){
+    el('kpi-cotas-label').textContent='Cotas da equipe';
+    el('kpi-volume-label').textContent='Volume da equipe';
+    el('kpi-cotas-sub').style.display='none';
+    el('kpi-delta').style.display='none';
+    el('kpi-volume-sub').textContent='Mês atual';
+    if(_supKpisCarregando) return;
+    _supKpisCarregando=true;
+    try{
+      const resumo=await fetchCrmResumoEquipe();
+      const minhaEquipe=(CUP?.equipe||'').trim().toLowerCase();
+      const vs=(resumo?.vendedores||[]).filter(v=>(v.equipe||'').trim().toLowerCase()===minhaEquipe);
+      el('kpi-cotas').textContent=vs.reduce((s,v)=>s+(v.cotas_mes||0),0);
+      el('kpi-volume').textContent=fmtBRL(vs.reduce((s,v)=>s+(parseFloat(v.volume_mes)||0),0));
+      el('kpi-volume').style.color='var(--gold2)';
+    }catch(e){
+      console.warn('[_renderDashKpisVendaOuEquipe] erro ao buscar resumo da equipe:',e.message);
+      el('kpi-cotas').textContent='–';
+      el('kpi-volume').textContent='–';
+    } finally{
+      _supKpisCarregando=false;
+    }
+    return;
+  }
+
+  // Vendedor — comportamento original, métricas pessoais.
+  el('kpi-cotas-label').textContent='Cotas este mês';
+  el('kpi-volume-label').textContent='Volume vendido';
+  el('kpi-cotas-sub').style.display='';
+  el('kpi-delta').style.display='';
   const mesAtual=new Date().toISOString().slice(0,7);
   const {cotas,volume}=getMesAtualStats();
   const meta=allMetas.find(m=>m.referencia===mesAtual);
@@ -2338,29 +2436,10 @@ function renderDashboard(){
     el('kpi-inadim-card').style.display='none';
   }
 
-  // Visão de gestão — só admin
-  if(isAdmin()){
-    el('dash-adm-gestao').style.display='';
-    renderDashboardAdminGestao();
-  } else {
-    el('dash-adm-gestao').style.display='none';
-  }
-
   el('meta-pct').textContent=pct+'%';
   el('meta-bar').style.width=pct+'%';
   el('meta-realizado').textContent=cotas+' cotas';
   el('meta-total').textContent=metaCotas+' cotas';
-
-  // Avisos
-  el('avisos-list').innerHTML=allAvisos.length===0
-    ?'<div class="empty"><div class="empty-line"></div><div class="empty-text">Nenhum aviso no momento</div></div>'
-    :allAvisos.map(a=>`<div style="padding:12px 0;border-bottom:1px solid var(--border);font-size:12.5px"><div style="font-weight:600;margin-bottom:2px">${a.titulo}</div><div style="color:var(--muted2);font-size:11.5px">${a.conteudo||''}</div><div style="font-size:10px;color:var(--muted);margin-top:4px">${fmtDate(a.criado_em)}</div></div>`).join('');
-
-  // Campanha destaque
-  const campAtiva=allCampanhas.find(c=>c.status==='ativa');
-  el('dash-campanha').innerHTML=campAtiva
-    ?`<div class="camp-title" style="font-size:14px">${campAtiva.titulo}</div><div class="camp-dates" style="margin-bottom:8px">Até ${fmtDate(campAtiva.data_fim)}</div><div class="camp-prize-val">${fmtBRL(campAtiva.premio_valor)}</div><div class="camp-bar"><div class="camp-bar-fill" style="width:${campAtiva.progresso_pct||40}%"></div></div>`
-    :'<div class="empty"><div class="empty-line"></div><div class="empty-text">Nenhuma campanha ativa</div></div>';
 }
 
 // Painel de gestão do admin: vendas totais da equipe (CRM) + inadimplência
@@ -2446,6 +2525,8 @@ function renderNiveis(){
   }).join('');
 
   el('pontos-rules').innerHTML=PONTOS_RULES.map(r=>`<tr><td>${r.acao}</td><td style="color:var(--gold2);font-family:var(--font-d);font-weight:700">+${r.pts}</td><td style="color:var(--muted2);font-size:11px">${r.limite}</td></tr>`).join('');
+  const pontosEl=el('meus-pontos-val');
+  if(pontosEl) pontosEl.textContent=(CUP?.pontos||0).toLocaleString('pt-BR');
 }
 
 /* ═══ PERFORMANCE ═══ */
@@ -2759,7 +2840,8 @@ function renderAcademy(cat){
       const p=isCurso?progressoCurso(a):null;
       return `<div class="acad-card" onclick="openAcad('${a.id}')">
       <div class="acad-thumb">
-        <div class="acad-play"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><polygon points="3,1 13,7 3,13"/></svg></div>
+        ${a.thumbnail_url?`<img src="${a.thumbnail_url}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`:''}
+        <div class="acad-play" style="position:relative"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><polygon points="3,1 13,7 3,13"/></svg></div>
         <span class="acad-thumb-label ${isCurso?'acad-label-video':(typeCls[a.tipo]||'acad-label-doc')}">${isCurso?'CURSO':(typeLabel[a.tipo]||a.tipo?.toUpperCase())}</span>
       </div>
       <div class="acad-info">
@@ -2851,6 +2933,7 @@ function renderCursoSidebar(a,p){
           <span class="curso-aula-check"><svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#08160F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <span class="curso-aula-title">${au.titulo}</span>
           ${au.video?'<span class="curso-aula-video-ic" title="Tem vídeo">🎥</span>':''}
+          ${(au.imagens||[]).length?'<span class="curso-aula-video-ic" title="Tem imagens">🖼️</span>':''}
         </div>`;
       }).join('')}`;
   }).join('');
@@ -2886,6 +2969,9 @@ function renderCursoContent(a,p){
   const videoHtml=!au.video?'':embed
     ?`<div class="curso-video"><iframe src="${embed}" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>`
     :`<a class="curso-video-link" href="${au.video}" target="_blank" rel="noopener">▶ Assistir vídeo</a>`;
+  // Imagens/prints da plataforma (útil pros cursos de CRM/Demandas) — clicáveis
+  // pra abrir em tamanho real numa aba nova, sem precisar de lightbox custom.
+  const imagensHtml=(au.imagens||[]).length===0?'':`<div class="curso-imagens">${au.imagens.map(u=>`<a href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="Imagem da aula" loading="lazy"></a>`).join('')}</div>`;
   // navegação sequencial (anterior/próxima) atravessando os módulos, como se
   // o curso inteiro fosse uma lista única de aulas
   const flat=[]; (a.modulos||[]).forEach((mm,mi)=>(mm.aulas||[]).forEach((aa,ai)=>flat.push({mi,ai})));
@@ -2895,6 +2981,7 @@ function renderCursoContent(a,p){
     <div class="curso-content-eyebrow">${m.titulo}</div>
     <div class="curso-content-title">${au.titulo}</div>
     ${videoHtml}
+    ${imagensHtml}
     <div class="curso-content-body">${corpoHtml}</div>
     <div class="curso-content-foot">
       <button class="curso-mark-btn ${isDone?'done':''}" onclick="toggleAulaConcluida()">${isDone?'✓ Aula concluída':'Marcar como concluída'}</button>
@@ -2965,6 +3052,11 @@ async function submeterProva(){
       respostas.push({questao_id:q.id, resposta:checked.value});
     }
   }
+  // Guardado ANTES do upsert pra saber se esse certificado é novo (1ª aprovação
+  // nesse curso) ou só uma repetição de prova já aprovada antes — os pontos de
+  // "Certificado Academy" (regra em PONTOS_RULES) só valem uma vez por curso,
+  // não a cada vez que alguém refaz a prova.
+  const jaTinhaCertificado=allCertificados.some(c=>c.academy_id===a.id);
   const payload={user_id:CU.id, academy_id:a.id, respostas};
   const{data,error}=await sb.from('portal_prova_respostas').upsert(payload,{onConflict:'user_id,academy_id'}).select().maybeSingle();
   if(error){ toast('Erro ao enviar prova: '+error.message,'err'); return; }
@@ -2976,8 +3068,28 @@ async function submeterProva(){
   // Recarrega certificados pra já refletir na hora.
   const{data:certs}=await sb.from('portal_certificados').select('*').eq('user_id',CU.id).order('emitido_em',{ascending:false});
   if(certs) allCertificados=certs;
-  toast(data.aprovado?`Aprovado com ${data.nota_pct}%! Certificado emitido.`:`Nota: ${data.nota_pct}% — não atingiu os 70%.`, data.aprovado?'ok':'err');
+  let msg=data.aprovado?`Aprovado com ${data.nota_pct}%! Certificado emitido.`:`Nota: ${data.nota_pct}% — não atingiu os 70%.`;
+  if(data.aprovado && !jaTinhaCertificado){
+    const ptsGanhos=await _ganharPontos(25);
+    if(ptsGanhos!=null) msg+=` +25 pontos GR Nível.`;
+  }
+  toast(msg, data.aprovado?'ok':'err');
   renderCurso();
+}
+// Soma pontos ao perfil do usuário logado (regra "Certificado Academy" de
+// PONTOS_RULES) — busca o valor atual no banco antes de somar (em vez de usar
+// só o CUP em memória) pra não perder pontos ganhos em outra aba/sessão.
+async function _ganharPontos(qtd){
+  try{
+    const{data:atual}=await sb.from('portal_users').select('pontos').eq('user_id',CU.id).maybeSingle();
+    const novoTotal=(atual?.pontos||0)+qtd;
+    const{error}=await sb.from('portal_users').update({pontos:novoTotal}).eq('user_id',CU.id);
+    if(error){ console.warn('[_ganharPontos] erro ao salvar pontos:',error.message); return null; }
+    if(CUP) CUP.pontos=novoTotal;
+    const pontosEl=el('meus-pontos-val');
+    if(pontosEl) pontosEl.textContent=novoTotal.toLocaleString('pt-BR');
+    return novoTotal;
+  }catch(e){ console.warn('[_ganharPontos] erro:',e.message); return null; }
 }
 async function toggleAulaConcluida(){
   const a=allAcademy.find(x=>x.id===_cursoAtualId);
@@ -3288,23 +3400,53 @@ function renderCertificados(){
   el('cert-grid').innerHTML = allCertificados.length===0
     ? '<div class="empty" style="grid-column:1/-1"><div class="empty-line"></div><div class="empty-text">Nenhum certificado ainda — conclua um curso da Academy e passe na prova pra desbloquear</div></div>'
     : allCertificados.map(c=>`<div class="cert-card" onclick="abrirCertificado('${c.id}')">
-        <div class="cert-card-seal">🏅</div>
+        <div class="cert-card-seal"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><circle cx="9.5" cy="12.2" r="2"/><path d="M8 17.5c.4-1.4 1.5-2.1 3-2.1"/><path d="M13 11h4M13 14h4"/></svg></div>
         <div class="cert-card-title">${c.titulo_curso}</div>
         <div class="cert-card-meta">${c.nota_pct}% de aproveitamento · ${fmtDate(c.emitido_em)}</div>
       </div>`).join('');
 }
-function abrirCertificado(id){
+// Nome completo (nome + sobrenome) pro certificado. Se o cadastro do Portal
+// não tiver sobrenome (só uma palavra), busca o nome no CRM (projeto Supabase
+// separado) pelo e-mail — mesmo padrão de RPC com segredo compartilhado já
+// usado em fetchCrmResumo/fetchCrmResumoEquipe, só que devolvendo nome em vez
+// de números de venda. Se o CRM também não tiver nada melhor, fica com o que
+// já tinha (nunca deixa o certificado sem nome).
+async function _nomeCompletoParaCertificado(){
+  const nomePortal=(CUP?.nome||'').trim();
+  if(nomePortal.includes(' ')) return nomePortal;
+  const email=CUP?.email||CU?.email;
+  if(email){
+    try{
+      const resp=await fetch(CRM_SUPA_URL+'/rest/v1/rpc/portal_nome_vendedor',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':CRM_ANON_KEY,'Authorization':'Bearer '+CRM_ANON_KEY},
+        body:JSON.stringify({p_email:email,p_secret:CRM_NOME_SECRET})
+      });
+      const data=await resp.json();
+      const nomeCrm=(data?.name||'').trim();
+      if(nomeCrm.includes(' ')) return nomeCrm;
+      if(nomeCrm && !nomePortal) return nomeCrm;
+    }catch(e){ console.warn('[_nomeCompletoParaCertificado] erro ao buscar no CRM:',e.message); }
+  }
+  return nomePortal||CU?.email||'Colaborador(a)';
+}
+async function abrirCertificado(id){
   const c=allCertificados.find(x=>x.id===id);
   if(!c) return;
-  const nome=CUP?.nome||CU?.email||'Colaborador(a)';
+  const nome=await _nomeCompletoParaCertificado();
   const curso=allAcademy.find(a=>a.id===c.academy_id);
+  // Reaproveita a logo GR de verdade já embutida na tela de login (mesmo PNG,
+  // sem duplicar mais de 100KB de base64 dentro do JS) — o <img> de login
+  // continua no DOM (só fica display:none após o login), então dá pra ler o
+  // src dele em vez de guardar uma segunda cópia da imagem.
+  const logoSrc=document.querySelector('.auth-logo-img')?.src||'';
   const modal=document.createElement('div');
   modal.className='modal-bg on';
   modal.innerHTML=`
     <div class="modal" style="width:820px;max-width:96vw;padding:0;background:transparent;box-shadow:none">
       <div class="cert-print">
         <div class="cert-print-border">
-          <div class="cert-print-crest">GR</div>
+          ${logoSrc?`<img class="cert-print-crest" src="${logoSrc}" alt="GR Consórcio">`:''}
           <div class="cert-print-kicker">GR Consórcio</div>
           <div class="cert-print-title">Certificado de Conclusão</div>
           <div class="cert-print-name">${nome}</div>
@@ -3667,6 +3809,18 @@ function buildAdmForm(type, d={}){
 
     case 'academy': return `
       ${inp('titulo','Título',d.titulo)}
+      <div class="adm-field">
+        <label class="adm-label">Capa do curso (opcional)</label>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <div class="timeline-photo" id="academy-capa-preview" style="width:70px;height:44px;border-radius:6px">${d.thumbnail_url?`<img src="${d.thumbnail_url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:6px">`:''}</div>
+          <div style="flex:1">
+            <input type="file" id="academy-capa-file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none" onchange="handleAcademyCapaUpload(event)">
+            <button type="button" class="btn-outline" style="font-size:11px" onclick="document.getElementById('academy-capa-file').click()">🖼️ Enviar capa</button>
+            <span id="academy-capa-status" style="font-size:10px;color:var(--muted2);margin-left:8px"></span>
+          </div>
+        </div>
+        <input class="adm-input" id="af-thumbnail_url" value="${d.thumbnail_url||''}" placeholder="ou cole uma URL de imagem..." style="font-size:11px">
+      </div>
       ${g2(sel('tipo','Tipo',[{v:'video',l:'Vídeo'},{v:'live',l:'Live'},{v:'material',l:'Material'}],d.tipo),
            inp('duracao','Duração',d.duracao,'text','Ex: 32 min'))}
       ${inp('categoria','Tema (vira aba de filtro na Academy — ex: "Compliance & Ética")',d.categoria)}
@@ -3677,8 +3831,13 @@ function buildAdmForm(type, d={}){
            inp('cert_tagline','Selo do certificado (opcional — ex: "PARE • DESCONFIE • CONFIRME")',d.cert_tagline))}
       <div class="adm-field">
         <label class="adm-label">Módulos e aulas (opcional — transforma este item num curso com barra de progresso)</label>
-        <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;line-height:1.5">Linha começando com <b>##</b> = novo módulo. Linha começando com <b>###</b> = nova aula dentro do módulo atual. Linhas em branco separam parágrafos. Comece uma linha com <b>%%</b> pra virar lista de tópicos (bom pra "Resumo") em vez de parágrafos. Linha <b>video: URL</b> logo abaixo do título da aula adiciona um vídeo a ela (link do YouTube toca embutido na página; qualquer outro link vira um botão "Assistir vídeo").</div>
-        <textarea class="adm-textarea" id="af-modulos_texto" rows="12" style="font-family:monospace;font-size:11.5px" placeholder="## Módulo 1 — Introdução&#10;### O que é isso?&#10;video: https://youtube.com/watch?v=...&#10;&#10;Primeiro parágrafo da aula.&#10;&#10;Segundo parágrafo.&#10;&#10;### Outra aula&#10;%%&#10;Tópico 1 em formato de lista&#10;Tópico 2 em formato de lista">${modulosParaTexto(d.modulos)}</textarea>
+        <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;line-height:1.5">Linha começando com <b>##</b> = novo módulo. Linha começando com <b>###</b> = nova aula dentro do módulo atual. Linhas em branco separam parágrafos. Comece uma linha com <b>%%</b> pra virar lista de tópicos (bom pra "Resumo") em vez de parágrafos. Linha <b>video: URL</b> logo abaixo do título da aula adiciona um vídeo a ela (link do YouTube toca embutido na página; qualquer outro link vira um botão "Assistir vídeo"). Linha <b>imagem: URL</b> (pode repetir várias vezes na mesma aula) adiciona print(s) — bom pra cursos de CRM/Demandas mostrarem a tela real do sistema.</div>
+        <div style="margin-bottom:6px">
+          <input type="file" id="academy-aula-img-file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none" onchange="handleAcademyAulaImgUpload(event)">
+          <button type="button" class="btn-outline" style="font-size:11px" onclick="document.getElementById('academy-aula-img-file').click()">🖼️ Enviar print/imagem</button>
+          <span id="academy-aula-img-status" style="font-size:10px;color:var(--muted2);margin-left:8px">Envia e copia a linha "imagem: URL" — cole ela dentro da aula certa no texto abaixo.</span>
+        </div>
+        <textarea class="adm-textarea" id="af-modulos_texto" rows="12" style="font-family:monospace;font-size:11.5px" placeholder="## Módulo 1 — Introdução&#10;### O que é isso?&#10;video: https://youtube.com/watch?v=...&#10;imagem: https://.../tela1.png&#10;&#10;Primeiro parágrafo da aula.&#10;&#10;Segundo parágrafo.&#10;&#10;### Outra aula&#10;%%&#10;Tópico 1 em formato de lista&#10;Tópico 2 em formato de lista">${modulosParaTexto(d.modulos)}</textarea>
       </div>
       <div class="adm-field">
         <label class="adm-label">Prova (obrigatória pra emitir certificado — deixe em branco pra não exigir prova)</label>
@@ -3875,7 +4034,7 @@ async function saveAdmModal(){
     case 'academy':{
       const academyAntigo = editId ? allAcademy.find(x=>x.id===editId) : null;
       payload = { titulo:av('titulo'), tipo:asel('tipo'), duracao:av('duracao'), categoria:av('categoria')||null,
-        url:av('url'), instrutor:av('instrutor'), descricao:av('descricao'),
+        url:av('url'), instrutor:av('instrutor'), descricao:av('descricao'), thumbnail_url:av('thumbnail_url')||null,
         tem_certificado: asel('tem_certificado')==='true', cert_tagline:av('cert_tagline')||null,
         modulos: parseModulosTexto(av('modulos_texto'), academyAntigo?.modulos),
         prova: parseProvaTexto(av('prova_texto'), academyAntigo?.prova) };
@@ -4200,6 +4359,11 @@ function parseModulosTexto(texto, modulosAntigos){
       modoLista=true;
     } else if(/^video\s*:/i.test(linha)){
       if(aulaAtual) aulaAtual.video=linha.replace(/^video\s*:/i,'').trim()||null;
+    } else if(/^imagem\s*:/i.test(linha)){
+      // Aceita mais de uma linha "imagem:" na mesma aula — útil pra cursos de
+      // sistema (CRM/Demandas) mostrarem várias telas/passos em sequência.
+      const url=linha.replace(/^imagem\s*:/i,'').trim();
+      if(aulaAtual&&url){ aulaAtual.imagens=aulaAtual.imagens||[]; aulaAtual.imagens.push(url); }
     } else if(!linha){
       flushPar();
     } else {
@@ -4213,7 +4377,8 @@ function modulosParaTexto(modulos){
   return (modulos||[]).map(m=>
     [`## ${m.titulo}`, ...(m.aulas||[]).map(a=>{
       const corpo = a.tipo==='lista' ? ['%%', ...(a.corpo||[])].join('\n') : (a.corpo||[]).join('\n\n');
-      const cabecalho = a.video ? `### ${a.titulo}\nvideo: ${a.video}\n` : `### ${a.titulo}`;
+      const linhasExtra=[a.video?`video: ${a.video}`:null, ...(a.imagens||[]).map(u=>`imagem: ${u}`)].filter(Boolean);
+      const cabecalho = linhasExtra.length ? `### ${a.titulo}\n${linhasExtra.join('\n')}\n` : `### ${a.titulo}`;
       return `${cabecalho}\n${corpo}`;
     })].join('\n\n')
   ).join('\n\n');
@@ -4997,6 +5162,46 @@ async function handleDestaquePhotoUpload(e){
   statusEl.textContent = 'Enviando...'; statusEl.style.color = 'var(--muted2)';
   const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
   const path = `destaques/${Date.now()}.${ext}`;
+  const {error} = await sb.storage.from('portal-uploads').upload(path, file, {upsert:true});
+  if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast('Erro ao enviar imagem: '+error.message,'err'); return; }
+  const {data} = sb.storage.from('portal-uploads').getPublicUrl(path);
+  urlInput.value = data.publicUrl;
+  statusEl.textContent = 'Enviada ✓'; statusEl.style.color = 'var(--green2)';
+}
+
+// Upload de print/imagem pra dentro de uma aula — diferente da capa, não dá
+// pra saber em qual aula do textarea o admin quer a imagem (é tudo um texto
+// só), então só faz o upload e devolve a linha "imagem: URL" pronta pra colar
+// no lugar certo (copia pra área de transferência quando possível).
+async function handleAcademyAulaImgUpload(e){
+  const file = e.target.files?.[0];
+  if(!file) return;
+  const statusEl = document.getElementById('academy-aula-img-status');
+  if(file.size > 5*1024*1024){ toast('Imagem muito grande (máx. 5MB)','err'); e.target.value=''; return; }
+  statusEl.textContent = 'Enviando...'; statusEl.style.color = 'var(--muted2)';
+  const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+  const path = `academy/aulas/${Date.now()}.${ext}`;
+  const {error} = await sb.storage.from('portal-uploads').upload(path, file, {upsert:true});
+  if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast('Erro ao enviar imagem: '+error.message,'err'); return; }
+  const {data} = sb.storage.from('portal-uploads').getPublicUrl(path);
+  const linha=`imagem: ${data.publicUrl}`;
+  try{ await navigator.clipboard.writeText(linha); statusEl.textContent='Enviada ✓ — linha copiada, cole na aula certa'; }
+  catch{ statusEl.textContent='Enviada ✓ — copie: '+linha; }
+  statusEl.style.color = 'var(--green2)';
+  e.target.value='';
+}
+
+async function handleAcademyCapaUpload(e){
+  const file = e.target.files?.[0];
+  if(!file) return;
+  const statusEl = document.getElementById('academy-capa-status');
+  const preview = document.getElementById('academy-capa-preview');
+  const urlInput = document.getElementById('af-thumbnail_url');
+  if(file.size > 5*1024*1024){ toast('Imagem muito grande (máx. 5MB)','err'); e.target.value=''; return; }
+  preview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:6px">`;
+  statusEl.textContent = 'Enviando...'; statusEl.style.color = 'var(--muted2)';
+  const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+  const path = `academy/capas/${Date.now()}.${ext}`;
   const {error} = await sb.storage.from('portal-uploads').upload(path, file, {upsert:true});
   if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast('Erro ao enviar imagem: '+error.message,'err'); return; }
   const {data} = sb.storage.from('portal-uploads').getPublicUrl(path);
