@@ -4507,14 +4507,22 @@ let _pendingObrigatorios=[];
 // sem filtrar nivel/app na query) e separa em memória — mais barato que duas
 // idas ao banco pra decidir bloqueio + visibilidade.
 let _academyOcultos=new Set();
-async function checkCursosObrigatorios(){
+// BUGFIX: num hard-reload (Ctrl+Shift+R) as conexões são "frias" (sem cache
+// de DNS/TLS/conexão mantida viva), então essas 3 consultas em paralelo às
+// vezes falham/timeoutam só na primeira tentativa — antes isso era engolido
+// pelo catch em silêncio e a tela obrigatória nunca aparecia até a pessoa
+// recarregar de novo (dessa vez com conexão já "quente"). Agora tenta de novo
+// automaticamente uma vez antes de desistir, e reforça com uma segunda
+// checagem 4s depois do load — sem custo real (são 3 queries pequenas).
+async function checkCursosObrigatorios(tentativa){
   if(!CU?.id) return;
   try{
-    const [{data:regras},{data:isentos},{data:aprovadas}]=await Promise.all([
+    const [{data:regras,error:e1},{data:isentos,error:e2},{data:aprovadas,error:e3}]=await Promise.all([
       sb.from('portal_academy_obrigatorio').select('*').eq('ativo',true),
       sb.from('portal_academy_obrigatorio_isento').select('*').eq('user_id',CU.id),
       sb.from('portal_prova_respostas').select('academy_id,aprovado').eq('user_id',CU.id).eq('aprovado',true),
     ]);
+    if(e1||e2||e3) throw new Error((e1||e2||e3).message);
     const meuCargo=(CUP?.cargo||'').toLowerCase().trim();
     const isentoIds=new Set((isentos||[]).map(i=>i.obrigatorio_id));
     const aprovadasIds=new Set((aprovadas||[]).map(a=>a.academy_id));
@@ -4528,7 +4536,10 @@ async function checkCursosObrigatorios(){
     // roda em paralelo com o resto do load), atualiza pra não deixar curso
     // oculto piscando na tela até a próxima navegação.
     if(_currentPage==='academy'){ renderAcademyTabs(); renderAcademy(_acadCategoriaAtiva); }
-  }catch(e){ console.warn('[checkCursosObrigatorios] erro:',e.message); }
+  }catch(e){
+    console.warn('[checkCursosObrigatorios] erro:',e.message,'— tentativa',tentativa||1);
+    if(!tentativa) setTimeout(()=>checkCursosObrigatorios(2),2500);
+  }
 }
 function _renderTelaObrigatoria(){
   const wrap=el('tela-obrigatoria');
@@ -5103,6 +5114,9 @@ window.loadAll = async function(){
     _admAllUsers = data||[];
   }
   checkCursosObrigatorios();
+  // Segunda checagem de segurança, um pouco depois — cobre qualquer corrida
+  // sutil (ex: CUP ainda não populado no primeiro run) sem custo perceptível.
+  setTimeout(()=>checkCursosObrigatorios(),4000);
 }
 </script>
 <script>
