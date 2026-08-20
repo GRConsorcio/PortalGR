@@ -105,8 +105,15 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
    svg, sem span próprio) some sozinho por estourar a largura com overflow
    escondido — evita precisar envolver cada nav-item existente numa span nova. */
 html.sidebar-mini{--sidebar-w:64px}
-html.sidebar-mini .nav-item{overflow:hidden;white-space:nowrap;justify-content:center;gap:0}
-html.sidebar-mini .nav-sect{overflow:hidden;white-space:nowrap;text-indent:-999px}
+/* font-size:0 zera o texto solto (não tem span próprio) sem afetar o ícone —
+   .nav-icon tem width/height fixos em px, não em em, então não encolhe junto.
+   overflow:hidden/white-space:nowrap sozinhos deixavam pedaço de texto
+   vazando (ficava ilegível, tipo "Dashbc") porque o texto solto ao lado de
+   um ícone flex não recebe o corte de forma confiável em todo navegador. */
+html.sidebar-mini .nav-item{font-size:0;justify-content:center;gap:0;padding-left:0;padding-right:0}
+html.sidebar-mini .nav-sect{font-size:0;padding-left:0;padding-right:0}
+html.sidebar-mini .sidebar-user{padding-left:8px;padding-right:8px;justify-content:center}
+html.sidebar-mini .sidebar-user>div:not(.su-av),html.sidebar-mini .su-logout{display:none}
 html.sidebar-mini .logo-text,html.sidebar-mini .sidebar-level{display:none}
 html.sidebar-mini .logo-wrap{justify-content:center;padding-left:8px;padding-right:8px}
 html.sidebar-mini .nav-badge{display:none}
@@ -2355,11 +2362,19 @@ function toggleCursoSidebar(){
 }
 
 /* ═══ ROLE HELPERS ═══ */
-function isAdmin(){ 
+function isAdmin(){
   const cargo = (CUP?.cargo||'').toLowerCase().trim();
-  return ['admin','administrador'].includes(cargo); 
+  return ['admin','administrador'].includes(cargo);
 }
-function isCoord(){ 
+// Cargo administrativo = colaborador de back-office (RH, financeiro etc.) que
+// não vende e não gerencia equipe de vendas — não é "administrador" (isAdmin
+// é o admin do sistema). Só vê o próprio progresso na Academy (pontos,
+// certificados), nunca cotas/vendas/gestão de equipe.
+function isAdministrativo(){
+  const cargo = (CUP?.cargo||'').toLowerCase().trim();
+  return cargo==='administrativo';
+}
+function isCoord(){
   const cargo = (CUP?.cargo||'').toLowerCase().trim();
   return ['coordenador','coordinador'].includes(cargo); 
 }
@@ -2395,15 +2410,20 @@ function renderNav(){
       adminSection.style.display='none';
     }
   }
+  // Administrativo não vende nem gerencia equipe — some com as telas de
+  // vendas/cotas individuais, ele só usa a Academy/Certificados/pontos.
+  const souAdm=isAdministrativo();
+  document.querySelector('.nav-item[data-page="performance"]')?.style.setProperty('display',souAdm?'none':'');
+  document.querySelector('.nav-item[data-page="niveis"]')?.style.setProperty('display',souAdm?'none':'');
   // Add admin badge to topbar if admin
   const badge = el('topbar-role-badge');
   if(badge){
     const cargo = CUP?.cargo||'Vendedor';
-    const colors = {admin:'var(--gold)',coordenador:'var(--violet2)',supervisor:'var(--green2)'};
+    const colors = {admin:'var(--gold)',coordenador:'var(--violet2)',supervisor:'var(--green2)',administrativo:'var(--diamond)'};
     const key = cargo.toLowerCase();
     badge.textContent = cargo.toUpperCase();
     badge.style.color = colors[key]||'var(--muted2)';
-    badge.style.display = isAdminOrCoordOrSup() ? 'block' : 'none';
+    badge.style.display = (isAdminOrCoordOrSup()||souAdm) ? 'block' : 'none';
   }
 }
 
@@ -2464,21 +2484,27 @@ function renderDashboard(){
   // métricas viram "da equipe" (soma de fetchCrmResumoEquipe filtrado pela
   // equipe dele, mesmo padrão de myTeamScope()) em vez de sumir de vez.
   const souGestor=isAdmin()||isCoord();
+  const souAdm=isAdministrativo();
   const souSup=isSup()&&!souGestor;
-  el('dash-kpis').style.display=souGestor?'none':'';
-  el('dash-kpis-gestao').style.display=souGestor?'':'none';
+  // Administrativo (RH, financeiro etc.) é como o gestor no sentido de "não
+  // vende, não mostra cotas" — mas ele só vê o PRÓPRIO progresso (pontos e
+  // certificados da Academy), nunca o painel de gestão da equipe de vendas.
+  el('dash-kpis').style.display=(souGestor||souAdm)?'none':'';
+  el('dash-kpis-gestao').style.display=(souGestor||souAdm)?'':'none';
   // Meta Mensal é uma meta pessoal de venda (allMetas é por vendedor) — não
-  // faz sentido pra quem não vende pessoalmente, então some pros dois casos.
-  el('meta-mensal-panel').style.display=(souGestor||souSup)?'none':'';
+  // faz sentido pra quem não vende pessoalmente.
+  el('meta-mensal-panel').style.display=(souGestor||souSup||souAdm)?'none':'';
 
-  if(souGestor){
+  if(souGestor||souAdm){
     el('kpi-gestao-pontos').textContent=(CUP?.pontos||0).toLocaleString('pt-BR');
     el('kpi-gestao-certs').textContent=allCertificados.length;
+  }
+  if(souGestor){
     el('dash-adm-gestao').style.display='';
     renderDashboardAdminGestao();
   } else {
     el('dash-adm-gestao').style.display='none';
-    _renderDashKpisVendaOuEquipe();
+    if(!souAdm) _renderDashKpisVendaOuEquipe();
   }
 
   // Avisos e campanha continuam iguais pra todo mundo — não dependem de venda
@@ -4212,6 +4238,7 @@ function buildAdmForm(type, d={}){
         {v:'Vendedor',l:'Vendedor'},
         {v:'Supervisor',l:'Supervisor'},
         {v:'Coordenador',l:'Coordenador'},
+        {v:'Administrativo',l:'Administrativo (RH, financeiro etc. — sem acesso a vendas/cotas)'},
         {v:'Admin',l:'Admin'},
       ],d.cargo)}
       <div class="adm-field"><label class="adm-label">Equipe</label>
