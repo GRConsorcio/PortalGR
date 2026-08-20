@@ -1264,7 +1264,8 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
           <div style="font-size:11px;color:var(--muted2);margin-top:4px">Nível atual</div>
         </div>
         <div class="ph-right">
-          <div class="ph-stat"><div class="ph-stat-label">Pontos totais</div><div class="ph-stat-val" id="nivel-pts-total" style="color:var(--gold2)">–</div></div>
+          <div class="ph-stat"><div class="ph-stat-label">Pontos GR</div><div class="ph-stat-val" id="nivel-pontos-gr" style="color:var(--gold2)">–</div></div>
+          <div class="ph-stat"><div class="ph-stat-label">Volume total</div><div class="ph-stat-val" id="nivel-pts-total" style="color:var(--gold2)">–</div></div>
           <div class="ph-stat"><div class="ph-stat-label">Próximo nível</div><div class="ph-stat-val" id="nivel-proximo">Prata</div></div>
           <div class="ph-stat"><div class="ph-stat-label">Faltam</div><div class="ph-stat-val" id="nivel-faltam">–</div></div>
           <div class="ph-stat"><div class="ph-stat-label">Cotas este mês</div><div class="ph-stat-val" id="nivel-cotas">–</div></div>
@@ -2500,6 +2501,7 @@ function renderNiveis(){
   el('nivel-pct-val').textContent=pct+'%';
   el('nivel-name-big').textContent=lv.name;
   el('nivel-name-big').style.color=lv.color;
+  el('nivel-pontos-gr').textContent=(CUP?.pontos||0).toLocaleString('pt-BR');
   el('nivel-pts-total').textContent=fmtBRL(volume);
   el('nivel-proximo').textContent=next?next.name:'Nível máximo ✦';
   el('nivel-faltam').textContent=next?(next.minVolume?fmtBRL(next.minVolume-volume)+' vol.':(next.minCotas-cotas)+' cotas'):'—';
