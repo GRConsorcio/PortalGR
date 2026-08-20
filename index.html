@@ -3099,8 +3099,16 @@ function _flatAulas(a){
 }
 // Índice (na lista achatada) da primeira aula ainda não concluída — tudo até
 // esse índice (inclusive) está destrancado; depois disso fica bloqueado.
+// Exceção pontual pedida pelo admin: essa conta específica pode navegar livre
+// entre aulas e pular direto pra prova, sem passar pelo trancamento sequencial
+// nem pela obrigatoriedade de assistir vídeo até o fim — é só pra permitir
+// revisar/testar cursos sem precisar concluir tudo de novo. Continua sendo o
+// único jeito de ganhar certificado de verdade passar na prova (isso é
+// corrigido no banco, não dá pra pular).
+function _bypassSequencialAcademy(){ return CU?.id==='8ece399e-af10-4456-88c5-9134554205bc'; }
 function _cursoUnlockIdx(a,p){
   const flat=_flatAulas(a);
+  if(_bypassSequencialAcademy()) return flat.length;
   const idx=flat.findIndex(f=>!p.concluidas.has(f.au.id));
   return idx===-1?flat.length:idx;
 }
@@ -3127,7 +3135,7 @@ function renderCursoSidebar(a,p){
   }).join('');
   if((a.prova||[]).length){
     const resp=allProvaRespostas.find(r=>r.academy_id===a.id);
-    const trancada=p.pct<100;
+    const trancada=p.pct<100&&!_bypassSequencialAcademy();
     const icone = resp ? (resp.aprovado?'✅':'❌') : (trancada?'🔒':'📝');
     html+=`<div class="curso-mod-head"><span>Avaliação</span></div>
       <div class="curso-aula ${_cursoView==='prova'?'on':''}" onclick="${trancada?'':'abrirProva()'}" style="${trancada?'opacity:.5;cursor:default':''}">
@@ -3149,6 +3157,7 @@ function abrirProva(){
 // o progresso real já fica salvo e essa checagem nem entra mais em jogo.
 let _aulasVideoAssistido=new Set();
 function _cursoPrecisaAssistirVideo(au){
+  if(_bypassSequencialAcademy()) return false;
   return !!au.video && !_aulasVideoAssistido.has(au.id);
 }
 function renderCursoContent(a,p){
@@ -3190,8 +3199,8 @@ function renderCursoContent(a,p){
       <button class="curso-mark-btn ${isDone?'done':''}" onclick="toggleAulaConcluida()" ${precisaVideo?'disabled':''} title="${precisaVideo?'Assista o vídeo até o fim primeiro':''}">${isDone?'✓ Aula concluída':'Marcar como concluída'}</button>
       <div class="curso-nav-btns">
         ${prev?`<button class="btn-outline" onclick="selecionarAula(${prev.mi},${prev.ai})">← Anterior</button>`:''}
-        ${next&&isDone?`<button class="btn-primary" onclick="selecionarAula(${next.mi},${next.ai})">Próxima →</button>`:''}
-        ${next&&!isDone?`<button class="btn-outline" disabled title="Marque esta aula como concluída pra avançar" style="opacity:.5;cursor:default">Próxima → 🔒</button>`:''}
+        ${next&&(isDone||_bypassSequencialAcademy())?`<button class="btn-primary" onclick="selecionarAula(${next.mi},${next.ai})">Próxima →</button>`:''}
+        ${next&&!isDone&&!_bypassSequencialAcademy()?`<button class="btn-outline" disabled title="Marque esta aula como concluída pra avançar" style="opacity:.5;cursor:default">Próxima → 🔒</button>`:''}
       </div>
     </div>`;
   if(embed && !isDone) _iniciarRastreioVideo(au.id);
@@ -3248,7 +3257,7 @@ function selecionarAula(mi,ai){
 // isso aqui só monta o formulário e manda as respostas cruas.
 function renderProvaContent(a,p){
   const respAnterior=allProvaRespostas.find(r=>r.academy_id===a.id);
-  if(p.pct<100){
+  if(p.pct<100&&!_bypassSequencialAcademy()){
     el('curso-content').innerHTML=`<div class="prova-locked"><div style="font-size:32px;margin-bottom:10px">🔒</div>Conclua todas as aulas do curso pra liberar a prova final.</div>`;
     return;
   }
