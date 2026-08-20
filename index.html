@@ -181,7 +181,10 @@ html.sidebar-mini .nav-badge{display:none}
 .panel-body{padding:20px;overflow-x:auto}
 
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-2.single-col{grid-template-columns:1fr}
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+#dash-kpis-gestao{grid-template-columns:repeat(2,1fr)}
+@media(max-width:640px){#dash-kpis-gestao{grid-template-columns:1fr}}
 
 /* ── LEVEL SYSTEM ── */
 .level-bronze .sl-bar-fill{background:linear-gradient(90deg,#8B4513,var(--bronze))}
@@ -1229,7 +1232,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         <div class="panel-body" id="avisos-list"></div>
       </div>
 
-      <div class="grid-2">
+      <div class="grid-2" id="dash-grid2-meta-camp">
         <!-- Meta mensal -->
         <div class="panel" id="meta-mensal-panel">
           <div class="panel-head"><div class="panel-title">Meta Mensal</div></div>
@@ -2494,6 +2497,7 @@ function renderDashboard(){
   // Meta Mensal é uma meta pessoal de venda (allMetas é por vendedor) — não
   // faz sentido pra quem não vende pessoalmente.
   el('meta-mensal-panel').style.display=(souGestor||souSup||souAdm)?'none':'';
+  el('dash-grid2-meta-camp').classList.toggle('single-col',souGestor||souSup||souAdm);
 
   if(souGestor||souAdm){
     el('kpi-gestao-pontos').textContent=(CUP?.pontos||0).toLocaleString('pt-BR');
