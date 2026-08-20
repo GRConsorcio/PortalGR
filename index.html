@@ -1394,6 +1394,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         </div>
         <div class="panel-body" id="copa-chaveamento-body" style="display:none;overflow-x:auto"></div>
       </div>
+      <div class="panel" id="copa-standings-panel" style="display:none;margin-bottom:16px">
+        <div class="panel-head"><div class="panel-title">📊 Classificação</div></div>
+        <div class="panel-body" style="padding:0;overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>Equipe</th><th>Pts</th><th>J</th><th>V</th><th>E</th><th>D</th><th>Gols</th><th>SG</th></tr></thead>
+            <tbody id="copa-standings-body"></tbody>
+          </table>
+        </div>
+      </div>
       <div class="panel">
         <div class="panel-head">
           <div class="panel-title" id="copa-timeline-title">🏆 Copa GR — Campeões por edição</div>
@@ -2805,6 +2814,31 @@ function renderCopa(tab){
   el('copa-timeline-title').textContent = _copaTab==='copinha' ? '🏆 Copinha — Campeões por edição' : '🏆 Copa GR — Campeões por edição';
   renderCopaTimeline();
   renderCopaChaveamento();
+  renderCopaStandings();
+}
+
+// Classificação por equipe (portal_copa_equipes) — cada equipe pertence a uma
+// competição (tipo copa/copinha), então a tabela filtra pela aba ativa, igual
+// já acontece no chaveamento. Fica escondida quando não há equipes cadastradas
+// pra essa competição ainda (evita mostrar uma tabela vazia por padrão).
+function renderCopaStandings(){
+  const panel=el('copa-standings-panel'), body=el('copa-standings-body');
+  if(!panel||!body) return;
+  const equipes=(allCopaEquipes||[]).filter(e=>(e.tipo||'copa')===_copaTab);
+  if(!equipes.length){ panel.style.display='none'; return; }
+  panel.style.display='block';
+  const ordenadas=[...equipes].sort((a,b)=>(b.pontos||0)-(a.pontos||0)||((b.gols_marcados||0)-(b.gols_sofridos||0))-((a.gols_marcados||0)-(a.gols_sofridos||0)));
+  body.innerHTML=ordenadas.map((e,i)=>{
+    const j=(e.vitorias||0)+(e.empates||0)+(e.derrotas||0);
+    const sg=(e.gols_marcados||0)-(e.gols_sofridos||0);
+    return `<tr>
+      <td>${i+1}. ${e.nome}</td>
+      <td style="font-weight:700;color:var(--gold2)">${e.pontos||0}</td>
+      <td>${j}</td><td>${e.vitorias||0}</td><td>${e.empates||0}</td><td>${e.derrotas||0}</td>
+      <td>${e.gols_marcados||0}:${e.gols_sofridos||0}</td>
+      <td>${sg>0?'+':''}${sg}</td>
+    </tr>`;
+  }).join('');
 }
 
 /* ── Copa GR: chaveamento da copa vigente ── */
@@ -4225,6 +4259,7 @@ function buildAdmForm(type, d={}){
       ${sel('ativo','Ativo',[{v:'true',l:'Sim'},{v:'false',l:'Não'}],String(d.ativo!==false))}`;
 
     case 'copa-equipe': return `
+      ${sel('tipo','Competição',[{v:'copa',l:'Copa'},{v:'copinha',l:'Copinha'}],d.tipo||'copa')}
       ${inp('nome','Nome da equipe',d.nome)}
       ${inp('temporada','Temporada',d.temporada||new Date().getFullYear())}
       ${g3(inp('vitorias','V',d.vitorias,'number','0'),inp('empates','E',d.empates,'number','0'),inp('derrotas','D',d.derrotas,'number','0'))}
@@ -4411,7 +4446,7 @@ async function saveAdmModal(){
         tipo:asel('tipo'), ativo: asel('ativo')==='true' };
       break;
     case 'copa-equipe':
-      payload = { nome:av('nome'), temporada:av('temporada'),
+      payload = { tipo:asel('tipo')||'copa', nome:av('nome'), temporada:av('temporada'),
         vitorias:parseInt(av('vitorias'))||0, empates:parseInt(av('empates'))||0,
         derrotas:parseInt(av('derrotas'))||0, gols_marcados:parseInt(av('gols_marcados'))||0,
         gols_sofridos:parseInt(av('gols_sofridos'))||0, pontos:parseInt(av('pontos'))||0 };
@@ -4823,9 +4858,10 @@ function renderAdmAvisos(){
 }
 
 function renderAdmCopa(){
-  el('adm-copa-list').innerHTML = admList(allCopaEquipes,'copa-equipe', e=>`
+  const ordenadas=[...allCopaEquipes].sort((a,b)=>(a.tipo||'copa').localeCompare(b.tipo||'copa')||(b.pontos||0)-(a.pontos||0));
+  el('adm-copa-list').innerHTML = admList(ordenadas,'copa-equipe', e=>`
     <div class="adm-row-main">
-      <div class="adm-row-title">${e.nome}</div>
+      <div class="adm-row-title">${e.nome} <span class="tag" style="background:${e.tipo==='copinha'?'rgba(124,111,205,0.12)':'rgba(201,168,76,0.12)'};color:${e.tipo==='copinha'?'var(--violet2)':'var(--gold)'};margin-left:6px">${e.tipo==='copinha'?'COPINHA':'COPA'}</span></div>
       <div class="adm-row-sub">Temp. ${e.temporada} · ${e.pontos} pts · ${e.vitorias}V ${e.empates}E ${e.derrotas}D · Gols ${e.gols_marcados}:${e.gols_sofridos}</div>
     </div>`);
   renderAdmCopaEdicoes();
