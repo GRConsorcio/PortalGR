@@ -336,16 +336,22 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .cert-card-title{font-family:var(--font-d);font-weight:700;font-size:15px;margin-bottom:6px;line-height:1.3}
 .cert-card-meta{font-size:10.5px;color:var(--muted2)}
 
-/* Certificado imprimível — sempre nas mesmas cores (papel claro + dourado),
+/* Certificado imprimível — sempre nas mesmas cores (fundo escuro + dourado),
    independente do tema do portal, porque é um documento pra imprimir/salvar,
-   não uma tela do app. */
-.cert-print{background:#fdfbf3;color:#1a1a1a;border-radius:6px;padding:56px 40px}
-.cert-print-border{border:2px solid #c9a84c;outline:1px solid #c9a84c;outline-offset:8px;padding:48px 32px;text-align:center}
-.cert-print-kicker{font-family:var(--font-d);font-size:13px;letter-spacing:3px;color:#8a6f30;font-weight:700;margin-bottom:28px;text-transform:uppercase}
-.cert-print-name{font-family:var(--font-d);font-size:38px;font-weight:800;margin-bottom:18px;color:#1a1a1a}
-.cert-print-text{font-size:14px;color:#444;margin-bottom:6px}
-.cert-print-curso{font-family:var(--font-d);font-size:20px;font-weight:700;color:#8a6f30;margin:10px 0 24px}
-.cert-print-date{font-size:11px;color:#777}
+   não uma tela do app. Rebranding: fundo escuro + moldura dupla dourada +
+   brasão em CSS (sem depender do PNG de 130KB usado só na tela de login —
+   consistente com o .logo-mark leve já usado na sidebar). */
+.cert-print{background:#0b0b0d;color:#f2ede0;border-radius:8px;padding:52px 40px}
+.cert-print-border{border:2px solid #c9a84c;outline:1px solid #c9a84c;outline-offset:8px;padding:46px 32px;text-align:center}
+.cert-print-crest{width:64px;height:64px;margin:0 auto 22px;border-radius:50%;background:linear-gradient(135deg,#d4af37,#f4d97a);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:22px;color:#1a1508;box-shadow:0 4px 18px rgba(212,175,55,.35)}
+.cert-print-kicker{font-family:var(--font-d);font-size:12px;letter-spacing:3px;color:#c9a84c;font-weight:700;margin-bottom:6px;text-transform:uppercase}
+.cert-print-title{font-family:var(--font-d);font-size:26px;letter-spacing:2px;font-weight:800;color:#e9cf7a;margin-bottom:26px;text-transform:uppercase}
+.cert-print-name{font-family:var(--font-d);font-size:36px;font-weight:800;margin-bottom:16px;color:#fff}
+.cert-print-text{font-size:14px;color:#c9c4b6;margin-bottom:6px}
+.cert-print-curso{font-family:var(--font-d);font-size:20px;font-weight:700;color:#e9cf7a;margin:10px 0 18px}
+.cert-print-meta{font-size:11.5px;color:#c9a84c;font-weight:700;letter-spacing:.5px;margin-bottom:22px}
+.cert-print-date{font-size:11px;color:#8f8a7c}
+.cert-print-tagline{font-size:10.5px;letter-spacing:2px;color:#8a6f30;font-weight:700;margin-top:26px;text-transform:uppercase}
 @media print{
   body *{visibility:hidden}
   .cert-print, .cert-print *{visibility:visible}
@@ -1030,7 +1036,6 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     <div class="nav-item" data-page="academy" onclick="nav('academy')">
       <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 1L1 5l8 4 8-4-8-4z"/><path d="M1 5v7"/><path d="M5 7v5a4 4 0 008 0V7"/></svg>
       GR Academy
-      <span class="nav-badge">3</span>
     </div>
     <div class="nav-item" data-page="carreira" onclick="nav('carreira')">
       <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16V8M9 16V4M15 16V10"/><line x1="1" y1="16" x2="17" y2="16"/></svg>
@@ -1374,13 +1379,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
     <!-- ACADEMY -->
     <div class="page" id="page-academy">
-      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
-        <button class="btn-primary" onclick="filterAcad('todos',this)">Todos</button>
-        <button class="btn-outline" onclick="filterAcad('video',this)">Vídeos</button>
-        <button class="btn-outline" onclick="filterAcad('live',this)">Lives</button>
-        <button class="btn-outline" onclick="filterAcad('material',this)">Materiais</button>
-        <button class="btn-outline" onclick="filterAcad('certificado',this)">Certificados</button>
-      </div>
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap" id="acad-tabs"></div>
       <div class="acad-grid" id="acad-grid"></div>
     </div>
 
@@ -1574,7 +1573,12 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     <div class="page" id="page-adm-academy">
       <div class="adm-page-head">
         <div class="adm-page-title">GR Academy</div>
-        <button class="btn-primary" onclick="openAdmModal('academy')">+ Novo conteúdo</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="adm-acad-f-tema" onchange="renderAdmAcademy()">
+            <option value="">Todos os temas</option>
+          </select>
+          <button class="btn-primary" onclick="openAdmModal('academy')">+ Novo conteúdo</button>
+        </div>
       </div>
       <div class="adm-table-wrap" id="adm-acad-list"></div>
     </div>
@@ -2170,7 +2174,7 @@ function nav(page){
   document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('on');
   el('topbar-title').textContent=PAGE_TITLES[page]||page;
   _currentPage=page;
-  const renderers={dashboard:renderDashboard,niveis:renderNiveis,performance:renderPerformance,destaques:renderDestaques,copa:renderCopa,campanhas:()=>renderCampanhas('ativa'),beneficios:renderBeneficios,academy:()=>renderAcademy('todos'),news:renderNews,sugestoes:renderSugestoes,hallfama:renderHallFama,regras:renderRegras,carreira:renderCarreira,biblioteca:()=>renderBiblioteca('todos'),certificados:renderCertificados};
+  const renderers={dashboard:renderDashboard,niveis:renderNiveis,performance:renderPerformance,destaques:renderDestaques,copa:renderCopa,campanhas:()=>renderCampanhas('ativa'),beneficios:renderBeneficios,academy:()=>{_acadCategoriaAtiva='todos';renderAcademyTabs();renderAcademy('todos');},news:renderNews,sugestoes:renderSugestoes,hallfama:renderHallFama,regras:renderRegras,carreira:renderCarreira,biblioteca:()=>renderBiblioteca('todos'),certificados:renderCertificados};
   renderers[page]?.();
   toggleMobileNav(false); // fecha a gaveta ao trocar de página no celular
   window.__pageEnter?.(pageEl);
@@ -2716,10 +2720,23 @@ function renderBeneficios(){
 }
 
 /* ═══ ACADEMY ═══ */
-function filterAcad(tipo,btn){
-  document.querySelectorAll('#page-academy > div:first-child button').forEach(b=>b.className='btn-outline');
-  btn.className='btn-primary';
-  renderAcademy(tipo);
+// Abas por tema (categoria), estilo "grade de faculdade" — igual ao padrão já
+// usado em Biblioteca (filterBiblio/renderBiblioteca), mas dinâmico: as abas
+// vêm das categorias que já existem em allAcademy, não de uma lista fixa no
+// HTML. Assim um curso novo com tema novo já ganha aba sem mexer em código.
+let _acadCategoriaAtiva='todos';
+function renderAcademyTabs(){
+  const wrap=el('acad-tabs');
+  if(!wrap) return;
+  const cats=[...new Set(allAcademy.map(a=>a.categoria).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  const temOutros=allAcademy.some(a=>!a.categoria);
+  const btn=(val,label)=>`<button class="${_acadCategoriaAtiva===val?'btn-primary':'btn-outline'}" onclick="filterAcad('${val}',this)">${label}</button>`;
+  wrap.innerHTML=btn('todos','Todos')+cats.map(c=>btn(c,c)).join('')+(temOutros?btn('__outros__','Outros'):'');
+}
+function filterAcad(cat,btn){
+  _acadCategoriaAtiva=cat;
+  renderAcademyTabs();
+  renderAcademy(cat);
 }
 // Calcula o progresso de um item de Academy que tem módulos/aulas (curso),
 // combinando o conteúdo (allAcademy) com o progresso pessoal salvo em
@@ -2731,8 +2748,8 @@ function progressoCurso(a){
   const pct=totalAulas?Math.round((concluidas.size/totalAulas)*100):0;
   return {totalAulas,concluidas,pct,totalModulos:(a.modulos||[]).length};
 }
-function renderAcademy(tipo){
-  const list=tipo==='todos'?allAcademy:allAcademy.filter(a=>a.tipo===tipo||(tipo==='certificado'&&a.tem_certificado));
+function renderAcademy(cat){
+  const list=cat==='todos'?allAcademy:cat==='__outros__'?allAcademy.filter(a=>!a.categoria):allAcademy.filter(a=>a.categoria===cat);
   const typeLabel={video:'VIDEO',live:'LIVE',material:'DOC'};
   const typeCls={video:'acad-label-video',live:'acad-label-live',material:'acad-label-doc'};
   el('acad-grid').innerHTML=list.length===0
@@ -3280,17 +3297,22 @@ function abrirCertificado(id){
   const c=allCertificados.find(x=>x.id===id);
   if(!c) return;
   const nome=CUP?.nome||CU?.email||'Colaborador(a)';
+  const curso=allAcademy.find(a=>a.id===c.academy_id);
   const modal=document.createElement('div');
   modal.className='modal-bg on';
   modal.innerHTML=`
     <div class="modal" style="width:820px;max-width:96vw;padding:0;background:transparent;box-shadow:none">
       <div class="cert-print">
         <div class="cert-print-border">
-          <div class="cert-print-kicker">GR Consórcio · Certificado de Conclusão</div>
+          <div class="cert-print-crest">GR</div>
+          <div class="cert-print-kicker">GR Consórcio</div>
+          <div class="cert-print-title">Certificado de Conclusão</div>
           <div class="cert-print-name">${nome}</div>
           <div class="cert-print-text">concluiu com aproveitamento de <b>${c.nota_pct}%</b> o curso</div>
           <div class="cert-print-curso">${c.titulo_curso}</div>
+          ${curso?.duracao?`<div class="cert-print-meta">Carga horária: ${curso.duracao}</div>`:''}
           <div class="cert-print-date">Emitido em ${fmtDate(c.emitido_em)}</div>
+          ${curso?.cert_tagline?`<div class="cert-print-tagline">${curso.cert_tagline}</div>`:''}
         </div>
       </div>
       <div style="display:flex;justify-content:center;gap:10px;margin-top:16px">
@@ -3647,10 +3669,12 @@ function buildAdmForm(type, d={}){
       ${inp('titulo','Título',d.titulo)}
       ${g2(sel('tipo','Tipo',[{v:'video',l:'Vídeo'},{v:'live',l:'Live'},{v:'material',l:'Material'}],d.tipo),
            inp('duracao','Duração',d.duracao,'text','Ex: 32 min'))}
+      ${inp('categoria','Tema (vira aba de filtro na Academy — ex: "Compliance & Ética")',d.categoria)}
       ${inp('url','URL / Link',d.url,'url','https://')}
       ${inp('instrutor','Instrutor',d.instrutor)}
       ${ta('descricao','Descrição',d.descricao)}
-      ${sel('tem_certificado','Certificado',[{v:'false',l:'Não'},{v:'true',l:'Sim'}],String(d.tem_certificado))}
+      ${g2(sel('tem_certificado','Certificado',[{v:'false',l:'Não'},{v:'true',l:'Sim'}],String(d.tem_certificado)),
+           inp('cert_tagline','Selo do certificado (opcional — ex: "PARE • DESCONFIE • CONFIRME")',d.cert_tagline))}
       <div class="adm-field">
         <label class="adm-label">Módulos e aulas (opcional — transforma este item num curso com barra de progresso)</label>
         <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;line-height:1.5">Linha começando com <b>##</b> = novo módulo. Linha começando com <b>###</b> = nova aula dentro do módulo atual. Linhas em branco separam parágrafos. Comece uma linha com <b>%%</b> pra virar lista de tópicos (bom pra "Resumo") em vez de parágrafos. Linha <b>video: URL</b> logo abaixo do título da aula adiciona um vídeo a ela (link do YouTube toca embutido na página; qualquer outro link vira um botão "Assistir vídeo").</div>
@@ -3850,9 +3874,9 @@ async function saveAdmModal(){
     }
     case 'academy':{
       const academyAntigo = editId ? allAcademy.find(x=>x.id===editId) : null;
-      payload = { titulo:av('titulo'), tipo:asel('tipo'), duracao:av('duracao'),
+      payload = { titulo:av('titulo'), tipo:asel('tipo'), duracao:av('duracao'), categoria:av('categoria')||null,
         url:av('url'), instrutor:av('instrutor'), descricao:av('descricao'),
-        tem_certificado: asel('tem_certificado')==='true',
+        tem_certificado: asel('tem_certificado')==='true', cert_tagline:av('cert_tagline')||null,
         modulos: parseModulosTexto(av('modulos_texto'), academyAntigo?.modulos),
         prova: parseProvaTexto(av('prova_texto'), academyAntigo?.prova) };
       break;
@@ -4052,11 +4076,20 @@ function renderAdmDestaques(){
 }
 
 function renderAdmAcademy(){
-  el('adm-acad-list').innerHTML = admList(allAcademy,'academy', a=>{
+  const temaSel=el('adm-acad-f-tema');
+  if(temaSel){
+    const cur=temaSel.value;
+    const temas=[...new Set(allAcademy.map(a=>a.categoria).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+    temaSel.innerHTML='<option value="">Todos os temas</option>'+temas.map(t=>`<option value="${t}">${t}</option>`).join('');
+    temaSel.value=cur;
+  }
+  const temaAtivo=temaSel?.value||'';
+  const list=temaAtivo?allAcademy.filter(a=>a.categoria===temaAtivo):allAcademy;
+  el('adm-acad-list').innerHTML = admList(list,'academy', a=>{
     const nMod=(a.modulos||[]).length;
     const nAulas=(a.modulos||[]).reduce((s,m)=>s+(m.aulas||[]).length,0);
     return `<div class="adm-row-main">
-      <div class="adm-row-title">${a.titulo}</div>
+      <div class="adm-row-title">${a.titulo}${a.categoria?` <span style="font-weight:400;color:var(--muted2)">· ${a.categoria}</span>`:''}</div>
       <div class="adm-row-sub">${a.tipo?.toUpperCase()} · ${nMod?`📚 ${nMod} módulo${nMod!==1?'s':''} · ${nAulas} aula${nAulas!==1?'s':''}`:(a.duracao||'–')+' · '+(a.instrutor||'–')}${a.tem_certificado?' · 🎓 Certificado':''}</div>
     </div>`;
   });
