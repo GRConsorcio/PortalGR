@@ -99,6 +99,17 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .sidebar-backdrop.on{display:block}
 .mobile-menu-btn{display:none;width:36px;height:36px;background:transparent;border:1px solid var(--border);align-items:center;justify-content:center;cursor:pointer;color:var(--text);flex-shrink:0}
 .mobile-menu-btn:hover{border-color:var(--border2)}
+.sidebar-collapse-btn{display:flex;width:36px;height:36px;background:transparent;border:1px solid var(--border);align-items:center;justify-content:center;cursor:pointer;color:var(--text);flex-shrink:0}
+.sidebar-collapse-btn:hover{border-color:var(--border2)}
+/* Menu recolhido: largura de ícone só, texto de cada item (texto solto após o
+   svg, sem span próprio) some sozinho por estourar a largura com overflow
+   escondido — evita precisar envolver cada nav-item existente numa span nova. */
+html.sidebar-mini{--sidebar-w:64px}
+html.sidebar-mini .nav-item{overflow:hidden;white-space:nowrap;justify-content:center;gap:0}
+html.sidebar-mini .nav-sect{overflow:hidden;white-space:nowrap;text-indent:-999px}
+html.sidebar-mini .logo-text,html.sidebar-mini .sidebar-level{display:none}
+html.sidebar-mini .logo-wrap{justify-content:center;padding-left:8px;padding-right:8px}
+html.sidebar-mini .nav-badge{display:none}
 .logo-wrap{padding:20px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
 .logo-mark{width:34px;height:34px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:14px;color:#08080D;flex-shrink:0}
 .logo-text{font-family:var(--font-d);font-size:16px;font-weight:800;color:var(--gold2)}
@@ -285,6 +296,8 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .curso-hero-pct{font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--gold2);white-space:nowrap;min-width:76px;text-align:right}
 
 .curso-wrap{display:grid;grid-template-columns:272px 1fr;gap:20px;align-items:start}
+.curso-wrap.sidebar-hidden{grid-template-columns:1fr}
+.curso-wrap.sidebar-hidden .curso-sidebar{display:none}
 .curso-sidebar{background:var(--s2);border:1px solid var(--border);border-radius:var(--radius-card);padding:8px;position:sticky;top:calc(var(--topbar-h) + 16px);max-height:calc(100vh - var(--topbar-h) - 32px);overflow-y:auto}
 .curso-mod-head{font-family:var(--font-d);font-size:12.5px;font-weight:700;letter-spacing:.3px;color:var(--text);padding:12px 10px 6px;display:flex;justify-content:space-between;align-items:baseline}
 .curso-mod-count{font-size:9.5px;color:var(--muted2);font-weight:400;font-family:var(--font-b)}
@@ -665,6 +678,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
   .sidebar.mobile-open{transform:translateX(0);visibility:visible}
   .main{margin-left:0}
   .mobile-menu-btn{display:flex}
+  .sidebar-collapse-btn{display:none}
   .topbar{padding:0 14px}
   .kpi-grid{grid-template-columns:1fr 1fr}
   .kpi-val{font-size:32px}
@@ -1164,6 +1178,9 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Abrir menu">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="1" y1="4" x2="17" y2="4"/><line x1="1" y1="9" x2="17" y2="9"/><line x1="1" y1="14" x2="17" y2="14"/></svg>
     </button>
+    <button class="sidebar-collapse-btn" id="sidebar-collapse-btn" onclick="toggleSidebarMini()" title="Recolher/expandir menu" aria-label="Recolher menu">
+      <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1.5" y="2.5" width="15" height="13" rx="1.5"/><line x1="6.5" y1="2.5" x2="6.5" y2="15.5"/></svg>
+    </button>
     <div class="topbar-title" id="topbar-title">Dashboard</div>
     <div class="topbar-right">
       <span id="topbar-role-badge" style="display:none;font-size:8px;font-weight:700;letter-spacing:2px;font-family:var(--font-b);padding:3px 8px;border:1px solid currentColor;opacity:0.7"></span>
@@ -1405,7 +1422,10 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
     <!-- CURSO (detalhe de um item de Academy com módulos/aulas) -->
     <div class="page" id="page-curso-detalhe">
-      <button class="curso-back" onclick="voltarAcademy()">← Voltar pra Academy</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <button class="curso-back" onclick="voltarAcademy()">← Voltar pra Academy</button>
+        <button class="curso-back" id="curso-sidebar-toggle" onclick="toggleCursoSidebar()">☰ Recolher módulos</button>
+      </div>
       <div class="curso-hero">
         <div class="curso-hero-title" id="curso-hero-titulo"></div>
         <div class="curso-hero-meta" id="curso-hero-meta"></div>
@@ -1414,7 +1434,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
           <div class="curso-hero-pct" id="curso-hero-pct">0%</div>
         </div>
       </div>
-      <div class="curso-wrap">
+      <div class="curso-wrap" id="curso-wrap">
         <div class="curso-sidebar" id="curso-sidebar"></div>
         <div class="curso-content" id="curso-content"></div>
       </div>
@@ -2273,6 +2293,11 @@ function nav(page){
   const renderers={dashboard:renderDashboard,niveis:renderNiveis,performance:renderPerformance,destaques:renderDestaques,copa:renderCopa,campanhas:()=>renderCampanhas('ativa'),beneficios:renderBeneficios,academy:()=>{_acadCategoriaAtiva='todos';renderAcademyTabs();renderAcademy('todos');},news:renderNews,sugestoes:renderSugestoes,hallfama:renderHallFama,regras:renderRegras,carreira:renderCarreira,biblioteca:()=>renderBiblioteca('todos'),certificados:renderCertificados};
   renderers[page]?.();
   toggleMobileNav(false); // fecha a gaveta ao trocar de página no celular
+  // Academy pede mais espaço horizontal pra ler o conteúdo do curso — recolhe
+  // o menu sozinho ao entrar, e devolve ao normal ao sair pra qualquer outra
+  // página (o usuário ainda pode recolher/expandir manualmente a qualquer
+  // momento pelo botão do topbar; isso só define o padrão ao navegar).
+  toggleSidebarMini(page==='academy');
   window.__pageEnter?.(pageEl);
 }
 
@@ -2300,6 +2325,25 @@ function toggleMobileNav(force){
   const open=typeof force==='boolean'?force:!sidebar.classList.contains('mobile-open');
   sidebar.classList.toggle('mobile-open',open);
   backdrop.classList.toggle('on',open);
+}
+
+// Menu lateral recolhido (ícones só) — usado manualmente pelo botão no topbar
+// e automaticamente ao entrar/sair da Academy (nav() e openCurso() chamam com
+// um valor explícito; o clique manual no botão passa undefined pra alternar).
+function toggleSidebarMini(force){
+  const ligar=typeof force==='boolean'?force:!document.documentElement.classList.contains('sidebar-mini');
+  document.documentElement.classList.toggle('sidebar-mini',ligar);
+}
+
+// Recolhe só a coluna de módulos/aulas dentro de um curso (diferente do menu
+// principal do Portal) — dá mais largura pro texto da aula quando o aluno só
+// quer ler, sem perder a barra de progresso/hero de cima.
+function toggleCursoSidebar(){
+  const wrap=el('curso-wrap');
+  if(!wrap) return;
+  const escondido=wrap.classList.toggle('sidebar-hidden');
+  const btn=el('curso-sidebar-toggle');
+  if(btn) btn.textContent=escondido?'☰ Mostrar módulos':'☰ Recolher módulos';
 }
 
 /* ═══ ROLE HELPERS ═══ */
@@ -2986,6 +3030,9 @@ function openCurso(id){
   _currentPage='curso-detalhe';
   renderCurso();
   toggleMobileNav(false);
+  toggleSidebarMini(true);
+  const btn=el('curso-sidebar-toggle');
+  if(btn) btn.textContent=el('curso-wrap')?.classList.contains('sidebar-hidden')?'☰ Mostrar módulos':'☰ Recolher módulos';
 }
 function voltarAcademy(){
   _cursoAtualId=null;
@@ -3002,19 +3049,39 @@ function renderCurso(){
   renderCursoSidebar(a,p);
   renderCursoContent(a,p);
 }
+// Lista "achatada" de aulas do curso, na ordem em que aparecem — usada tanto
+// pra navegação sequencial quanto pro cálculo de bloqueio (só destrava a
+// próxima aula depois que a atual foi marcada concluída).
+function _flatAulas(a){
+  const flat=[];
+  (a.modulos||[]).forEach((mm,mi)=>(mm.aulas||[]).forEach((aa,ai)=>flat.push({mi,ai,au:aa})));
+  return flat;
+}
+// Índice (na lista achatada) da primeira aula ainda não concluída — tudo até
+// esse índice (inclusive) está destrancado; depois disso fica bloqueado.
+function _cursoUnlockIdx(a,p){
+  const flat=_flatAulas(a);
+  const idx=flat.findIndex(f=>!p.concluidas.has(f.au.id));
+  return idx===-1?flat.length:idx;
+}
 function renderCursoSidebar(a,p){
+  const unlockIdx=_cursoUnlockIdx(a,p);
+  let flatI=-1;
   let html=(a.modulos||[]).map((m,mi)=>{
     const aulas=m.aulas||[];
     const doneCount=aulas.filter(au=>p.concluidas.has(au.id)).length;
     return `<div class="curso-mod-head"><span>${m.titulo}</span><span class="curso-mod-count">${doneCount}/${aulas.length}</span></div>
       ${aulas.map((au,ai)=>{
+        flatI++;
         const isOn=_cursoView==='aula'&&mi===_cursoModIdx&&ai===_cursoAulaIdx;
         const isDone=p.concluidas.has(au.id);
-        return `<div class="curso-aula ${isOn?'on':''} ${isDone?'done':''}" onclick="selecionarAula(${mi},${ai})">
+        const trancada=flatI>unlockIdx;
+        return `<div class="curso-aula ${isOn?'on':''} ${isDone?'done':''}" onclick="${trancada?'':`selecionarAula(${mi},${ai})`}" style="${trancada?'opacity:.45;cursor:default':''}">
           <span class="curso-aula-check"><svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#08160F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <span class="curso-aula-title">${au.titulo}</span>
-          ${au.video?'<span class="curso-aula-video-ic" title="Tem vídeo">🎥</span>':''}
-          ${(au.imagens||[]).length?'<span class="curso-aula-video-ic" title="Tem imagens">🖼️</span>':''}
+          ${trancada?'<span class="curso-aula-video-ic" title="Conclua a aula anterior pra destravar">🔒</span>':''}
+          ${!trancada&&au.video?'<span class="curso-aula-video-ic" title="Tem vídeo">🎥</span>':''}
+          ${!trancada&&(au.imagens||[]).length?'<span class="curso-aula-video-ic" title="Tem imagens">🖼️</span>':''}
         </div>`;
       }).join('')}`;
   }).join('');
@@ -3035,6 +3102,15 @@ function abrirProva(){
   renderCurso();
   el('curso-content')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
+// IDs de aula cujo vídeo já foi assistido até o fim nesta sessão (YouTube,
+// via evento "ended" da API do player) ou pelo menos aberto (vídeo externo,
+// que não dá pra rastrear término real). Só existe em memória — não precisa
+// persistir no banco, porque uma vez marcada concluída (toggleAulaConcluida)
+// o progresso real já fica salvo e essa checagem nem entra mais em jogo.
+let _aulasVideoAssistido=new Set();
+function _cursoPrecisaAssistirVideo(au){
+  return !!au.video && !_aulasVideoAssistido.has(au.id);
+}
 function renderCursoContent(a,p){
   if(_cursoView==='prova'){ renderProvaContent(a,p); return; }
   const m=a.modulos[_cursoModIdx]; const au=m?.aulas?.[_cursoAulaIdx];
@@ -3045,34 +3121,84 @@ function renderCursoContent(a,p){
     : (au.corpo||[]).map(t=>`<p>${t}</p>`).join('');
   // Vídeo é opcional por aula. Link do YouTube (qualquer formato) embute
   // player direto na página, igual já acontece em openAcad; qualquer outro
-  // link (Vimeo, Drive, etc) vira um botão que abre em nova aba.
+  // link (Vimeo, Drive, etc) vira um botão que abre em nova aba. Se ainda não
+  // foi concluída, o vídeo do YouTube entra com a API do player habilitada
+  // (enablejsapi=1) pra saber quando acabou de assistir (evento "ended") —
+  // enquanto isso, o botão de concluir fica travado (ver bloco abaixo).
   const embed=au.video?_youtubeEmbedUrl(au.video):null;
   const videoHtml=!au.video?'':embed
-    ?`<div class="curso-video"><iframe src="${embed}" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>`
-    :`<a class="curso-video-link" href="${au.video}" target="_blank" rel="noopener">▶ Assistir vídeo</a>`;
+    ?`<div class="curso-video"><iframe id="curso-video-iframe" src="${embed}${embed.includes('?')?'&':'?'}enablejsapi=1" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>`
+    :`<a class="curso-video-link" href="${au.video}" target="_blank" rel="noopener" onclick="_marcarVideoAssistido('${au.id}')">▶ Assistir vídeo</a>`;
   // Imagens/prints da plataforma (útil pros cursos de CRM/Demandas) — clicáveis
   // pra abrir em tamanho real numa aba nova, sem precisar de lightbox custom.
   const imagensHtml=(au.imagens||[]).length===0?'':`<div class="curso-imagens">${au.imagens.map(u=>`<a href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="Imagem da aula" loading="lazy"></a>`).join('')}</div>`;
-  // navegação sequencial (anterior/próxima) atravessando os módulos, como se
-  // o curso inteiro fosse uma lista única de aulas
-  const flat=[]; (a.modulos||[]).forEach((mm,mi)=>(mm.aulas||[]).forEach((aa,ai)=>flat.push({mi,ai})));
+  // Navegação sequencial (anterior/próxima) atravessando os módulos. "Próxima"
+  // só aparece depois que a aula atual foi marcada concluída — é o que força
+  // avançar em ordem em vez de pular aulas.
+  const flat=_flatAulas(a);
   const curFlatIdx=flat.findIndex(f=>f.mi===_cursoModIdx&&f.ai===_cursoAulaIdx);
   const prev=flat[curFlatIdx-1], next=flat[curFlatIdx+1];
+  const precisaVideo=!isDone&&_cursoPrecisaAssistirVideo(au);
   el('curso-content').innerHTML=`
     <div class="curso-content-eyebrow">${m.titulo}</div>
     <div class="curso-content-title">${au.titulo}</div>
     ${videoHtml}
     ${imagensHtml}
     <div class="curso-content-body">${corpoHtml}</div>
+    ${precisaVideo?`<div style="font-size:11.5px;color:var(--gold2);margin-bottom:10px">🔒 Assista o vídeo até o fim pra liberar a conclusão desta aula.</div>`:''}
     <div class="curso-content-foot">
-      <button class="curso-mark-btn ${isDone?'done':''}" onclick="toggleAulaConcluida()">${isDone?'✓ Aula concluída':'Marcar como concluída'}</button>
+      <button class="curso-mark-btn ${isDone?'done':''}" onclick="toggleAulaConcluida()" ${precisaVideo?'disabled':''} title="${precisaVideo?'Assista o vídeo até o fim primeiro':''}">${isDone?'✓ Aula concluída':'Marcar como concluída'}</button>
       <div class="curso-nav-btns">
         ${prev?`<button class="btn-outline" onclick="selecionarAula(${prev.mi},${prev.ai})">← Anterior</button>`:''}
-        ${next?`<button class="btn-primary" onclick="selecionarAula(${next.mi},${next.ai})">Próxima →</button>`:''}
+        ${next&&isDone?`<button class="btn-primary" onclick="selecionarAula(${next.mi},${next.ai})">Próxima →</button>`:''}
+        ${next&&!isDone?`<button class="btn-outline" disabled title="Marque esta aula como concluída pra avançar" style="opacity:.5;cursor:default">Próxima → 🔒</button>`:''}
       </div>
     </div>`;
+  if(embed && !isDone) _iniciarRastreioVideo(au.id);
+}
+// Marca um vídeo externo (não-YouTube) como "assistido" assim que a pessoa
+// clica pra abrir — é o melhor sinal disponível, já que não dá pra saber se
+// terminou de assistir um link que abre fora do Portal.
+function _marcarVideoAssistido(auId){
+  _aulasVideoAssistido.add(auId);
+  const btn=document.querySelector('.curso-mark-btn');
+  if(btn){ btn.disabled=false; btn.title=''; }
+}
+// Carrega a API do player do YouTube (uma vez só) e escuta o fim do vídeo
+// embutido — quando termina, libera o botão de concluir a aula.
+let _ytApiCarregando=false;
+function _iniciarRastreioVideo(auId){
+  function criarPlayer(){
+    if(!document.getElementById('curso-video-iframe')) return;
+    try{
+      new YT.Player('curso-video-iframe',{events:{onStateChange:e=>{
+        if(e.data===YT.PlayerState.ENDED){
+          _aulasVideoAssistido.add(auId);
+          const btn=document.querySelector('.curso-mark-btn');
+          if(btn){ btn.disabled=false; btn.title=''; }
+        }
+      }}});
+    }catch(err){ console.warn('[curso] player YouTube não iniciou:',err.message); }
+  }
+  if(window.YT?.Player){ criarPlayer(); return; }
+  window.onYouTubeIframeAPIReady=criarPlayer;
+  if(!_ytApiCarregando && !document.getElementById('yt-iframe-api')){
+    _ytApiCarregando=true;
+    const s=document.createElement('script');
+    s.id='yt-iframe-api'; s.src='https://www.youtube.com/iframe_api';
+    document.head.appendChild(s);
+  }
 }
 function selecionarAula(mi,ai){
+  // Defesa extra além do sidebar já não ter onclick em aula trancada — mesmo
+  // que algo chame selecionarAula direto, respeita o mesmo bloqueio sequencial.
+  const a=allAcademy.find(x=>x.id===_cursoAtualId);
+  if(a){
+    const p=progressoCurso(a);
+    const flat=_flatAulas(a);
+    const alvoIdx=flat.findIndex(f=>f.mi===mi&&f.ai===ai);
+    if(alvoIdx>_cursoUnlockIdx(a,p)){ toast('Conclua as aulas anteriores primeiro','err'); return; }
+  }
   _cursoModIdx=mi; _cursoAulaIdx=ai; _cursoView='aula';
   renderCurso();
   el('curso-content')?.scrollIntoView({behavior:'smooth',block:'start'});
