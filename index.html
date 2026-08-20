@@ -1629,7 +1629,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         <div class="adm-page-title">Cursos Obrigatórios</div>
         <button class="btn-primary" onclick="openObrigModal()">+ Nova Regra</button>
       </div>
-      <div style="font-size:11.5px;color:var(--muted2);margin-bottom:14px;line-height:1.5">Define quais cursos da Academy são obrigatórios pra usar cada sistema (CRM, este Portal, Demandas), pra quais papéis, e quem fica isento. Enquanto pendente, a pessoa vê uma tela obrigatória até concluir o curso com pelo menos 70% de aproveitamento.</div>
+      <div style="font-size:11.5px;color:var(--muted2);margin-bottom:14px;line-height:1.5">Cada curso pode ter regras de acesso por papel: <b>Obrigatório</b> (bloqueia CRM/Portal/Demandas até concluir com 70%+), <b>Opcional</b> (aparece na Academy pra quem quiser fazer, sem cobrança) ou <b>Oculto</b> (nem aparece na listagem). Sem nenhuma regra, o curso é opcional/visível pra todo mundo por padrão. Dá pra isentar colaboradores específicos de qualquer regra.</div>
       <div class="adm-table-wrap" id="adm-obrig-list"></div>
     </div>
 
@@ -1644,7 +1644,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
           <select class="adm-input" id="obrig-academy"></select>
         </div>
         <div class="adm-field">
-          <label class="adm-label">Sistema</label>
+          <label class="adm-label">Nível de acesso</label>
+          <select class="adm-input" id="obrig-nivel" onchange="_toggleObrigAppField()">
+            <option value="obrigatorio">Obrigatório — bloqueia o sistema até concluir</option>
+            <option value="opcional">Opcional — aparece na Academy, ninguém é forçado</option>
+            <option value="oculto">Oculto — nem aparece na Academy pra quem a regra alcança</option>
+          </select>
+        </div>
+        <div class="adm-field" id="obrig-app-field">
+          <label class="adm-label">Sistema que fica bloqueado</label>
           <select class="adm-input" id="obrig-app">
             <option value="crm">CRM</option>
             <option value="portal">Portal GR</option>
@@ -1652,7 +1660,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
           </select>
         </div>
         <div class="adm-field">
-          <label class="adm-label">Papéis obrigados (deixe todos desmarcados = vale pra todo mundo)</label>
+          <label class="adm-label">Papéis alcançados pela regra (deixe todos desmarcados = vale pra todo mundo)</label>
           <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12px">
             <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="obrig-role" value="vendedor"> Vendedor</label>
             <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="obrig-role" value="supervisor"> Supervisor</label>
@@ -2931,11 +2939,16 @@ function renderBeneficios(){
 // vêm das categorias que já existem em allAcademy, não de uma lista fixa no
 // HTML. Assim um curso novo com tema novo já ganha aba sem mexer em código.
 let _acadCategoriaAtiva='todos';
+// Cursos que a regra de nível 'oculto' não escondeu de mim — usada tanto nas
+// abas quanto na grade, pra não sobrar aba de tema cujo único curso está
+// oculto pro meu papel.
+function _academyMinhaVisao(){ return allAcademy.filter(a=>!_academyOcultos.has(a.id)); }
 function renderAcademyTabs(){
   const wrap=el('acad-tabs');
   if(!wrap) return;
-  const cats=[...new Set(allAcademy.map(a=>a.categoria).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
-  const temOutros=allAcademy.some(a=>!a.categoria);
+  const visiveis=_academyMinhaVisao();
+  const cats=[...new Set(visiveis.map(a=>a.categoria).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  const temOutros=visiveis.some(a=>!a.categoria);
   const btn=(val,label)=>`<button class="${_acadCategoriaAtiva===val?'btn-primary':'btn-outline'}" onclick="filterAcad('${val}',this)">${label}</button>`;
   wrap.innerHTML=btn('todos','Todos')+cats.map(c=>btn(c,c)).join('')+(temOutros?btn('__outros__','Outros'):'');
 }
@@ -2955,7 +2968,8 @@ function progressoCurso(a){
   return {totalAulas,concluidas,pct,totalModulos:(a.modulos||[]).length};
 }
 function renderAcademy(cat){
-  const list=cat==='todos'?allAcademy:cat==='__outros__'?allAcademy.filter(a=>!a.categoria):allAcademy.filter(a=>a.categoria===cat);
+  const base=_academyMinhaVisao();
+  const list=cat==='todos'?base:cat==='__outros__'?base.filter(a=>!a.categoria):base.filter(a=>a.categoria===cat);
   const typeLabel={video:'VIDEO',live:'LIVE',material:'DOC'};
   const typeCls={video:'acad-label-video',live:'acad-label-live',material:'acad-label-doc'};
   el('acad-grid').innerHTML=list.length===0
@@ -4449,23 +4463,35 @@ function renderAdmDestaques(){
    portal_cursos_pendentes via REST (mesmo padrão de segredo compartilhado
    já usado noutras integrações Portal↔CRM). ═══ */
 let _pendingObrigatorios=[];
+// Regras de acesso à Academy têm 3 níveis (portal_academy_obrigatorio.nivel):
+// 'obrigatorio' (bloqueia o app até concluir, escopado por app crm/portal/
+// demandas), 'opcional' (aparece na Academy, ninguém é forçado — é o padrão
+// quando não existe regra nenhuma pro curso) e 'oculto' (nem aparece na
+// listagem pra quem a regra alcança). Busca tudo de uma vez só (ativo=true,
+// sem filtrar nivel/app na query) e separa em memória — mais barato que duas
+// idas ao banco pra decidir bloqueio + visibilidade.
+let _academyOcultos=new Set();
 async function checkCursosObrigatorios(){
   if(!CU?.id) return;
   try{
     const [{data:regras},{data:isentos},{data:aprovadas}]=await Promise.all([
-      sb.from('portal_academy_obrigatorio').select('*').eq('app','portal').eq('ativo',true),
+      sb.from('portal_academy_obrigatorio').select('*').eq('ativo',true),
       sb.from('portal_academy_obrigatorio_isento').select('*').eq('user_id',CU.id),
       sb.from('portal_prova_respostas').select('academy_id,aprovado').eq('user_id',CU.id).eq('aprovado',true),
     ]);
     const meuCargo=(CUP?.cargo||'').toLowerCase().trim();
     const isentoIds=new Set((isentos||[]).map(i=>i.obrigatorio_id));
     const aprovadasIds=new Set((aprovadas||[]).map(a=>a.academy_id));
-    _pendingObrigatorios=(regras||[]).filter(r=>{
-      if(isentoIds.has(r.id)) return false;
-      if((r.roles_aplicaveis||[]).length && !r.roles_aplicaveis.map(x=>(x||'').toLowerCase()).includes(meuCargo)) return false;
-      return !aprovadasIds.has(r.academy_id);
-    }).map(r=>({academy_id:r.academy_id, titulo: allAcademy.find(a=>a.id===r.academy_id)?.titulo || 'Curso'}));
+    const alcancaMim=r=>!isentoIds.has(r.id) && (!(r.roles_aplicaveis||[]).length || r.roles_aplicaveis.map(x=>(x||'').toLowerCase()).includes(meuCargo));
+    _pendingObrigatorios=(regras||[])
+      .filter(r=>r.nivel==='obrigatorio' && r.app==='portal' && alcancaMim(r) && !aprovadasIds.has(r.academy_id))
+      .map(r=>({academy_id:r.academy_id, titulo: allAcademy.find(a=>a.id===r.academy_id)?.titulo || 'Curso'}));
+    _academyOcultos=new Set((regras||[]).filter(r=>r.nivel==='oculto' && alcancaMim(r)).map(r=>r.academy_id));
     _renderTelaObrigatoria();
+    // Se a checagem terminou depois da Academy já ter renderizado (é async,
+    // roda em paralelo com o resto do load), atualiza pra não deixar curso
+    // oculto piscando na tela até a próxima navegação.
+    if(_currentPage==='academy'){ renderAcademyTabs(); renderAcademy(_acadCategoriaAtiva); }
   }catch(e){ console.warn('[checkCursosObrigatorios] erro:',e.message); }
 }
 function _renderTelaObrigatoria(){
@@ -4515,11 +4541,12 @@ async function renderAdmObrigatorios(){
       const curso=allAcademy.find(a=>a.id===o.academy_id);
       const papeis=(o.roles_aplicaveis||[]).length?o.roles_aplicaveis.map(r=>ROLE_LABELS[r]||r).join(', '):'Todos os papéis';
       const nIsentos=allObrigatoriosIsentos.filter(i=>i.obrigatorio_id===o.id).length;
+      const nivelInfo={obrigatorio:{l:'Obrigatório',c:'var(--red)'},opcional:{l:'Opcional',c:'var(--muted2)'},oculto:{l:'Oculto',c:'var(--gold2)'}}[o.nivel]||{l:o.nivel,c:'var(--muted2)'};
       return `<div class="adm-row">
         <div class="status-dot" style="background:${o.ativo?'var(--green2)':'var(--muted2)'}"></div>
         <div class="adm-row-main">
-          <div class="adm-row-title">${curso?.titulo||'(curso removido)'}</div>
-          <div class="adm-row-sub">${APP_LABELS[o.app]||o.app} · ${papeis} · ${nIsentos} isento${nIsentos!==1?'s':''}${o.ativo?'':' · inativa'}</div>
+          <div class="adm-row-title">${curso?.titulo||'(curso removido)'} <span style="font-weight:400;color:${nivelInfo.c}">· ${nivelInfo.l}</span></div>
+          <div class="adm-row-sub">${o.nivel==='obrigatorio'?(APP_LABELS[o.app]||o.app)+' · ':''}${papeis} · ${nIsentos} isento${nIsentos!==1?'s':''}${o.ativo?'':' · inativa'}</div>
         </div>
         <div class="adm-actions">
           <button class="btn-edit" onclick="openObrigIsentosModal('${o.id}')">Isentos</button>
@@ -4530,24 +4557,32 @@ async function renderAdmObrigatorios(){
     }).join('');
 }
 
+function _toggleObrigAppField(){
+  const field=el('obrig-app-field');
+  if(field) field.style.display=el('obrig-nivel').value==='obrigatorio'?'':'none';
+}
 function openObrigModal(id){
   const o=id?allObrigatorios.find(x=>x.id===id):null;
   el('obrig-id').value=id||'';
   el('obrig-academy').innerHTML=allAcademy.map(a=>`<option value="${a.id}">${a.titulo}</option>`).join('');
   if(o) el('obrig-academy').value=o.academy_id;
+  el('obrig-nivel').value=o?.nivel||'obrigatorio';
   el('obrig-app').value=o?.app||'crm';
   document.querySelectorAll('.obrig-role').forEach(chk=>{ chk.checked=(o?.roles_aplicaveis||[]).includes(chk.value); });
   el('obrig-ativo').checked=o?o.ativo:true;
+  _toggleObrigAppField();
   el('modal-obrig').classList.add('on');
 }
 function closeObrigModal(){ el('modal-obrig').classList.remove('on'); }
 
 async function saveObrigModal(){
   const id=el('obrig-id').value;
+  const nivel=el('obrig-nivel').value;
   const roles=[...document.querySelectorAll('.obrig-role:checked')].map(c=>c.value);
   const payload={
     academy_id: el('obrig-academy').value,
-    app: el('obrig-app').value,
+    nivel,
+    app: nivel==='obrigatorio'?el('obrig-app').value:null,
     roles_aplicaveis: roles.length?roles:null,
     ativo: el('obrig-ativo').checked,
   };
