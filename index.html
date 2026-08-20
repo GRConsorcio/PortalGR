@@ -862,7 +862,8 @@ button,input,select,textarea{font:inherit}
 .timeline-wrap::before{content:'';position:absolute;left:9px;top:4px;bottom:4px;width:2px;background:linear-gradient(var(--gold-dim),var(--border))}
 .timeline-item{position:relative;margin-bottom:18px}
 .timeline-dot{position:absolute;left:-30px;top:18px;width:14px;height:14px;background:var(--s1);border:3px solid var(--gold);box-shadow:0 0 0 4px var(--gold-glow)}
-.timeline-card{background:var(--s2);border:1px solid var(--border);padding:16px 18px;display:flex;align-items:center;gap:14px}
+.timeline-card{background:var(--s2);border:1px solid var(--border);padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .15s,transform .15s}
+.timeline-card:hover{border-color:var(--gold-dim);transform:translateY(-1px)}
 .timeline-photo{width:56px;height:56px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--gold-dim);box-shadow:0 0 0 3px var(--gold-glow)}
 .timeline-photo img{width:100%;height:100%;object-fit:cover}
 .timeline-flag{width:40px;text-align:center;flex-shrink:0;display:flex;align-items:center;justify-content:center}
@@ -2880,7 +2881,7 @@ function renderCopaTimeline(){
   wrap.innerHTML = `<div class="timeline-wrap">${ordenadas.map(ed=>`
     <div class="timeline-item">
       <div class="timeline-dot"></div>
-      <div class="timeline-card">
+      <div class="timeline-card" onclick="abrirCopaEdicao('${ed.id}')">
         ${ed.imagem_url?`<div class="timeline-photo"><img src="${ed.imagem_url}" alt="${ed.equipe_campea}"></div>`:''}
         <div class="timeline-flag" title="${ed.pais||''}">${flagImg(ed.pais_code,30)}</div>
         <div class="timeline-year">${ed.ano}</div>
@@ -2892,6 +2893,37 @@ function renderCopaTimeline(){
       </div>
     </div>`).join('')}</div>`;
   window.__pageEnter?.(wrap);
+}
+
+// Modal de detalhe de uma edição da Copa/Copinha — foto grande + todos os
+// campos, pro usuário poder abrir o card e ver com calma (pedido do usuário,
+// antes só dava pra ver o resumo truncado no card da timeline).
+function abrirCopaEdicao(id){
+  const ed=allCopaEdicoes.find(x=>x.id===id);
+  if(!ed) return;
+  const modal=document.createElement('div');
+  modal.className='modal-bg on';
+  modal.innerHTML=`
+    <div class="modal" style="width:560px;max-width:96vw;padding:0;overflow:hidden">
+      <button class="modal-close" onclick="this.closest('.modal-bg').remove()">✕</button>
+      ${ed.imagem_url?`<div style="width:100%;aspect-ratio:16/10;background:var(--s3);overflow:hidden"><img src="${ed.imagem_url}" alt="${ed.equipe_campea}" style="width:100%;height:100%;object-fit:cover"></div>`:''}
+      <div style="padding:22px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span style="font-size:22px">${flagImg(ed.pais_code,26)}</span>
+          <span style="font-family:var(--font-d);font-size:22px;font-weight:700;color:var(--gold2)">${ed.ano}</span>
+        </div>
+        <div style="font-family:var(--font-d);font-size:19px;font-weight:700;margin-bottom:4px">🏆 ${ed.equipe_campea}</div>
+        ${ed.titulo?`<div style="font-size:13px;color:var(--muted2);margin-bottom:12px">${ed.titulo}</div>`:''}
+        <div style="display:flex;flex-direction:column;gap:8px;padding-top:8px;border-top:1px solid var(--border)">
+          ${ed.capitao?`<div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="color:var(--muted2)">Capitão</span><span style="font-weight:600">${ed.capitao}</span></div>`:''}
+          ${ed.pais?`<div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="color:var(--muted2)">País</span><span style="font-weight:600">${ed.pais}</span></div>`:''}
+          ${ed.pontos_finais?`<div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="color:var(--muted2)">Pontos finais</span><span style="font-weight:600;color:var(--gold2)">${ed.pontos_finais} pts</span></div>`:''}
+        </div>
+        ${ed.descricao?`<div style="margin-top:14px;font-size:13px;color:var(--muted2);line-height:1.6">${ed.descricao}</div>`:''}
+      </div>
+    </div>`;
+  modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
 }
 
 function renderAdmCopaEdicoes(){
