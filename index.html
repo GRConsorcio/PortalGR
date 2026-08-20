@@ -1098,6 +1098,10 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
           <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 1L1 5l8 4 8-4-8-4z"/><path d="M5 7v5a4 4 0 008 0V7"/></svg>
           Academy
         </div>
+        <div class="nav-item admin-only" data-page="adm-obrigatorios" onclick="nav('adm-obrigatorios')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="2" width="12" height="14" rx="1"/><path d="M6.5 8.5l1.7 1.7L11.5 6.5"/></svg>
+          Cursos Obrigatórios
+        </div>
         <div class="nav-item admin-only" data-page="adm-biblioteca" onclick="nav('adm-biblioteca')">
           <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2h5a2 2 0 012 2v12a2 2 0 00-2-2H2V2z"/><path d="M16 2h-5a2 2 0 00-2 2v12a2 2 0 012-2h5V2z"/></svg>
           Biblioteca
@@ -1599,6 +1603,68 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       <div class="adm-table-wrap" id="adm-acad-list"></div>
     </div>
 
+    <!-- ══ ADM: CURSOS OBRIGATÓRIOS ══ -->
+    <div class="page" id="page-adm-obrigatorios">
+      <div class="adm-page-head">
+        <div class="adm-page-title">Cursos Obrigatórios</div>
+        <button class="btn-primary" onclick="openObrigModal()">+ Nova Regra</button>
+      </div>
+      <div style="font-size:11.5px;color:var(--muted2);margin-bottom:14px;line-height:1.5">Define quais cursos da Academy são obrigatórios pra usar cada sistema (CRM, este Portal, Demandas), pra quais papéis, e quem fica isento. Enquanto pendente, a pessoa vê uma tela obrigatória até concluir o curso com pelo menos 70% de aproveitamento.</div>
+      <div class="adm-table-wrap" id="adm-obrig-list"></div>
+    </div>
+
+    <!-- Modal: criar/editar regra de curso obrigatório -->
+    <div class="modal-bg" id="modal-obrig">
+      <div class="modal" style="width:520px">
+        <div class="modal-title">Regra de Curso Obrigatório</div>
+        <button class="modal-close" onclick="closeObrigModal()">✕</button>
+        <input type="hidden" id="obrig-id" value="">
+        <div class="adm-field">
+          <label class="adm-label">Curso</label>
+          <select class="adm-input" id="obrig-academy"></select>
+        </div>
+        <div class="adm-field">
+          <label class="adm-label">Sistema</label>
+          <select class="adm-input" id="obrig-app">
+            <option value="crm">CRM</option>
+            <option value="portal">Portal GR</option>
+            <option value="demandas">Demandas</option>
+          </select>
+        </div>
+        <div class="adm-field">
+          <label class="adm-label">Papéis obrigados (deixe todos desmarcados = vale pra todo mundo)</label>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12px">
+            <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="obrig-role" value="vendedor"> Vendedor</label>
+            <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="obrig-role" value="supervisor"> Supervisor</label>
+            <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="obrig-role" value="coordenador"> Coordenador</label>
+            <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="obrig-role" value="admin"> Admin</label>
+          </div>
+        </div>
+        <div class="adm-field">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12.5px"><input type="checkbox" id="obrig-ativo" checked> Regra ativa</label>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:20px">
+          <button class="btn-primary" onclick="saveObrigModal()">Salvar</button>
+          <button class="btn-outline" onclick="closeObrigModal()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: gerenciar isentos de uma regra -->
+    <div class="modal-bg" id="modal-obrig-isentos">
+      <div class="modal" style="width:480px">
+        <div class="modal-title">Isentar Colaboradores</div>
+        <button class="modal-close" onclick="closeObrigIsentosModal()">✕</button>
+        <input type="hidden" id="obrig-isentos-regra-id" value="">
+        <div class="adm-field">
+          <label class="adm-label">Adicionar isento</label>
+          <select class="adm-input" id="obrig-isentos-add-select"></select>
+          <button class="btn-outline" style="margin-top:8px;font-size:11px" onclick="addObrigIsento()">+ Adicionar</button>
+        </div>
+        <div id="obrig-isentos-lista" style="margin-top:12px;max-height:260px;overflow-y:auto"></div>
+      </div>
+    </div>
+
     <!-- ══ ADM: BIBLIOTECA ══ -->
     <div class="page" id="page-adm-biblioteca">
       <div class="adm-page-head">
@@ -1708,6 +1774,19 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 </div>
 
 <div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- Tela obrigatória: bloqueia navegação até concluir curso(s) obrigatório(s)
+     marcado(s) pro Portal em "Cursos Obrigatórios" (admin). Fica escondida
+     por padrão; checkCursosObrigatorios() decide se mostra. -->
+<div id="tela-obrigatoria" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(8,8,10,0.97);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:24px">
+  <div style="max-width:520px;width:100%;background:var(--s2);border:1px solid var(--gold-dim);border-radius:14px;padding:32px;text-align:center">
+    <div style="font-size:36px;margin-bottom:14px">🎓</div>
+    <div style="font-family:var(--font-d);font-size:19px;font-weight:800;margin-bottom:10px">Curso obrigatório pendente</div>
+    <div style="font-size:12.5px;color:var(--muted2);margin-bottom:20px;line-height:1.6">Antes de continuar usando o Portal, você precisa concluir o(s) curso(s) abaixo com pelo menos 70% de aproveitamento na prova.</div>
+    <div id="tela-obrig-lista" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px"></div>
+    <button class="btn-outline" onclick="_recheckObrigatorios()" style="font-size:11px">🔄 Já concluí, verificar novamente</button>
+  </div>
+</div>
 
 <script>
 /* ═══ CONFIG SUPABASE ═══ */
@@ -3077,6 +3156,7 @@ async function submeterProva(){
   }
   toast(msg, data.aprovado?'ok':'err');
   renderCurso();
+  if(data.aprovado) checkCursosObrigatorios?.();
 }
 // Soma pontos ao perfil do usuário logado (regra "Certificado Academy" de
 // PONTOS_RULES) — busca o valor atual no banco antes de somar (em vez de usar
@@ -3613,7 +3693,7 @@ function renderCarreira(){
 const ADM_PAGE_TITLES = {
   'adm-vendas-equipe':'Vendas da Equipe',
   'adm-campanhas':'Campanhas','adm-metas':'Metas','adm-destaques':'Destaques',
-  'adm-academy':'GR Academy','adm-news':'GR News','adm-avisos':'Avisos',
+  'adm-academy':'GR Academy','adm-obrigatorios':'Cursos Obrigatórios','adm-news':'GR News','adm-avisos':'Avisos',
   'adm-copa':'Copa GR','adm-beneficios':'Benefícios','adm-hallfama':'Hall da Fama',
   'adm-regras':'Regras GR','adm-usuarios':'Usuários','adm-sugestoes':'Sugestões',
   'adm-biblioteca':'Biblioteca',
@@ -3633,6 +3713,7 @@ window.nav = function(page){
       'adm-vendas-equipe':renderAdmVendasEquipe,
       'adm-campanhas':renderAdmCampanhas,'adm-metas':renderAdmMetas,
       'adm-destaques':renderAdmDestaques,'adm-academy':renderAdmAcademy,
+      'adm-obrigatorios':renderAdmObrigatorios,
       'adm-news':renderAdmNews,'adm-avisos':renderAdmAvisos,
       'adm-copa':renderAdmCopa,'adm-beneficios':renderAdmBeneficios,
       'adm-hallfama':renderAdmHallFama,'adm-regras':renderAdmRegras,
@@ -4236,6 +4317,167 @@ function renderAdmDestaques(){
   });
 }
 
+/* ═══ ENFORCEMENT: bloqueia navegação enquanto houver curso obrigatório
+   pendente pro Portal (app='portal' em portal_academy_obrigatorio). CRM e
+   Demandas fazem o mesmo bloqueio no lado deles, consultando a função
+   portal_cursos_pendentes via REST (mesmo padrão de segredo compartilhado
+   já usado noutras integrações Portal↔CRM). ═══ */
+let _pendingObrigatorios=[];
+async function checkCursosObrigatorios(){
+  if(!CU?.id) return;
+  try{
+    const [{data:regras},{data:isentos},{data:aprovadas}]=await Promise.all([
+      sb.from('portal_academy_obrigatorio').select('*').eq('app','portal').eq('ativo',true),
+      sb.from('portal_academy_obrigatorio_isento').select('*').eq('user_id',CU.id),
+      sb.from('portal_prova_respostas').select('academy_id,aprovado').eq('user_id',CU.id).eq('aprovado',true),
+    ]);
+    const meuCargo=(CUP?.cargo||'').toLowerCase().trim();
+    const isentoIds=new Set((isentos||[]).map(i=>i.obrigatorio_id));
+    const aprovadasIds=new Set((aprovadas||[]).map(a=>a.academy_id));
+    _pendingObrigatorios=(regras||[]).filter(r=>{
+      if(isentoIds.has(r.id)) return false;
+      if((r.roles_aplicaveis||[]).length && !r.roles_aplicaveis.map(x=>(x||'').toLowerCase()).includes(meuCargo)) return false;
+      return !aprovadasIds.has(r.academy_id);
+    }).map(r=>({academy_id:r.academy_id, titulo: allAcademy.find(a=>a.id===r.academy_id)?.titulo || 'Curso'}));
+    _renderTelaObrigatoria();
+  }catch(e){ console.warn('[checkCursosObrigatorios] erro:',e.message); }
+}
+function _renderTelaObrigatoria(){
+  const wrap=el('tela-obrigatoria');
+  if(!wrap) return;
+  if(!_pendingObrigatorios.length){ wrap.style.display='none'; return; }
+  el('tela-obrig-lista').innerHTML=_pendingObrigatorios.map(p=>`<button class="btn-primary" onclick="_irParaCursoObrigatorio('${p.academy_id}')">${p.titulo}</button>`).join('');
+  wrap.style.display='flex';
+}
+function _irParaCursoObrigatorio(academyId){
+  el('tela-obrigatoria').style.display='none';
+  nav('academy');
+  setTimeout(()=>openCurso(academyId),50);
+}
+function _recheckObrigatorios(){ toast('Verificando...','ok'); checkCursosObrigatorios(); }
+
+const _navBeforeObrig=window.nav;
+const OBRIG_PAGINAS_LIVRES=new Set(['academy','niveis','certificados']);
+window.nav=function(page){
+  if(_pendingObrigatorios.length && !OBRIG_PAGINAS_LIVRES.has(page)){
+    _renderTelaObrigatoria();
+    toast('Conclua o curso obrigatório antes de continuar','err');
+    return;
+  }
+  _navBeforeObrig(page);
+}
+
+/* ═══ CURSOS OBRIGATÓRIOS (bloqueio de acesso por app) ═══
+   Duas tabelas: portal_academy_obrigatorio (a regra: curso + app + papéis +
+   ativo) e portal_academy_obrigatorio_isento (quem fica de fora de uma regra
+   específica). Não segue o padrão genérico de CRUD (switch de 4 pontos) por
+   ter duas entidades relacionadas — é uma telinha própria. */
+let allObrigatorios=[], allObrigatoriosIsentos=[];
+const APP_LABELS={crm:'CRM',portal:'Portal GR',demandas:'Demandas'};
+const ROLE_LABELS={vendedor:'Vendedor',supervisor:'Supervisor',coordenador:'Coordenador',admin:'Admin'};
+
+async function renderAdmObrigatorios(){
+  const [{data:regras},{data:isentos}]=await Promise.all([
+    sb.from('portal_academy_obrigatorio').select('*').order('criado_em',{ascending:false}),
+    sb.from('portal_academy_obrigatorio_isento').select('*')
+  ]);
+  allObrigatorios=regras||[];
+  allObrigatoriosIsentos=isentos||[];
+  el('adm-obrig-list').innerHTML=allObrigatorios.length===0
+    ?'<div class="empty" style="padding:32px"><div class="empty-line"></div><div class="empty-text">Nenhuma regra cadastrada ainda</div></div>'
+    :allObrigatorios.map(o=>{
+      const curso=allAcademy.find(a=>a.id===o.academy_id);
+      const papeis=(o.roles_aplicaveis||[]).length?o.roles_aplicaveis.map(r=>ROLE_LABELS[r]||r).join(', '):'Todos os papéis';
+      const nIsentos=allObrigatoriosIsentos.filter(i=>i.obrigatorio_id===o.id).length;
+      return `<div class="adm-row">
+        <div class="status-dot" style="background:${o.ativo?'var(--green2)':'var(--muted2)'}"></div>
+        <div class="adm-row-main">
+          <div class="adm-row-title">${curso?.titulo||'(curso removido)'}</div>
+          <div class="adm-row-sub">${APP_LABELS[o.app]||o.app} · ${papeis} · ${nIsentos} isento${nIsentos!==1?'s':''}${o.ativo?'':' · inativa'}</div>
+        </div>
+        <div class="adm-actions">
+          <button class="btn-edit" onclick="openObrigIsentosModal('${o.id}')">Isentos</button>
+          <button class="btn-edit" onclick="openObrigModal('${o.id}')">Editar</button>
+          <button class="btn-del" onclick="deleteObrigatorio('${o.id}')">Apagar</button>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function openObrigModal(id){
+  const o=id?allObrigatorios.find(x=>x.id===id):null;
+  el('obrig-id').value=id||'';
+  el('obrig-academy').innerHTML=allAcademy.map(a=>`<option value="${a.id}">${a.titulo}</option>`).join('');
+  if(o) el('obrig-academy').value=o.academy_id;
+  el('obrig-app').value=o?.app||'crm';
+  document.querySelectorAll('.obrig-role').forEach(chk=>{ chk.checked=(o?.roles_aplicaveis||[]).includes(chk.value); });
+  el('obrig-ativo').checked=o?o.ativo:true;
+  el('modal-obrig').classList.add('on');
+}
+function closeObrigModal(){ el('modal-obrig').classList.remove('on'); }
+
+async function saveObrigModal(){
+  const id=el('obrig-id').value;
+  const roles=[...document.querySelectorAll('.obrig-role:checked')].map(c=>c.value);
+  const payload={
+    academy_id: el('obrig-academy').value,
+    app: el('obrig-app').value,
+    roles_aplicaveis: roles.length?roles:null,
+    ativo: el('obrig-ativo').checked,
+  };
+  const {error} = id
+    ? await sb.from('portal_academy_obrigatorio').update(payload).eq('id',id)
+    : await sb.from('portal_academy_obrigatorio').insert(payload);
+  if(error){ toast('Erro ao salvar: '+error.message,'err'); return; }
+  toast('Regra salva','ok');
+  closeObrigModal();
+  renderAdmObrigatorios();
+}
+
+async function deleteObrigatorio(id){
+  if(!confirm('Apagar esta regra de curso obrigatório?')) return;
+  const {error} = await sb.from('portal_academy_obrigatorio').delete().eq('id',id);
+  if(error){ toast('Erro ao apagar: '+error.message,'err'); return; }
+  toast('Regra removida','ok');
+  renderAdmObrigatorios();
+}
+
+function openObrigIsentosModal(regraId){
+  el('obrig-isentos-regra-id').value=regraId;
+  const jaIsentos=new Set(allObrigatoriosIsentos.filter(i=>i.obrigatorio_id===regraId).map(i=>i.user_id));
+  el('obrig-isentos-add-select').innerHTML=_admAllUsers.filter(u=>!jaIsentos.has(u.user_id)).map(u=>`<option value="${u.user_id}">${u.nome||u.email}</option>`).join('');
+  renderObrigIsentosLista(regraId);
+  el('modal-obrig-isentos').classList.add('on');
+}
+function closeObrigIsentosModal(){ el('modal-obrig-isentos').classList.remove('on'); renderAdmObrigatorios(); }
+function renderObrigIsentosLista(regraId){
+  const lista=allObrigatoriosIsentos.filter(i=>i.obrigatorio_id===regraId);
+  el('obrig-isentos-lista').innerHTML=lista.length===0
+    ?'<div style="font-size:11.5px;color:var(--muted2)">Ninguém isento nesta regra ainda.</div>'
+    :lista.map(i=>{
+      const u=_admAllUsers.find(x=>x.user_id===i.user_id);
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <span>${u?.nome||u?.email||'(usuário removido)'}</span>
+        <button class="btn-del" style="font-size:10px;padding:3px 8px" onclick="removeObrigIsento('${i.id}','${regraId}')">Remover</button>
+      </div>`;
+    }).join('');
+}
+async function addObrigIsento(){
+  const regraId=el('obrig-isentos-regra-id').value;
+  const userId=el('obrig-isentos-add-select').value;
+  if(!userId){ toast('Selecione um colaborador','err'); return; }
+  const {data,error}=await sb.from('portal_academy_obrigatorio_isento').insert({obrigatorio_id:regraId,user_id:userId}).select().maybeSingle();
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  allObrigatoriosIsentos.push(data);
+  openObrigIsentosModal(regraId); // recarrega select + lista
+}
+async function removeObrigIsento(isentoId,regraId){
+  const {error}=await sb.from('portal_academy_obrigatorio_isento').delete().eq('id',isentoId);
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  allObrigatoriosIsentos=allObrigatoriosIsentos.filter(i=>i.id!==isentoId);
+  openObrigIsentosModal(regraId);
+}
+
 function renderAdmAcademy(){
   const temaSel=el('adm-acad-f-tema');
   if(temaSel){
@@ -4663,6 +4905,7 @@ window.loadAll = async function(){
     const {data} = await sb.from('portal_users').select('*').order('nome');
     _admAllUsers = data||[];
   }
+  checkCursosObrigatorios();
 }
 </script>
 <script>
