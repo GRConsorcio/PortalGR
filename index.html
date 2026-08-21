@@ -1018,7 +1018,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
 <!-- AUTH -->
 <div id="auth-screen">
-  <video id="auth-bg-video" class="auth-bg-video" autoplay muted loop playsinline></video>
+  <video id="auth-bg-video" class="auth-bg-video" autoplay muted playsinline></video>
   <div class="auth-bg-scrim"></div>
   <script>
   // Sorteia 1 dos 2 vídeos de fundo do tema atual (data-theme já foi setado
@@ -6234,13 +6234,21 @@ const EASE = [0.22, 1, 0.36, 1];
 // "respirando" bem devagar em loop (zoom quase imperceptível) — dá vida sem
 // disputar atenção com o formulário. Roda direto ao carregar o módulo porque
 // #auth-screen já está visível desde o primeiro paint (não passa por nav()).
+// Assim que essa animação de entrada termina, o vídeo de fundo CONGELA (pause)
+// no frame em que estiver — vira só uma imagem parada dali em diante, só volta
+// a tocar recarregando a página (pedido explícito: não é pra ficar em loop).
 {
   const deco = document.querySelector('.auth-deco');
+  const bgVideo = document.getElementById('auth-bg-video');
   if(deco && !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
     animate(deco, {opacity:[0,1], scale:[1.12,1]}, {duration:1.7, easing:EASE})
       .finished.then(()=>{
+        bgVideo?.pause();
         animate(deco, {scale:[1,1.035,1]}, {duration:17, easing:'ease-in-out', repeat:Infinity});
       });
+  }else{
+    if(deco) deco.style.opacity=1;
+    bgVideo?.pause(); // sem animação de entrada (reduced-motion) — já congela direto
   }
 }
 
