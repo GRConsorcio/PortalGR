@@ -175,7 +175,11 @@ html.sidebar-mini .nav-badge{display:none}
 .nav-badge{margin-left:auto;font-size:9px;font-weight:700;background:var(--gold);color:#08080D;padding:1px 6px;font-family:var(--font-b)}
 
 .sidebar-user{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.su-av{width:32px;height:32px;background:var(--gold);color:#08080D;font-family:var(--font-d);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;cursor:pointer}
+.su-av{width:32px;height:32px;background:var(--gold);color:#08080D;font-family:var(--font-d);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;border-radius:50%}
+/* Badge de câmera no canto do avatar — sem isso o círculo com a inicial não
+   dava nenhuma pista de que era clicável pra trocar a foto. */
+.su-av-wrap{position:relative;cursor:pointer;flex-shrink:0}
+.su-av-badge{position:absolute;bottom:-2px;right:-2px;width:14px;height:14px;border-radius:50%;background:var(--gold);color:#08080D;display:flex;align-items:center;justify-content:center;border:2px solid var(--s1)}
 .su-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.2}
 .su-role{font-size:10px;color:var(--muted2)}
 .su-logout{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--muted2);transition:color .15s;padding:4px}
@@ -1276,7 +1280,10 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
   </div>
 
   <div class="sidebar-user">
-    <div class="su-av" id="su-av" onclick="openPerfilFotoModal()" title="Trocar minha foto">?</div>
+    <div class="su-av-wrap" onclick="openPerfilFotoModal()" title="Trocar minha foto">
+      <div class="su-av" id="su-av">?</div>
+      <div class="su-av-badge"><svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 5h2l1-2h6l1 2h2v8H2z"/><circle cx="8" cy="9" r="2.2"/></svg></div>
+    </div>
     <div>
       <div class="su-name" id="su-name">–</div>
       <div class="su-role" id="su-role">Vendedor</div>
