@@ -3729,10 +3729,19 @@ function _biblioRenderMark(pageWrap, marcacao){
 }
 async function _biblioCriarMarcacao(livroId, pagina, idxInicio, idxFim, texto, cor, pageWrap){
   const payload={user_id:CU.id, livro_id:livroId, pagina, idx_inicio:idxInicio, idx_fim:idxFim, texto:texto.slice(0,2000), cor};
-  const {data,error}=await sb.from('portal_biblioteca_marcacoes').insert(payload).select().maybeSingle();
-  if(error){ toast('Erro ao marcar texto: '+error.message,'err'); return; }
-  _biblioMarcacoesAtual.push(data);
-  _biblioRenderMark(pageWrap, data);
+  // try/catch além do {error} do supabase-js: se a chamada rejeitar de vez
+  // (rede caiu, CORS etc.) em vez de resolver com um objeto de erro, isso
+  // virava uma promise rejeitada sem tratamento — falha 100% silenciosa,
+  // sem toast nenhum, só um erro no console que ninguém ia ver.
+  try{
+    const {data,error}=await sb.from('portal_biblioteca_marcacoes').insert(payload).select().maybeSingle();
+    if(error){ console.error('[biblioteca] erro ao marcar texto:',error); toast('Erro ao marcar texto: '+error.message,'err'); return; }
+    _biblioMarcacoesAtual.push(data);
+    _biblioRenderMark(pageWrap, data);
+  }catch(e){
+    console.error('[biblioteca] falha ao marcar texto:',e);
+    toast('Erro ao marcar texto: '+e.message,'err');
+  }
 }
 async function _biblioRemoverMarcacao(marca, pageWrap){
   _biblioMarcacoesAtual=_biblioMarcacoesAtual.filter(m=>m.id!==marca.id);
@@ -3750,9 +3759,6 @@ function _biblioMostrarPopupSelecao(range, pageWrap, pagina, livroId){
   const rect=range.getBoundingClientRect();
   const popup=document.createElement('div');
   popup.className='biblio-mark-popup';
-  popup.style.left=(rect.left+rect.width/2)+'px';
-  popup.style.top=Math.max(8,rect.top-40)+'px';
-  popup.style.transform='translateX(-50%)';
   popup.innerHTML=['amarelo','azul','rosa'].map(c=>`<div class="biblio-mark-dot" data-cor="${c}" title="Marcar"></div>`).join('');
   popup.querySelectorAll('.biblio-mark-dot').forEach(dot=>{
     dot.onmousedown=ev=>ev.preventDefault(); // não deixa o navegador desfazer a seleção antes do click disparar
@@ -3763,6 +3769,15 @@ function _biblioMostrarPopupSelecao(range, pageWrap, pagina, livroId){
     };
   });
   document.body.appendChild(popup);
+  // Só dá pra centralizar/travar nas bordas da tela depois de anexado (precisa
+  // da largura real renderizada) — sem isso, marcar um trecho colado na
+  // margem esquerda/direita da página jogava os pontinhos de cor pra fora
+  // da tela, inclicáveis.
+  const half=popup.offsetWidth/2;
+  const left=Math.min(window.innerWidth-half-8, Math.max(half+8, rect.left+rect.width/2));
+  popup.style.left=left+'px';
+  popup.style.top=Math.max(8,rect.top-40)+'px';
+  popup.style.transform='translateX(-50%)';
   _biblioPopupEl=popup;
   setTimeout(()=>document.addEventListener('mousedown',_biblioFecharPopupSeForaClique,{once:true}),0);
 }
