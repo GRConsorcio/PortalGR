@@ -77,7 +77,8 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 /* Vídeo de fundo (sorteado entre 2 por tema, ver script logo após a tag
    <video> no HTML) + véu escuro por cima só pra garantir contraste do balão
    de login e da moldura dourada, sem depender do conteúdo do vídeo. */
-.auth-bg-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.auth-bg-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:1;transition:opacity 1s ease}
+.auth-bg-video.auth-bg-video-fade{opacity:0}
 .auth-bg-scrim{position:absolute;inset:0;z-index:1;background:
   radial-gradient(ellipse at 50% 38%,rgba(0,0,0,0) 0%,rgba(0,0,0,.4) 65%,rgba(0,0,0,.65) 100%),
   linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.4))}
@@ -1093,9 +1094,10 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       // nada (nem o timeout de segurança ajudava, já saía com a referência
       // vazia). Busca de novo TODA vez que a função roda, não guarda cache.
       var jaEntrou=false, atrasoMinOk=false, quisMostrar=false;
-      // Atraso mínimo de 1s garantido — mesmo que o vídeo seja curto ou
-      // termine antes, o balão nunca aparece antes de 1s de vídeo sozinho.
-      setTimeout(function(){ atrasoMinOk=true; if(quisMostrar) mostrarBalao(); }, 1000);
+      // Atraso mínimo de 0.5s garantido — mesmo que o vídeo seja curto ou
+      // termine antes, o balão nunca aparece antes de meio segundo de vídeo
+      // sozinho.
+      setTimeout(function(){ atrasoMinOk=true; if(quisMostrar) mostrarBalao(); }, 500);
       function mostrarBalao(){
         if(jaEntrou) return;
         if(!atrasoMinOk){ quisMostrar=true; return; }
@@ -1103,18 +1105,19 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         if(!wrap) return;
         jaEntrou=true;
         wrap.classList.add('auth-wrap-entrou');
+        // BUGFIX: pausar o vídeo (seja chegando no fim de verdade ou via
+        // pause() manual) faz o Safari/WebKit mostrar o próprio ícone nativo
+        // de play/replay por cima — não tem como tirar esse ícone enquanto o
+        // vídeo continuar visível e pausado. Em vez de tentar evitar a pausa,
+        // esconde o vídeo (fade pra opacity:0) no mesmo instante que o balão
+        // aparece — o ícone pode até aparecer por baixo, mas fica invisível.
+        el.classList.add('auth-bg-video-fade');
       }
       if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
         mostrarBalao();
       } else {
         el.addEventListener('timeupdate', function(){
-          if(!el.duration) return;
-          // BUGFIX: deixar o vídeo chegar em 'ended' de verdade faz o
-          // Safari/WebKit mostrar o próprio ícone nativo de "replay" por cima
-          // (confirmado em vídeo mandado pelo usuário) — pausa um instante
-          // ANTES do fim de verdade pra nunca disparar esse estado.
-          if(el.currentTime>=el.duration-0.25){ el.pause(); mostrarBalao(); }
-          else if(el.currentTime>=el.duration-1) mostrarBalao();
+          if(el.duration && el.currentTime>=el.duration-1) mostrarBalao();
         });
         el.addEventListener('ended', mostrarBalao);
         el.addEventListener('error', mostrarBalao);
