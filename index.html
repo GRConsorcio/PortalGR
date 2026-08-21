@@ -1049,14 +1049,13 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     var raiz='https://defwtvwmxntoliuwzjnf.supabase.co/storage/v1/object/public/portal-uploads/';
     var base2=raiz+encodeURIComponent('auth-bg//');
     var base3=raiz+encodeURIComponent('auth-bg///');
+    // Pasta nova, criada limpa (sem barra duplicada) — uploads futuros devem
+    // ir aqui, não na auth-bg antiga.
+    var baseV2=raiz+'auth-bg-v2/';
     var escuro=(document.documentElement.getAttribute('data-theme')||'dark')!=='light';
-    // dark-3/4/5 e light-5 saíram temporariamente da lista: as versões antigas
-    // (encoding pesado demais pro decoder de hardware do iPhone) foram
-    // apagadas do Storage; volta assim que a versão recodificada (mais leve,
-    // H.264 Level 4.0) subir de novo — ver pasta auth-bg-v2.
     var opcoes=escuro
-      ?[base2+'dark-1.ext.mp4',base3+encodeURIComponent('dark-2.ext (1).mp4')]
-      :[base2+'light-1.ext.mp4',base2+'light-2.ext.mp4',base2+'light-3.ext.mp4'];
+      ?[base2+'dark-1.ext.mp4',base3+encodeURIComponent('dark-2.ext (1).mp4'),baseV2+'dark-3-compat.mp4',baseV2+'dark-4-compat.mp4',baseV2+'dark-5-compat.mp4']
+      :[base2+'light-1.ext.mp4',base2+'light-2.ext.mp4',base2+'light-3.ext.mp4',baseV2+'light-5-compat.mp4'];
     var el=document.getElementById('auth-bg-video');
     if(el){
       el.src=opcoes[Math.floor(Math.random()*opcoes.length)];
