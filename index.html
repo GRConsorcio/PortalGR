@@ -70,7 +70,10 @@
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:14px}
 
 /* ── AUTH ── */
-#auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;overflow:hidden}
+/* Gradiente de fallback — se o vídeo não carregar/autoplay for bloqueado e a
+   moldura SVG não renderizar por algum motivo, ainda fica um fundo com
+   alguma profundidade em vez de cor sólida chapada. */
+#auth-screen{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 30%,color-mix(in srgb,var(--gold) 10%,var(--bg)),var(--bg) 70%);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;overflow:hidden}
 /* Vídeo de fundo (sorteado entre 2 por tema, ver script logo após a tag
    <video> no HTML) + véu escuro por cima só pra garantir contraste do balão
    de login e da moldura dourada, sem depender do conteúdo do vídeo. */
@@ -94,7 +97,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
    em opacity:0 durante o delay e SEMPRE aparece sozinho depois, mesmo se
    JavaScript nenhum rodar. */
 @keyframes authWrapEntrada{from{opacity:0;transform:translateY(14px) scale(.72)}to{opacity:1;transform:translateY(0) scale(1)}}
-.auth-wrap{position:relative;z-index:3;width:420px;background:color-mix(in srgb,var(--s1) 62%,transparent);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);border:1px solid color-mix(in srgb,var(--border2) 70%,transparent);border-radius:18px;padding:40px 36px;box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:authWrapEntrada 2.2s cubic-bezier(.16,1,.3,1) 1s backwards}
+.auth-wrap{position:relative;z-index:3;width:420px;background:color-mix(in srgb,var(--s1) 42%,transparent);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);border:1px solid color-mix(in srgb,var(--border2) 70%,transparent);border-radius:18px;padding:40px 36px;box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:authWrapEntrada 2.2s cubic-bezier(.16,1,.3,1) 1s backwards}
 @media (prefers-reduced-motion: reduce){
   .auth-wrap{animation:none}
 }
@@ -110,7 +113,13 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
    é um detalhe ambiente contínuo, não precisa passar pela lib. */
 @keyframes authDecoCintilar{0%,100%{opacity:.15}50%{opacity:1}}
 .auth-deco{position:absolute;inset:-6%;width:112%;height:112%;pointer-events:none;z-index:2;opacity:1;transform-origin:center}
-.auth-deco-bracket{fill:none;stroke:var(--gold);stroke-width:2.5;filter:drop-shadow(0 0 var(--auth-deco-blur,8px) var(--gold))}
+/* BUGFIX: WebKit/iOS tem um bug conhecido onde var() dentro de
+   filter:drop-shadow() faz o filtro inteiro falhar silenciosamente — e
+   dependendo da versão, isso derruba a renderização do SVG inteiro, não só
+   o brilho. Cor do glow hardcoded (duas declarações, uma por tema) em vez de
+   interpolar var(--gold) ali dentro. */
+.auth-deco-bracket{fill:none;stroke:var(--gold);stroke-width:2.5;filter:drop-shadow(0 0 8px rgba(201,168,76,.9))}
+:root[data-theme="light"] .auth-deco-bracket{filter:drop-shadow(0 0 3px rgba(0,129,194,.85))}
 .auth-deco-line{stroke:var(--gold);stroke-width:1;opacity:.35}
 .auth-deco-spark{fill:var(--gold2);animation:authDecoCintilar 3.6s ease-in-out infinite}
 @media (prefers-reduced-motion: reduce){
@@ -820,10 +829,6 @@ html.sidebar-mini .nav-badge{display:none}
      cima. Só escurece um pouco pra manter contraste em cima do fundo claro. */
   --fame-gold:#B8860B;
   --fame-gold2:#DAA520;
-  /* Glow forte (pensado pro dourado sobre fundo quase preto) vira mancha
-     borrada em cima de fundo claro — reduz o blur, a cor já troca sozinha
-     pra azul via var(--gold). */
-  --auth-deco-blur:3px;
 }
 :root[data-theme="light"] .modal-bg{background:rgba(15,17,20,0.45)}
 :root[data-theme="light"] .adm-row:hover{background:rgba(0,0,0,0.025)}
@@ -1068,6 +1073,12 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       // sem quebrar nada.
       el.load();
       el.play?.().catch(()=>{});
+      // Alguns navegadores mobile (confirmado no Brave iOS) bloqueiam o
+      // autoplay mesmo com muted+playsinline e mostram o próprio ícone de
+      // play por cima — no primeiro toque na tela (em qualquer lugar, não só
+      // no vídeo), isso já conta como gesto do usuário e o play() funciona de
+      // verdade. {once:true} tira o listener depois do 1º toque.
+      document.getElementById('auth-screen')?.addEventListener('click', ()=>{ el.play?.().catch(()=>{}); }, {once:true});
     }
   })();
   </script>
