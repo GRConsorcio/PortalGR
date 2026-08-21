@@ -87,7 +87,17 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
    (um card sólido escondia o fundo quase inteiro). color-mix() em cima dos
    tokens de tema em vez de duplicar cor: já sai certo no claro e no escuro
    sem precisar de override em nenhum dos dois. */
-.auth-wrap{position:relative;z-index:1;width:420px;background:color-mix(in srgb,var(--s1) 62%,transparent);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);border:1px solid color-mix(in srgb,var(--border2) 70%,transparent);border-radius:18px;padding:40px 36px;box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+/* Entrada do balão atrasada — dá um instante só do vídeo/moldura dourada
+   antes do formulário aparecer por cima. CSS puro (não motion.dev) de
+   propósito: isso é o formulário de LOGIN, não pode ficar escondido
+   dependendo de import de CDN/rede terminar — backwards garante que fica
+   em opacity:0 durante o delay e SEMPRE aparece sozinho depois, mesmo se
+   JavaScript nenhum rodar. */
+@keyframes authWrapEntrada{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.auth-wrap{position:relative;z-index:1;width:420px;background:color-mix(in srgb,var(--s1) 62%,transparent);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);border:1px solid color-mix(in srgb,var(--border2) 70%,transparent);border-radius:18px;padding:40px 36px;box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:authWrapEntrada .7s cubic-bezier(.16,1,.3,1) .5s backwards}
+@media (prefers-reduced-motion: reduce){
+  .auth-wrap{animation:none}
+}
 /* Moldura decorativa dourada atrás do balão de login — cantos estilo
    "viewfinder" espalhados + linhas finas + pontinhos, tudo em var(--gold)
    pra virar azul sozinho no tema claro (mesma troca de acento do resto do
@@ -761,7 +771,7 @@ html.sidebar-mini .nav-badge{display:none}
 @media(max-width:520px){
   .kpi-grid{grid-template-columns:1fr}
   .levels-grid,.hall-grid{grid-template-columns:1fr}
-  .auth-wrap{padding:28px 22px;width:100%}
+  .auth-wrap{padding:26px 20px;width:100%;max-width:320px}
   #auth-screen{padding:12px}
   .hall-hero-title{font-size:24px}
   .panel-head{padding:12px 14px}
@@ -1029,14 +1039,20 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
   // pelo script inline do <head>, antes do 1º paint, então já dá pra ler
   // aqui). Só carrega o escolhido — não os 4 — pra não gastar banda à toa.
   (function(){
-    // O nome real do objeto no bucket ficou com barra dupla ("auth-bg//dark-1...",
-    // sobrou do jeito que a pasta foi criada no dashboard) — o gateway do Storage
-    // normaliza "//" pra "/" numa URL comum e aí não acha o objeto (404). Só
-    // funciona codificando as barras (%2F), que aí passam intactas até a busca
-    // pela chave exata.
-    var base='https://defwtvwmxntoliuwzjnf.supabase.co/storage/v1/object/public/portal-uploads/'+encodeURIComponent('auth-bg//');
+    // O nome real dos objetos no bucket ficou com barra dupla ou tripla
+    // ("auth-bg//..." / "auth-bg///...", sobra de como a pasta foi criada no
+    // dashboard em uploads diferentes) — o gateway do Storage normaliza "//"
+    // pra "/" numa URL comum e aí não acha o objeto (404). Só funciona
+    // codificando as barras (%2F), que aí passam intactas até a busca pela
+    // chave exata. Lista tem que ser atualizada manualmente aqui toda vez que
+    // um vídeo novo for enviado — não existe listagem automática da pasta.
+    var raiz='https://defwtvwmxntoliuwzjnf.supabase.co/storage/v1/object/public/portal-uploads/';
+    var base2=raiz+encodeURIComponent('auth-bg//');
+    var base3=raiz+encodeURIComponent('auth-bg///');
     var escuro=(document.documentElement.getAttribute('data-theme')||'dark')!=='light';
-    var opcoes=escuro?[base+'dark-1.ext.mp4',base+'dark-2.ext.mp4']:[base+'light-1.ext.mp4',base+'light-2.ext.mp4'];
+    var opcoes=escuro
+      ?[base2+'dark-1.ext.mp4',base2+'dark-2.ext.mp4',base2+'dark-3.ext.mp4']
+      :[base2+'light-1.ext.mp4',base2+'light-2.ext.mp4',base2+'light-3.ext.mp4',base3+'light-4.ext.mp4',base3+'light-5.ext.mp4'];
     var el=document.getElementById('auth-bg-video');
     if(el) el.src=opcoes[Math.floor(Math.random()*opcoes.length)];
   })();
