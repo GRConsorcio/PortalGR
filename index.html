@@ -1051,7 +1051,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     var base3=raiz+encodeURIComponent('auth-bg///');
     var escuro=(document.documentElement.getAttribute('data-theme')||'dark')!=='light';
     var opcoes=escuro
-      ?[base2+'dark-1.ext.mp4',base2+'dark-2.ext.mp4',base2+'dark-3.ext.mp4']
+      ?[base2+'dark-1.ext.mp4',base3+encodeURIComponent('dark-2.ext (1).mp4'),base2+'dark-3.ext.mp4',base3+'dark-4.ext.mp4',base3+'dark-5.ext.mp4']
       :[base2+'light-1.ext.mp4',base2+'light-2.ext.mp4',base2+'light-3.ext.mp4',base3+'light-4.ext.mp4',base3+'light-5.ext.mp4'];
     var el=document.getElementById('auth-bg-video');
     if(el) el.src=opcoes[Math.floor(Math.random()*opcoes.length)];
