@@ -4454,7 +4454,16 @@ function _admDismissDraft(type, editId){
   el('adm-draft-banner')?.remove();
 }
 
-function openAdmModal(type, data=null){
+async function openAdmModal(type, data=null){
+  // BUGFIX: _admAllUsers só era populado como efeito colateral de visitar a
+  // página "Usuários" antes — abrir "Nova Meta"/"Novo Destaque" direto (sem
+  // passar por lá primeiro) deixava o select de Colaborador completamente
+  // vazio, sem nenhuma opção pra escolher. Carrega aqui se ainda não tiver
+  // carregado, igual renderAdmUsuarios() já fazia.
+  if(!_admAllUsers.length){
+    const {data:users} = await sb.from('portal_users').select('*').order('nome');
+    if(users) _admAllUsers = users;
+  }
   _admModalType = type;
   _admEditId = data?.id || null;
   const titles = {
