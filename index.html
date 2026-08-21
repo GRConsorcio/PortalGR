@@ -2205,6 +2205,15 @@ async function initApp(user){
   renderNav();
   renderDashboard();
   renderNiveis();
+  // Restaura a última página visitada antes do reload (ver o wrap de nav()
+  // logo depois do organograma, mais pra baixo no arquivo, que é quem grava
+  // gr_last_page) — só se ainda for uma página reconhecida, senão fica no
+  // Dashboard mesmo (já renderizado acima).
+  let _lastPage=null;
+  try{ _lastPage=localStorage.getItem('gr_last_page'); }catch(e){}
+  if(_lastPage && _lastPage!=='dashboard' && (PAGE_TITLES[_lastPage]||ADM_PAGE_TITLES[_lastPage])){
+    nav(_lastPage);
+  }
 }
 
 /* ═══ RESUMO DE VENDAS (CRM) ═══
@@ -5685,6 +5694,17 @@ window.nav = function(page){
     _navOrig2(page);
   }
 }
+
+// Lembra a última página visitada (localStorage, mesmo padrão já usado pro
+// tema claro/escuro) — ao recarregar, initApp restaura em vez de sempre cair
+// no Dashboard. Esse wrap é o mais externo (roda por último no arquivo),
+// então pega toda navegação — inclusive páginas admin e organograma, que têm
+// seus próprios branches e não passam pelo nav() de baixo.
+const _navOrigPersist = window.nav;
+window.nav = function(page){
+  _navOrigPersist(page);
+  try{ localStorage.setItem('gr_last_page', page); }catch(e){}
+};
 
 // Fecha modais/gaveta com a tecla Esc — acessibilidade de teclado
 document.addEventListener('keydown', e=>{
