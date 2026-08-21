@@ -96,7 +96,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
    rede de segurança em setTimeout garante que aparece de qualquer jeito).
    Começa oculto/pequeno via classe base; TRANSITION em vez de @keyframes
    porque é mais simples de disparar por classe a partir do JS. */
-.auth-wrap{position:relative;z-index:3;width:420px;background:color-mix(in srgb,var(--s1) 42%,transparent);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);border:1px solid color-mix(in srgb,var(--border2) 70%,transparent);border-radius:18px;padding:40px 36px;box-shadow:0 20px 60px rgba(0,0,0,0.6);opacity:0;transform:translateY(14px) scale(.72);transition:opacity 1.1s cubic-bezier(.16,1,.3,1),transform 1.1s cubic-bezier(.16,1,.3,1)}
+.auth-wrap{position:relative;z-index:3;width:420px;background:color-mix(in srgb,var(--s1) 42%,transparent);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);border:1px solid color-mix(in srgb,var(--border2) 70%,transparent);border-radius:18px;padding:40px 36px;box-shadow:0 20px 60px rgba(0,0,0,0.6);opacity:0;transform:translateY(20px) scale(.55);transition:opacity 1.3s cubic-bezier(.16,1,.3,1),transform 1.3s cubic-bezier(.16,1,.3,1)}
 .auth-wrap.auth-wrap-entrou{opacity:1;transform:translateY(0) scale(1)}
 @media (prefers-reduced-motion: reduce){
   .auth-wrap{transition:none}
@@ -1092,9 +1092,13 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       // fora, uma vez só, sempre dava null, e mostrarBalao() nunca fazia
       // nada (nem o timeout de segurança ajudava, já saía com a referência
       // vazia). Busca de novo TODA vez que a função roda, não guarda cache.
-      var jaEntrou=false;
+      var jaEntrou=false, atrasoMinOk=false, quisMostrar=false;
+      // Atraso mínimo de 1s garantido — mesmo que o vídeo seja curto ou
+      // termine antes, o balão nunca aparece antes de 1s de vídeo sozinho.
+      setTimeout(function(){ atrasoMinOk=true; if(quisMostrar) mostrarBalao(); }, 1000);
       function mostrarBalao(){
         if(jaEntrou) return;
+        if(!atrasoMinOk){ quisMostrar=true; return; }
         var wrap=document.querySelector('.auth-wrap');
         if(!wrap) return;
         jaEntrou=true;
@@ -1104,7 +1108,13 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         mostrarBalao();
       } else {
         el.addEventListener('timeupdate', function(){
-          if(el.duration && el.currentTime>=el.duration-1) mostrarBalao();
+          if(!el.duration) return;
+          // BUGFIX: deixar o vídeo chegar em 'ended' de verdade faz o
+          // Safari/WebKit mostrar o próprio ícone nativo de "replay" por cima
+          // (confirmado em vídeo mandado pelo usuário) — pausa um instante
+          // ANTES do fim de verdade pra nunca disparar esse estado.
+          if(el.currentTime>=el.duration-0.25){ el.pause(); mostrarBalao(); }
+          else if(el.currentTime>=el.duration-1) mostrarBalao();
         });
         el.addEventListener('ended', mostrarBalao);
         el.addEventListener('error', mostrarBalao);
