@@ -3525,7 +3525,13 @@ function renderProvaContent(a,p){
     </div>`;
 }
 let _provaRefazendo=false;
+// BUGFIX: sem essa trava, um clique duplo (ou duplo toque, comum em conexão
+// lenta) disparava duas submeterProva() em paralelo — as duas liam
+// jaTinhaCertificado=false antes de qualquer uma terminar de salvar, então as
+// duas somavam os +25 pontos de "Certificado Academy" pra uma única aprovação.
+let _provaEnviando=false;
 async function submeterProva(){
+  if(_provaEnviando) return;
   const a=allAcademy.find(x=>x.id===_cursoAtualId);
   if(!a) return;
   const perguntas=(a.prova||[]);
@@ -3541,30 +3547,35 @@ async function submeterProva(){
       respostas.push({questao_id:q.id, resposta:checked.value});
     }
   }
-  // Guardado ANTES do upsert pra saber se esse certificado é novo (1ª aprovação
-  // nesse curso) ou só uma repetição de prova já aprovada antes — os pontos de
-  // "Certificado Academy" (regra em PONTOS_RULES) só valem uma vez por curso,
-  // não a cada vez que alguém refaz a prova.
-  const jaTinhaCertificado=allCertificados.some(c=>c.academy_id===a.id);
-  const payload={user_id:CU.id, academy_id:a.id, respostas};
-  const{data,error}=await sb.from('portal_prova_respostas').upsert(payload,{onConflict:'user_id,academy_id'}).select().maybeSingle();
-  if(error){ toast('Erro ao enviar prova: '+error.message,'err'); return; }
-  _provaRefazendo=false;
-  const idx=allProvaRespostas.findIndex(r=>r.academy_id===a.id);
-  if(idx>-1) allProvaRespostas[idx]=data; else allProvaRespostas.push(data);
-  // A nota veio calculada pelo trigger — se aprovado, o certificado já foi
-  // emitido no mesmo INSERT/UPDATE (trigger portal_emitir_certificado).
-  // Recarrega certificados pra já refletir na hora.
-  const{data:certs}=await sb.from('portal_certificados').select('*').eq('user_id',CU.id).order('emitido_em',{ascending:false});
-  if(certs) allCertificados=certs;
-  let msg=data.aprovado?`Aprovado com ${data.nota_pct}%! Certificado emitido.`:`Nota: ${data.nota_pct}% — não atingiu os 70%.`;
-  if(data.aprovado && !jaTinhaCertificado){
-    const ptsGanhos=await _ganharPontos(25);
-    if(ptsGanhos!=null) msg+=` +25 pontos GR Nível.`;
+  _provaEnviando=true;
+  try{
+    // Guardado ANTES do upsert pra saber se esse certificado é novo (1ª aprovação
+    // nesse curso) ou só uma repetição de prova já aprovada antes — os pontos de
+    // "Certificado Academy" (regra em PONTOS_RULES) só valem uma vez por curso,
+    // não a cada vez que alguém refaz a prova.
+    const jaTinhaCertificado=allCertificados.some(c=>c.academy_id===a.id);
+    const payload={user_id:CU.id, academy_id:a.id, respostas};
+    const{data,error}=await sb.from('portal_prova_respostas').upsert(payload,{onConflict:'user_id,academy_id'}).select().maybeSingle();
+    if(error){ toast('Erro ao enviar prova: '+error.message,'err'); return; }
+    _provaRefazendo=false;
+    const idx=allProvaRespostas.findIndex(r=>r.academy_id===a.id);
+    if(idx>-1) allProvaRespostas[idx]=data; else allProvaRespostas.push(data);
+    // A nota veio calculada pelo trigger — se aprovado, o certificado já foi
+    // emitido no mesmo INSERT/UPDATE (trigger portal_emitir_certificado).
+    // Recarrega certificados pra já refletir na hora.
+    const{data:certs}=await sb.from('portal_certificados').select('*').eq('user_id',CU.id).order('emitido_em',{ascending:false});
+    if(certs) allCertificados=certs;
+    let msg=data.aprovado?`Aprovado com ${data.nota_pct}%! Certificado emitido.`:`Nota: ${data.nota_pct}% — não atingiu os 70%.`;
+    if(data.aprovado && !jaTinhaCertificado){
+      const ptsGanhos=await _ganharPontos(25);
+      if(ptsGanhos!=null) msg+=` +25 pontos GR Nível.`;
+    }
+    toast(msg, data.aprovado?'ok':'err');
+    renderCurso();
+    if(data.aprovado) checkCursosObrigatorios?.();
+  } finally {
+    _provaEnviando=false;
   }
-  toast(msg, data.aprovado?'ok':'err');
-  renderCurso();
-  if(data.aprovado) checkCursosObrigatorios?.();
 }
 // Soma pontos ao perfil do usuário logado (regra "Certificado Academy" de
 // PONTOS_RULES) — busca o valor atual no banco antes de somar (em vez de usar
@@ -5580,6 +5591,14 @@ ADM_PAGE_TITLES['organograma'] = 'Organograma';
 
 const _navOrig2 = window.nav;
 window.nav = function(page){
+  // BUGFIX: esse wrap tratava 'organograma' direto, sem passar pelo _navOrig2
+  // (que já embute o bloqueio de curso obrigatório, ver _navBeforeObrig acima)
+  // — dava pra escapar do bloqueio clicando em Organograma. Repassa pro nav de
+  // baixo primeiro nesse caso, que já sabe mostrar a tela de bloqueio.
+  if(_pendingObrigatorios.length && !OBRIG_PAGINAS_LIVRES.has(page)){
+    _navOrig2(page);
+    return;
+  }
   if(page === 'organograma'){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
@@ -6234,23 +6253,24 @@ const EASE = [0.22, 1, 0.36, 1];
 // "respirando" bem devagar em loop (zoom quase imperceptível) — dá vida sem
 // disputar atenção com o formulário. Roda direto ao carregar o módulo porque
 // #auth-screen já está visível desde o primeiro paint (não passa por nav()).
-// Assim que essa animação de entrada termina, o vídeo de fundo CONGELA (pause)
-// no frame em que estiver — vira só uma imagem parada dali em diante, só volta
-// a tocar recarregando a página (pedido explícito: não é pra ficar em loop).
 {
   const deco = document.querySelector('.auth-deco');
-  const bgVideo = document.getElementById('auth-bg-video');
   if(deco && !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
     animate(deco, {opacity:[0,1], scale:[1.12,1]}, {duration:1.7, easing:EASE})
       .finished.then(()=>{
-        bgVideo?.pause();
         animate(deco, {scale:[1,1.035,1]}, {duration:17, easing:'ease-in-out', repeat:Infinity});
       });
-  }else{
-    if(deco) deco.style.opacity=1;
-    bgVideo?.pause(); // sem animação de entrada (reduced-motion) — já congela direto
+  }else if(deco){
+    deco.style.opacity=1;
   }
 }
+// BUGFIX: congelar o vídeo junto com o fim da animação da moldura (~1.7s)
+// cortava o próprio vídeo no meio do movimento dele — os vídeos preparados
+// duram bem mais que isso, então pausar ali sempre pegava "no meio da
+// animação" do vídeo em vez de deixá-la terminar. Sem o atributo loop
+// (removido no HTML), o <video> já para sozinho, parado no último frame,
+// quando termina de tocar uma vez inteira — não precisa de pause() manual
+// amarrado a nenhum tempo fixo. Só volta a tocar recarregando a página.
 
 // Anima os blocos "soltos" de uma página assim que ela é exibida — leve fade
 // + subida em cascata. Reaproveitado por nav(), pela troca de sub-aba da
