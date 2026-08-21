@@ -1093,38 +1093,20 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       // fora, uma vez só, sempre dava null, e mostrarBalao() nunca fazia
       // nada (nem o timeout de segurança ajudava, já saía com a referência
       // vazia). Busca de novo TODA vez que a função roda, não guarda cache.
-      var jaEntrou=false, atrasoMinOk=false, quisMostrar=false;
-      // Atraso mínimo de 0.5s garantido — mesmo que o vídeo seja curto ou
-      // termine antes, o balão nunca aparece antes de meio segundo de vídeo
-      // sozinho.
-      setTimeout(function(){ atrasoMinOk=true; if(quisMostrar) mostrarBalao(); }, 200);
+      // Balão aparece em exatamente 0.2s, sempre, em qualquer aparelho — não
+      // depende mais do vídeo (timeupdate/ended) porque isso deixava o tempo
+      // de aparecimento variável (e às vezes nunca disparava, dependendo de
+      // autoplay bloqueado no navegador). O vídeo continua tocando por trás
+      // por conta própria, só não dita mais quando o formulário aparece.
+      var jaEntrou=false;
       function mostrarBalao(){
         if(jaEntrou) return;
-        if(!atrasoMinOk){ quisMostrar=true; return; }
         var wrap=document.querySelector('.auth-wrap');
         if(!wrap) return;
         jaEntrou=true;
         wrap.classList.add('auth-wrap-entrou');
-        // BUGFIX: pausar o vídeo (seja chegando no fim de verdade ou via
-        // pause() manual) faz o Safari/WebKit mostrar o próprio ícone nativo
-        // de play/replay por cima — e esse ícone parece ser desenhado numa
-        // camada separada que ignora opacity:0 do elemento (só esconder via
-        // CSS não bastou). Faz o fade visual primeiro (suave), e logo depois
-        // tira o vídeo do layout de vez (display:none + pause), que aí não
-        // sobra elemento nenhum pro navegador desenhar overlay em cima.
-        el.classList.add('auth-bg-video-fade');
-        setTimeout(function(){ el.pause(); el.style.display='none'; }, 1100);
       }
-      if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-        mostrarBalao();
-      } else {
-        el.addEventListener('timeupdate', function(){
-          if(el.duration && el.currentTime>=el.duration-1) mostrarBalao();
-        });
-        el.addEventListener('ended', mostrarBalao);
-        el.addEventListener('error', mostrarBalao);
-        setTimeout(mostrarBalao, 4500);
-      }
+      setTimeout(mostrarBalao, 200);
     }
   })();
   </script>
