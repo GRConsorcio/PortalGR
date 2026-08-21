@@ -74,8 +74,8 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 /* Vídeo de fundo (sorteado entre 2 por tema, ver script logo após a tag
    <video> no HTML) + véu escuro por cima só pra garantir contraste do balão
    de login e da moldura dourada, sem depender do conteúdo do vídeo. */
-.auth-bg-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
-.auth-bg-scrim{position:absolute;inset:0;z-index:-1;background:
+.auth-bg-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.auth-bg-scrim{position:absolute;inset:0;z-index:1;background:
   radial-gradient(ellipse at 50% 38%,rgba(0,0,0,0) 0%,rgba(0,0,0,.4) 65%,rgba(0,0,0,.65) 100%),
   linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.4))}
 /* "Gelo": tom azul-acinzentado frio em vez de preto puro por cima do vídeo —
@@ -94,7 +94,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
    em opacity:0 durante o delay e SEMPRE aparece sozinho depois, mesmo se
    JavaScript nenhum rodar. */
 @keyframes authWrapEntrada{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-.auth-wrap{position:relative;z-index:1;width:420px;background:color-mix(in srgb,var(--s1) 62%,transparent);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);border:1px solid color-mix(in srgb,var(--border2) 70%,transparent);border-radius:18px;padding:40px 36px;box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:authWrapEntrada .7s cubic-bezier(.16,1,.3,1) .5s backwards}
+.auth-wrap{position:relative;z-index:3;width:420px;background:color-mix(in srgb,var(--s1) 62%,transparent);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);border:1px solid color-mix(in srgb,var(--border2) 70%,transparent);border-radius:18px;padding:40px 36px;box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:authWrapEntrada .7s cubic-bezier(.16,1,.3,1) .5s backwards}
 @media (prefers-reduced-motion: reduce){
   .auth-wrap{animation:none}
 }
@@ -109,7 +109,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
    Cintilar dos pontinhos continua em CSS puro — não é "entrada de página",
    é um detalhe ambiente contínuo, não precisa passar pela lib. */
 @keyframes authDecoCintilar{0%,100%{opacity:.15}50%{opacity:1}}
-.auth-deco{position:absolute;inset:-6%;width:112%;height:112%;pointer-events:none;z-index:0;opacity:1;transform-origin:center}
+.auth-deco{position:absolute;inset:-6%;width:112%;height:112%;pointer-events:none;z-index:2;opacity:1;transform-origin:center}
 .auth-deco-bracket{fill:none;stroke:var(--gold);stroke-width:2.5;filter:drop-shadow(0 0 var(--auth-deco-blur,8px) var(--gold))}
 .auth-deco-line{stroke:var(--gold);stroke-width:1;opacity:.35}
 .auth-deco-spark{fill:var(--gold2);animation:authDecoCintilar 3.6s ease-in-out infinite}
@@ -1032,7 +1032,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
 <!-- AUTH -->
 <div id="auth-screen">
-  <video id="auth-bg-video" class="auth-bg-video" autoplay muted playsinline></video>
+  <video id="auth-bg-video" class="auth-bg-video" autoplay muted playsinline webkit-playsinline="true" preload="auto"></video>
   <div class="auth-bg-scrim"></div>
   <script>
   // Sorteia 1 dos 2 vídeos de fundo do tema atual (data-theme já foi setado
@@ -1052,9 +1052,20 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     var escuro=(document.documentElement.getAttribute('data-theme')||'dark')!=='light';
     var opcoes=escuro
       ?[base2+'dark-1.ext.mp4',base3+encodeURIComponent('dark-2.ext (1).mp4'),base2+'dark-3.ext.mp4',base3+'dark-4.ext.mp4',base3+'dark-5.ext.mp4']
-      :[base2+'light-1.ext.mp4',base2+'light-2.ext.mp4',base2+'light-3.ext.mp4',base3+'light-4.ext.mp4',base3+'light-5.ext.mp4'];
+      :[base2+'light-1.ext.mp4',base2+'light-2.ext.mp4',base2+'light-3.ext.mp4'];
     var el=document.getElementById('auth-bg-video');
-    if(el) el.src=opcoes[Math.floor(Math.random()*opcoes.length)];
+    if(el){
+      el.src=opcoes[Math.floor(Math.random()*opcoes.length)];
+      // BUGFIX: definir .src via JS num <video autoplay> que nasceu sem
+      // source nenhuma (a tag no HTML fica vazia de propósito, o src só é
+      // escolhido aqui) não dispara autoplay sozinho em alguns navegadores
+      // mobile (confirmado no Safari/Brave iOS) — precisa forçar load()+play()
+      // explicitamente. O catch é porque play() pode rejeitar por política de
+      // autoplay do navegador; nesse caso o vídeo só fica parado no 1º frame,
+      // sem quebrar nada.
+      el.load();
+      el.play?.().catch(()=>{});
+    }
   })();
   </script>
   <svg class="auth-deco" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
