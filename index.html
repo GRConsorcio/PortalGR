@@ -1107,11 +1107,13 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         wrap.classList.add('auth-wrap-entrou');
         // BUGFIX: pausar o vídeo (seja chegando no fim de verdade ou via
         // pause() manual) faz o Safari/WebKit mostrar o próprio ícone nativo
-        // de play/replay por cima — não tem como tirar esse ícone enquanto o
-        // vídeo continuar visível e pausado. Em vez de tentar evitar a pausa,
-        // esconde o vídeo (fade pra opacity:0) no mesmo instante que o balão
-        // aparece — o ícone pode até aparecer por baixo, mas fica invisível.
+        // de play/replay por cima — e esse ícone parece ser desenhado numa
+        // camada separada que ignora opacity:0 do elemento (só esconder via
+        // CSS não bastou). Faz o fade visual primeiro (suave), e logo depois
+        // tira o vídeo do layout de vez (display:none + pause), que aí não
+        // sobra elemento nenhum pro navegador desenhar overlay em cima.
         el.classList.add('auth-bg-video-fade');
+        setTimeout(function(){ el.pause(); el.style.display='none'; }, 1100);
       }
       if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
         mostrarBalao();
