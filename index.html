@@ -175,7 +175,7 @@ html.sidebar-mini .nav-badge{display:none}
 .nav-badge{margin-left:auto;font-size:9px;font-weight:700;background:var(--gold);color:#08080D;padding:1px 6px;font-family:var(--font-b)}
 
 .sidebar-user{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.su-av{width:32px;height:32px;background:var(--gold);color:#08080D;font-family:var(--font-d);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.su-av{width:32px;height:32px;background:var(--gold);color:#08080D;font-family:var(--font-d);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;cursor:pointer}
 .su-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.2}
 .su-role{font-size:10px;color:var(--muted2)}
 .su-logout{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--muted2);transition:color .15s;padding:4px}
@@ -1276,7 +1276,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
   </div>
 
   <div class="sidebar-user">
-    <div class="su-av" id="su-av">?</div>
+    <div class="su-av" id="su-av" onclick="openPerfilFotoModal()" title="Trocar minha foto">?</div>
     <div>
       <div class="su-name" id="su-name">–</div>
       <div class="su-role" id="su-role">Vendedor</div>
@@ -2198,6 +2198,7 @@ async function initApp(user){
   el('su-av').textContent=(dn[0]||'?').toUpperCase();
   el('auth-screen').style.display='none';
   await loadAll();
+  _renderAvatarSidebar(); // agora que CUP existe, troca a inicial pela foto se tiver uma salva
   await fetchCrmResumo(CUP?.email||CU.email);
   await fetchQualidadeResumo(CUP?.email||CU.email);
   renderSidebar();
@@ -5484,6 +5485,59 @@ async function doChangeOwnPassword(){
   if(error){ err.textContent = error.message; return; }
   document.querySelector('.modal-bg.on')?.remove();
   toast('Senha alterada com sucesso!','ok');
+}
+
+// Avatar da sidebar: mostra a foto de perfil (CUP.foto_url) se tiver, senão a
+// inicial do nome — chamado no boot (initApp, depois de CUP carregar) e de
+// novo depois de um upload bem-sucedido, pra atualizar na hora sem reload.
+function _renderAvatarSidebar(){
+  const av=el('su-av');
+  if(!av) return;
+  const dn=CU?.user_metadata?.full_name||CU?.email||'';
+  const inicial=(dn[0]||'?').toUpperCase();
+  av.innerHTML = CUP?.foto_url
+    ? `<img src="${CUP.foto_url}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.textContent='${inicial}'">`
+    : inicial;
+}
+function openPerfilFotoModal(){
+  const dn=CU?.user_metadata?.full_name||CU?.email||'';
+  const inicial=(dn[0]||'?').toUpperCase();
+  const modal = document.createElement('div');
+  modal.className = 'modal-bg on';
+  modal.innerHTML = `
+    <div class="modal" style="width:340px;text-align:center">
+      <div class="modal-title">Minha foto de perfil</div>
+      <button class="modal-close" onclick="this.closest('.modal-bg').remove()">✕</button>
+      <div id="perfil-foto-preview" style="width:96px;height:96px;border-radius:50%;margin:0 auto 16px;overflow:hidden;background:var(--gold);color:#08080D;font-family:var(--font-d);font-weight:800;font-size:32px;display:flex;align-items:center;justify-content:center">
+        ${CUP?.foto_url?`<img src="${CUP.foto_url}" alt="" style="width:100%;height:100%;object-fit:cover">`:inicial}
+      </div>
+      <input type="file" id="perfil-foto-file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none" onchange="handlePerfilFotoUpload(event)">
+      <button type="button" class="btn-outline" style="font-size:11px" onclick="document.getElementById('perfil-foto-file').click()">📷 Enviar foto</button>
+      <div id="perfil-foto-status" style="font-size:10px;color:var(--muted2);margin-top:8px"></div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+async function handlePerfilFotoUpload(e){
+  const file=e.target.files?.[0];
+  if(!file) return;
+  const statusEl=document.getElementById('perfil-foto-status');
+  const preview=document.getElementById('perfil-foto-preview');
+  if(file.size>5*1024*1024){ toast('Imagem muito grande (máx. 5MB)','err'); e.target.value=''; return; }
+  preview.innerHTML=`<img src="${URL.createObjectURL(file)}" alt="" style="width:100%;height:100%;object-fit:cover">`;
+  statusEl.textContent='Enviando...'; statusEl.style.color='var(--muted2)';
+  const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+  // Path com o próprio user_id como subpasta — é o que a policy de storage
+  // (portal_uploads_perfil_self_insert/update) usa pra garantir que cada um só
+  // consegue escrever dentro da própria pasta, não na de outro colaborador.
+  const path=`perfil/${CU.id}/${Date.now()}.${ext}`;
+  const {error}=await sb.storage.from('portal-uploads').upload(path,file,{upsert:true});
+  if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast('Erro ao enviar foto: '+error.message,'err'); return; }
+  const {data}=sb.storage.from('portal-uploads').getPublicUrl(path);
+  const {error:errUpd}=await sb.from('portal_users').update({foto_url:data.publicUrl}).eq('user_id',CU.id);
+  if(errUpd){ statusEl.textContent='Falha ao salvar'; statusEl.style.color='var(--red)'; toast('Erro ao salvar foto: '+errUpd.message,'err'); return; }
+  if(CUP) CUP.foto_url=data.publicUrl;
+  statusEl.textContent='Foto atualizada ✓'; statusEl.style.color='var(--green2)';
+  _renderAvatarSidebar();
 }
 
 /* ── Definir senha direto (sem e-mail) ──
