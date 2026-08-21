@@ -4191,12 +4191,17 @@ function toggleAnon(){_sugAnon=!_sugAnon;el('sug-anon-cb').classList.toggle('on'
 async function enviarSugestao(){
   const cat=v('sug-cat'),txt=v('sug-texto');
   if(!cat||!txt){toast('Preencha categoria e sugestão','err');return;}
-  const{error}=await sb.from('portal_sugestoes').insert({user_id:_sugAnon?null:CU.id,categoria:cat,texto:txt,anonimo:_sugAnon,criado_em:new Date().toISOString()});
+  const payload={user_id:_sugAnon?null:CU.id,categoria:cat,texto:txt,anonimo:_sugAnon,criado_em:new Date().toISOString()};
+  const{data,error}=await sb.from('portal_sugestoes').insert(payload).select().maybeSingle();
   if(error){toast('Erro: '+error.message,'err');return;}
   toast('Sugestão enviada!','ok');
   el('sug-cat').value='';el('sug-texto').value='';
-  const{data}=await sb.from('portal_sugestoes').select('*').eq('user_id',CU.id).order('criado_em',{ascending:false});
-  allSugestoes=data||[];
+  // BUGFIX: recarregar filtrando por user_id nunca trazia de volta uma
+  // sugestão anônima (o insert grava user_id:null de propósito, pra ficar
+  // anônima de verdade pros admins) — a sugestão sumia da própria lista do
+  // usuário logo depois do toast de sucesso. Insere local em vez de refazer
+  // a query, já que acabamos de saber exatamente o que foi salvo.
+  allSugestoes.unshift(data||payload);
   renderSugestoes();
 }
 function renderSugestoes(){
@@ -4791,6 +4796,16 @@ async function saveAdmModal(){
       payload = { nome:av('nome'), cargo:asel('cargo'), equipe:av('equipe'),
         data_admissao:av('data_admissao')||null, pontos:parseInt(av('pontos'))||0 };
       break;
+  }
+
+  // BUGFIX: 'meta' tem 'user_id' como FK obrigatória (NOT NULL) e o select do
+  // formulário permite deixar em branco — sem essa checagem, salvar sem
+  // escolher colaborador mandava user_id:'' pro banco e voltava um erro cru
+  // tipo "invalid input syntax for type uuid: \"\"" em vez de avisar o que
+  // faltar preencher.
+  if(type==='meta' && !payload.user_id){
+    toast('Selecione um colaborador','err');
+    return;
   }
 
   // Map type to table
