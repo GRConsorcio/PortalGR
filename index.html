@@ -90,16 +90,16 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
    (um card sólido escondia o fundo quase inteiro). color-mix() em cima dos
    tokens de tema em vez de duplicar cor: já sai certo no claro e no escuro
    sem precisar de override em nenhum dos dois. */
-/* Entrada do balão atrasada — dá um instante só do vídeo/moldura dourada
-   antes do formulário aparecer por cima. CSS puro (não motion.dev) de
-   propósito: isso é o formulário de LOGIN, não pode ficar escondido
-   dependendo de import de CDN/rede terminar — backwards garante que fica
-   em opacity:0 durante o delay e SEMPRE aparece sozinho depois, mesmo se
-   JavaScript nenhum rodar. */
-@keyframes authWrapEntrada{from{opacity:0;transform:translateY(14px) scale(.72)}to{opacity:1;transform:translateY(0) scale(1)}}
-.auth-wrap{position:relative;z-index:3;width:420px;background:color-mix(in srgb,var(--s1) 42%,transparent);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);border:1px solid color-mix(in srgb,var(--border2) 70%,transparent);border-radius:18px;padding:40px 36px;box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:authWrapEntrada 2.2s cubic-bezier(.16,1,.3,1) 1s backwards}
+/* Entrada do balão sincronizada com o fim do vídeo de fundo — o JS logo
+   depois da tag <video> adiciona a classe .auth-wrap-entrou quando o vídeo
+   está terminando (ou, se o vídeo não carregar/tocar por algum motivo, uma
+   rede de segurança em setTimeout garante que aparece de qualquer jeito).
+   Começa oculto/pequeno via classe base; TRANSITION em vez de @keyframes
+   porque é mais simples de disparar por classe a partir do JS. */
+.auth-wrap{position:relative;z-index:3;width:420px;background:color-mix(in srgb,var(--s1) 42%,transparent);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);border:1px solid color-mix(in srgb,var(--border2) 70%,transparent);border-radius:18px;padding:40px 36px;box-shadow:0 20px 60px rgba(0,0,0,0.6);opacity:0;transform:translateY(14px) scale(.72);transition:opacity 1.1s cubic-bezier(.16,1,.3,1),transform 1.1s cubic-bezier(.16,1,.3,1)}
+.auth-wrap.auth-wrap-entrou{opacity:1;transform:translateY(0) scale(1)}
 @media (prefers-reduced-motion: reduce){
-  .auth-wrap{animation:none}
+  .auth-wrap{transition:none}
 }
 /* Moldura decorativa dourada atrás do balão de login — cantos estilo
    "viewfinder" espalhados + linhas finas + pontinhos, tudo em var(--gold)
@@ -1073,12 +1073,37 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       // sem quebrar nada.
       el.load();
       el.play?.().catch(()=>{});
-      // Alguns navegadores mobile (confirmado no Brave iOS) bloqueiam o
-      // autoplay mesmo com muted+playsinline e mostram o próprio ícone de
-      // play por cima — no primeiro toque na tela (em qualquer lugar, não só
-      // no vídeo), isso já conta como gesto do usuário e o play() funciona de
-      // verdade. {once:true} tira o listener depois do 1º toque.
+      // Alguns navegadores mobile bloqueiam o autoplay mesmo com
+      // muted+playsinline e mostram o próprio ícone de play por cima (é do
+      // navegador, não dá pra tirar via CSS/HTML) — no primeiro toque na tela
+      // (em qualquer lugar, não só no vídeo), isso já conta como gesto do
+      // usuário e o play() funciona de verdade. {once:true} tira o listener
+      // depois do 1º toque.
       document.getElementById('auth-screen')?.addEventListener('click', ()=>{ el.play?.().catch(()=>{}); }, {once:true});
+
+      // Balão de login aparece sincronizado com o fim do vídeo, não num tempo
+      // fixo — dispara no último ~1s de reprodução (timeupdate) ou assim que
+      // o vídeo termina (ended). Se o vídeo nunca tocar/carregar por algum
+      // motivo (erro, bloqueio total), o setTimeout de segurança garante que
+      // o formulário aparece de qualquer jeito depois de um tempo — isso é
+      // tela de LOGIN, não pode ficar escondida esperando o vídeo pra sempre.
+      var wrap=document.querySelector('.auth-wrap');
+      var jaEntrou=false;
+      function mostrarBalao(){
+        if(jaEntrou||!wrap) return;
+        jaEntrou=true;
+        wrap.classList.add('auth-wrap-entrou');
+      }
+      if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        mostrarBalao();
+      } else {
+        el.addEventListener('timeupdate', function(){
+          if(el.duration && el.currentTime>=el.duration-1) mostrarBalao();
+        });
+        el.addEventListener('ended', mostrarBalao);
+        el.addEventListener('error', mostrarBalao);
+        setTimeout(mostrarBalao, 4500);
+      }
     }
   })();
   </script>
