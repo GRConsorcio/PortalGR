@@ -71,7 +71,23 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 
 /* ── AUTH ── */
 #auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;overflow:hidden}
-.auth-wrap{position:relative;z-index:1;width:420px;background:var(--s1);border:1px solid var(--border2);border-radius:18px;padding:40px 36px;box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+/* Vídeo de fundo (sorteado entre 2 por tema, ver script logo após a tag
+   <video> no HTML) + véu escuro por cima só pra garantir contraste do balão
+   de login e da moldura dourada, sem depender do conteúdo do vídeo. */
+.auth-bg-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.auth-bg-scrim{position:absolute;inset:0;z-index:-1;background:
+  radial-gradient(ellipse at 50% 38%,rgba(0,0,0,0) 0%,rgba(0,0,0,.4) 65%,rgba(0,0,0,.65) 100%),
+  linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.4))}
+/* "Gelo": tom azul-acinzentado frio em vez de preto puro por cima do vídeo —
+   preto chapado no claro deixava tudo "duro"/sem contraste com o balão. */
+:root[data-theme="light"] .auth-bg-scrim{background:
+  radial-gradient(ellipse at 50% 38%,rgba(216,227,236,.1) 0%,rgba(163,180,199,.55) 65%,rgba(120,138,158,.75) 100%),
+  linear-gradient(180deg,rgba(216,227,236,.2),rgba(163,180,199,.5))}
+/* Balão em vidro — translúcido + blur, pra deixar o vídeo por trás visível
+   (um card sólido escondia o fundo quase inteiro). color-mix() em cima dos
+   tokens de tema em vez de duplicar cor: já sai certo no claro e no escuro
+   sem precisar de override em nenhum dos dois. */
+.auth-wrap{position:relative;z-index:1;width:420px;background:color-mix(in srgb,var(--s1) 62%,transparent);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);border:1px solid color-mix(in srgb,var(--border2) 70%,transparent);border-radius:18px;padding:40px 36px;box-shadow:0 20px 60px rgba(0,0,0,0.6)}
 /* Moldura decorativa dourada atrás do balão de login — cantos estilo
    "viewfinder" espalhados + linhas finas + pontinhos, tudo em var(--gold)
    pra virar azul sozinho no tema claro (mesma troca de acento do resto do
@@ -1002,6 +1018,25 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
 <!-- AUTH -->
 <div id="auth-screen">
+  <video id="auth-bg-video" class="auth-bg-video" autoplay muted loop playsinline></video>
+  <div class="auth-bg-scrim"></div>
+  <script>
+  // Sorteia 1 dos 2 vídeos de fundo do tema atual (data-theme já foi setado
+  // pelo script inline do <head>, antes do 1º paint, então já dá pra ler
+  // aqui). Só carrega o escolhido — não os 4 — pra não gastar banda à toa.
+  (function(){
+    // O nome real do objeto no bucket ficou com barra dupla ("auth-bg//dark-1...",
+    // sobrou do jeito que a pasta foi criada no dashboard) — o gateway do Storage
+    // normaliza "//" pra "/" numa URL comum e aí não acha o objeto (404). Só
+    // funciona codificando as barras (%2F), que aí passam intactas até a busca
+    // pela chave exata.
+    var base='https://defwtvwmxntoliuwzjnf.supabase.co/storage/v1/object/public/portal-uploads/'+encodeURIComponent('auth-bg//');
+    var escuro=(document.documentElement.getAttribute('data-theme')||'dark')!=='light';
+    var opcoes=escuro?[base+'dark-1.ext.mp4',base+'dark-2.ext.mp4']:[base+'light-1.ext.mp4',base+'light-2.ext.mp4'];
+    var el=document.getElementById('auth-bg-video');
+    if(el) el.src=opcoes[Math.floor(Math.random()*opcoes.length)];
+  })();
+  </script>
   <svg class="auth-deco" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
     <defs><polyline id="adL" points="0,44 0,0 44,0"/></defs>
     <line class="auth-deco-line" x1="0" y1="330" x2="230" y2="330"/>
