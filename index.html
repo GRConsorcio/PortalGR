@@ -3649,8 +3649,17 @@ function openBiblioReader(id){
   // Abre já em tela cheia real (o clique no card é o "gesto do usuário" que a
   // Fullscreen API exige) — se o navegador recusar (ex: dentro de um iframe
   // restrito), o CSS de .biblio-reader-modal já cobre 100vw/100vh mesmo assim.
-  if(b.arquivo_url) modal.requestFullscreen?.().catch(()=>{});
-  if(b.arquivo_url) _carregarMarcacoes(b.id).then(()=>renderBiblioPdfPages(b.arquivo_url, el(readerId), b.id));
+  // Só carrega o PDF DEPOIS que a transição de tela cheia terminar (sucesso ou
+  // falha): entrar em fullscreen muda o tamanho do viewport, e se o livro
+  // começasse a renderizar em paralelo, a largura usada pras páginas (e a
+  // rolagem até a última página lida) ficava baseada nas dimensões de
+  // antes da transição — a rolagem de retomada não tinha erro nela mesma,
+  // mas media/rolava um layout que ainda ia mudar de tamanho por baixo dela.
+  const _biblioAbrirLeitura=()=>{ if(b.arquivo_url) _carregarMarcacoes(b.id).then(()=>renderBiblioPdfPages(b.arquivo_url, el(readerId), b.id)); };
+  if(b.arquivo_url){
+    const fs=modal.requestFullscreen?.();
+    if(fs?.then) fs.then(_biblioAbrirLeitura,_biblioAbrirLeitura); else _biblioAbrirLeitura();
+  }
 }
 // Marcações (highlights) do livro atual — carregadas ao abrir o leitor,
 // junto com o progresso de leitura, e usadas por renderBiblioPdfPages pra
@@ -3868,11 +3877,14 @@ async function renderBiblioPdfPages(url, container, livroId){
     pageEls.push(pageWrap);
   }
 
-  // Retoma na última página lida (se já tiver progresso salvo pra esse livro)
+  // Retoma na última página lida (se já tiver progresso salvo pra esse livro).
+  // setTimeout, não requestAnimationFrame — rAF fica suspenso enquanto a aba
+  // está em segundo plano (o que rola bem na entrada/transição de tela cheia
+  // em alguns navegadores/mobile), então um rAF podia nunca disparar.
   const prog=allBiblioProgresso.find(p=>p.livro_id===livroId);
   if(prog?.ultima_pagina>1){
     const alvo=pageEls[prog.ultima_pagina-1];
-    if(alvo) setTimeout(()=>alvo.scrollIntoView({block:'start'}),50);
+    if(alvo) setTimeout(()=>alvo.scrollIntoView({block:'start'}),100);
   }
 
   // Marca a página atual conforme o usuário rola, salvando com debounce (não
