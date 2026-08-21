@@ -1087,10 +1087,16 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       // motivo (erro, bloqueio total), o setTimeout de segurança garante que
       // o formulário aparece de qualquer jeito depois de um tempo — isso é
       // tela de LOGIN, não pode ficar escondida esperando o vídeo pra sempre.
-      var wrap=document.querySelector('.auth-wrap');
+      // BUGFIX: essa <script> roda ANTES de .auth-wrap existir no HTML (ele
+      // vem depois, mais abaixo em #auth-screen) — pegar a referência aqui
+      // fora, uma vez só, sempre dava null, e mostrarBalao() nunca fazia
+      // nada (nem o timeout de segurança ajudava, já saía com a referência
+      // vazia). Busca de novo TODA vez que a função roda, não guarda cache.
       var jaEntrou=false;
       function mostrarBalao(){
-        if(jaEntrou||!wrap) return;
+        if(jaEntrou) return;
+        var wrap=document.querySelector('.auth-wrap');
+        if(!wrap) return;
         jaEntrou=true;
         wrap.classList.add('auth-wrap-entrou');
       }
