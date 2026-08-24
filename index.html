@@ -12,6 +12,9 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>GR Portal — GR Consórcio</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<meta name="theme-color" content="#C9A84C">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -1364,6 +1367,9 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     <div class="topbar-title" id="topbar-title">Dashboard</div>
     <div class="topbar-right">
       <span id="topbar-role-badge" style="display:none;font-size:8px;font-weight:700;letter-spacing:2px;font-family:var(--font-b);padding:3px 8px;border:1px solid currentColor;opacity:0.7"></span>
+      <button class="theme-toggle" id="btn-instalar-app" onclick="instalarAppPortal()" title="Instalar app" aria-label="Instalar app" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 2v9"/><path d="M5 7.5L9 12l4-4.5"/><path d="M3 14.5h12v1.5H3z"/></svg>
+      </button>
       <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Alternar modo claro/escuro" title="Alternar modo claro/escuro">
         <svg id="theme-icon-moon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 10.5A6.5 6.5 0 017.5 3 6.5 6.5 0 1015 10.5z"/></svg>
         <svg id="theme-icon-sun" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" style="display:none"><circle cx="9" cy="9" r="3.5"/><line x1="9" y1="1" x2="9" y2="3"/><line x1="9" y1="15" x2="9" y2="17"/><line x1="1" y1="9" x2="3" y2="9"/><line x1="15" y1="9" x2="17" y2="9"/><line x1="3.5" y1="3.5" x2="5" y2="5"/><line x1="13" y1="13" x2="14.5" y2="14.5"/><line x1="14.5" y1="3.5" x2="13" y2="5"/><line x1="5" y1="13" x2="3.5" y2="14.5"/></svg>
@@ -1439,11 +1445,24 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
           <div class="kpi-card"><div class="kpi-label">Crédito em carteira</div><div class="kpi-val" id="adm-kpi-credito">–</div></div>
         </div>
         <div class="panel">
-          <div class="panel-head"><div class="panel-title">Inadimplência por vendedor</div></div>
+          <div class="panel-head" style="flex-wrap:wrap;gap:8px">
+            <div class="panel-title">Inadimplência por vendedor</div>
+            <div style="display:flex;gap:8px;margin-left:auto">
+              <select class="adm-select" id="adm-gestao-tipo-filter" onchange="renderDashboardAdminGestao()" style="font-size:11px;width:auto;min-width:150px">
+                <option value="ambos">Atraso + Cancelado</option>
+                <option value="atraso">Só atrasados</option>
+                <option value="cancelado">Só cancelados</option>
+              </select>
+              <select class="adm-select" id="adm-gestao-mes-filter" onchange="renderDashboardAdminGestao()" style="font-size:11px;width:auto;min-width:150px">
+                <option value="">Todo período</option>
+              </select>
+            </div>
+          </div>
           <div class="panel-body">
             <table class="tbl">
-              <thead><tr><th>Vendedor</th><th>Clientes</th><th>Crédito</th><th>Inadimplência</th></tr></thead>
+              <thead><tr><th>Vendedor</th><th>Clientes</th><th>Crédito</th><th id="adm-gestao-th-inadim">Inadimplência</th></tr></thead>
               <tbody id="adm-gestao-vendedores"></tbody>
+              <tfoot id="adm-gestao-total"></tfoot>
             </table>
           </div>
         </div>
@@ -2300,15 +2319,33 @@ async function fetchQualidadeResumo(email){
     _qualidadeResumo=null;
   }
 }
-async function fetchQualidadeResumoGeral(){
+async function fetchQualidadeResumoGeral(pMes,pAno){
+  const body={p_secret:QUALIDADE_RESUMO_GERAL_SECRET};
+  if(pMes) body.p_mes=pMes;
+  if(pAno) body.p_ano=pAno;
   const resp=await fetch(CRM_SUPA_URL+'/rest/v1/rpc/qualidade_resumo_geral',{
     method:'POST',
     headers:{'Content-Type':'application/json','apikey':CRM_ANON_KEY,'Authorization':'Bearer '+CRM_ANON_KEY},
-    body:JSON.stringify({p_secret:QUALIDADE_RESUMO_GERAL_SECRET})
+    body:JSON.stringify(body)
   });
   const data=await resp.json();
   if(!data||data.error) throw new Error(data?.error||'Falha ao buscar dados do app Qualidade');
   return data;
+}
+// Preenche o filtro de mês do painel de gestão só uma vez, com os meses que
+// realmente têm cliente lançado na Qualidade — mesmo padrão de
+// _popularFiltroMesesVendasEquipe (Vendas da Equipe).
+let _admGestaoMesesCarregados=false;
+function _popularFiltroMesesAdmGestao(meses){
+  if(_admGestaoMesesCarregados || !meses?.length) return;
+  _admGestaoMesesCarregados=true;
+  const sel=el('adm-gestao-mes-filter');
+  meses.forEach(m=>{
+    const opt=document.createElement('option');
+    opt.value=m.mes+'|'+m.ano;
+    opt.textContent=m.mes.charAt(0)+m.mes.slice(1).toLowerCase()+'/'+m.ano;
+    sel.appendChild(opt);
+  });
 }
 
 // Preenche o filtro de mês só uma vez (na primeira carga) com os meses que
@@ -2338,7 +2375,15 @@ async function renderAdmVendasEquipe(){
     // Supervisor só vê a própria equipe (mesmo escopo usado no resto do Portal
     // via myTeamScope()) — admin/coordenador continuam vendo todo mundo.
     const scope=myTeamScope();
-    if(scope) vendedores=vendedores.filter(v=>v.equipe===scope);
+    // BUGFIX: comparação exata (===) enquanto _renderDashKpisVendaOuEquipe usa a
+    // mesma equipe normalizada (.trim().toLowerCase()) pro mesmo conceito — um
+    // nome de equipe com diferença de maiúscula/espaço entre Portal e CRM (bem
+    // provável, são cadastros manuais separados) fazia essa tabela ficar vazia
+    // mesmo com o KPI do dashboard mostrando os números certos.
+    if(scope){
+      const scopeNorm=scope.trim().toLowerCase();
+      vendedores=vendedores.filter(v=>(v.equipe||'').trim().toLowerCase()===scopeNorm);
+    }
 
     const todoPeriodo=!!data.todo_periodo;
     el('vendas-equipe-ref').textContent=todoPeriodo?'':(data.mes_referencia?`Referência: ${data.mes_referencia}`:'');
@@ -2436,8 +2481,15 @@ async function loadAll(){
     // ele está editando (auth.users não é legível pelo client com a chave anon).
     // Preenche/corrige aqui, silenciosamente, se estiver faltando.
     if(!CUP.email && CU.email){
+      // BUGFIX: não checava {error} — o .then() rodava mesmo se o update falhasse
+      // (RLS/rede), "corrigindo" CUP.email só na sessão atual enquanto o banco
+      // continuava sem o e-mail, fazendo o card do admin voltar a ficar vazio a
+      // cada nova sessão sem nenhum log indicando a falha.
       sb.from('portal_users').update({email:CU.email}).eq('user_id',CU.id)
-        .then(()=>{ CUP.email=CU.email; });
+        .then(({error})=>{
+          if(error){ console.warn('[loadAll] falha ao corrigir e-mail:',error.message); return; }
+          CUP.email=CU.email;
+        });
     }
   }
 }
@@ -2752,13 +2804,21 @@ async function _renderDashKpisVendaOuEquipe(){
 // geral (Qualidade) + ranking de risco por vendedor. Busca sob demanda (não
 // entra no Promise.allSettled de loadAll porque só o admin usa isso).
 let _admGestaoCarregando=false;
+let _admGestaoPendente=false;
 async function renderDashboardAdminGestao(){
-  if(_admGestaoCarregando) return;
+  // BUGFIX: antes, trocar o filtro de mês/tipo enquanto uma busca anterior ainda
+  // estava em voo simplesmente descartava o clique (o <select> já mostrava o valor
+  // novo, mas a tabela/KPIs ficavam com os dados do filtro velho até o admin mudar
+  // de novo manualmente). Agora marca um "pendente" e reexecuta assim que a busca
+  // atual terminar, garantindo que a última escolha do admin sempre vença.
+  if(_admGestaoCarregando){ _admGestaoPendente=true; return; }
   _admGestaoCarregando=true;
   try{
+    const filtroSel=el('adm-gestao-mes-filter')?.value||'';
+    const [fMes,fAno]=filtroSel?filtroSel.split('|'):[undefined,undefined];
     const [equipeRes,geralRes]=await Promise.allSettled([
       fetchCrmResumoEquipe(),
-      fetchQualidadeResumoGeral()
+      fetchQualidadeResumoGeral(fMes,fAno?parseInt(fAno):undefined)
     ]);
     if(equipeRes.status==='fulfilled'){
       const vs=equipeRes.value.vendedores||[];
@@ -2767,21 +2827,43 @@ async function renderDashboardAdminGestao(){
       el('adm-kpi-vendas-mes').textContent=totalVendas;
       el('adm-kpi-vendas-mes-sub').textContent=vs.length+' vendedores ativos';
       el('adm-kpi-volume-mes').textContent=fmtBRL(totalVolume);
+    } else {
+      // BUGFIX: sem esse else, uma falha na RPC do CRM (rede, segredo, projeto fora
+      // do ar) deixava "Vendas do mês (equipe)"/"Volume do mês (equipe)" travados no
+      // valor anterior sem toast nem log — o admin não tinha como saber que aquele
+      // número estava desatualizado.
+      console.warn('[renderDashboardAdminGestao] CRM resumo equipe falhou:',equipeRes.reason?.message);
     }
     if(geralRes.status==='fulfilled'){
       const g=geralRes.value;
-      el('adm-kpi-inadim').textContent=g.pct_inadimplencia_total+'%';
+      _popularFiltroMesesAdmGestao(g.meses_disponiveis);
+      const tipo=el('adm-gestao-tipo-filter')?.value||'ambos';
+      const campoPct=tipo==='atraso'?'pct_atraso':tipo==='cancelado'?'pct_cancelado':'pct_inadimplencia';
+      // BUGFIX: a RPC pode devolver null pra esses campos quando o filtro (mês/tipo)
+      // não tem nenhum cliente/parcela no período — sem o `??0`, virava "undefined%"
+      // na tela e a comparação `undefined>=15` caía sempre no ramo verde (parecia
+      // "sem risco" quando na verdade era "sem dado").
+      const pctTotal=(tipo==='atraso'?g.pct_atraso_total:tipo==='cancelado'?g.pct_cancelado_total:g.pct_inadimplencia_total)??0;
+      el('adm-gestao-th-inadim').textContent=tipo==='atraso'?'Atraso':tipo==='cancelado'?'Cancelado':'Inadimplência';
+      el('adm-kpi-inadim').textContent=pctTotal+'%';
       el('adm-kpi-inadim-sub').textContent=g.total_clientes+' clientes em carteira';
       el('adm-kpi-credito').textContent=fmtBRL(g.credito_total);
-      el('adm-gestao-vendedores').innerHTML=(g.por_vendedor||[]).filter(v=>v.total_clientes>0).map(v=>{
-        const cor=v.pct_inadimplencia>=15?'var(--red)':v.pct_inadimplencia>=5?'var(--gold2)':'var(--green2)';
-        return `<tr><td>${v.nome}</td><td>${v.total_clientes}</td><td>${fmtBRL(v.credito_total)}</td><td style="color:${cor};font-weight:700">${v.pct_inadimplencia}%</td></tr>`;
+      el('adm-gestao-vendedores').innerHTML=(g.por_vendedor||[]).filter(v=>v.total_clientes>0)
+        .slice().sort((a,b)=>(b[campoPct]??0)-(a[campoPct]??0)).map(v=>{
+        const pct=v[campoPct]??0;
+        const cor=pct>=15?'var(--red)':pct>=5?'var(--gold2)':'var(--green2)';
+        return `<tr><td>${v.nome}</td><td>${v.total_clientes}</td><td>${fmtBRL(v.credito_total)}</td><td style="color:${cor};font-weight:700">${pct}%</td></tr>`;
       }).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--muted2)">Sem dados</td></tr>';
+      const corTotal=pctTotal>=15?'var(--red)':pctTotal>=5?'var(--gold2)':'var(--green2)';
+      el('adm-gestao-total').innerHTML=g.total_clientes>0
+        ?`<tr style="font-weight:700"><td>TOTAL</td><td>${g.total_clientes}</td><td>${fmtBRL(g.credito_total)}</td><td style="color:${corTotal}">${pctTotal}%</td></tr>`
+        :'';
     } else {
       console.warn('[renderDashboardAdminGestao] qualidade geral falhou:',geralRes.reason?.message);
     }
   } finally {
     _admGestaoCarregando=false;
+    if(_admGestaoPendente){ _admGestaoPendente=false; renderDashboardAdminGestao(); }
   }
 }
 
@@ -4856,7 +4938,16 @@ async function saveAdmModal(){
   // parcial no banco (uniq_chaveamento_ativo_por_tipo) bloquearia o save se
   // já existisse outro ativo do mesmo tipo, então desativa os outros antes.
   if(type==='copa-chaveamento' && payload.ativo){
-    await sb.from('portal_copa_chaveamento').update({ativo:false}).eq('tipo',payload.tipo).neq('id',editId||'00000000-0000-0000-0000-000000000000');
+    // BUGFIX: sem checar {error}, se essa desativação falhasse silenciosamente
+    // (RLS/transiente) e o item novo fosse um insert com ativo:true, o índice
+    // único parcial do banco rejeitava o save principal com um erro cru do
+    // Postgres em vez da mensagem amigável que este bloco deveria garantir.
+    const{error:errDesativa}=await sb.from('portal_copa_chaveamento').update({ativo:false}).eq('tipo',payload.tipo).neq('id',editId||'00000000-0000-0000-0000-000000000000');
+    if(errDesativa){
+      toast('Erro ao desativar chaveamento anterior: '+errDesativa.message,'err');
+      console.error('[saveAdmItem] falha ao desativar chaveamentos:',errDesativa);
+      return;
+    }
   }
 
   const btn = el('adm-modal-save');
@@ -5841,7 +5932,11 @@ async function loadOrgData(){
 }
 
 async function saveOrgData(){
-  await sb.from('portal_organograma').upsert({id:1, estrutura:_orgData, atualizado_em:new Date().toISOString()});
+  // BUGFIX: não checava {error} — quem chamava (toggleOrgEdit) assumia sucesso
+  // incondicional e mostrava "Organograma salvo!" mesmo com o upsert falhando
+  // (RLS/rede); o trabalho do admin sumia sem aviso no próximo loadOrgData().
+  const{error}=await sb.from('portal_organograma').upsert({id:1, estrutura:_orgData, atualizado_em:new Date().toISOString()});
+  if(error){ console.error('[saveOrgData] falha no upsert:',error); throw error; }
 }
 
 function toggleOrgEdit(){
@@ -5851,7 +5946,7 @@ function toggleOrgEdit(){
   btn.style.background = _orgEditMode ? 'var(--green2)' : '';
   btn.style.color = _orgEditMode ? '#07070C' : '';
   if(!_orgEditMode){
-    saveOrgData().then(()=>toast('Organograma salvo!','ok'));
+    saveOrgData().then(()=>toast('Organograma salvo!','ok')).catch(e=>toast('Erro ao salvar organograma: '+e.message,'err'));
   }
   renderOrganograma();
 }
@@ -6617,4 +6712,29 @@ window.syncVendedoresRanking = async function(){
     if(btn){ btn.disabled = false; btn.textContent = btnLabel; }
   }
 };
+</script>
+
+<script>
+/* ═══ PWA: instalável no desktop, service worker próprio (mesmo padrão do app Operacional).
+   Estratégia network-first (nunca serve do cache enquanto a rede responde) — não conflita
+   com as meta tags de no-cache já existentes pra WebViews (WhatsApp/Instagram); só entra em
+   jogo se a rede cair de vez, como fallback offline. ═══ */
+let _deferredInstallPromptPortal=null;
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault();
+  _deferredInstallPromptPortal=e;
+  const btn=document.getElementById('btn-instalar-app');
+  if(btn) btn.style.display='inline-flex';
+});
+window.instalarAppPortal=async function(){
+  if(!_deferredInstallPromptPortal) return;
+  _deferredInstallPromptPortal.prompt();
+  await _deferredInstallPromptPortal.userChoice;
+  _deferredInstallPromptPortal=null;
+  const btn=document.getElementById('btn-instalar-app');
+  if(btn) btn.style.display='none';
+};
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
 </script>

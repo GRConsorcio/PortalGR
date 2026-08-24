@@ -1,0 +1,15 @@
+{
+  "name": "Portal GR — GR Consórcio",
+  "short_name": "Portal GR",
+  "description": "Portal do colaborador — GR Consórcio",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#07070C",
+  "theme_color": "#C9A84C",
+  "orientation": "any",
+  "icons": [
+    { "src": "logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
