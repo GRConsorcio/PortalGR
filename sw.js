@@ -1,5 +1,5 @@
-const CACHE = 'portal-gr-v3';
-const SHELL = ['./', './index.html', './manifest.json', './logo.svg', './icon.svg?v=2'];
+const CACHE = 'portal-gr-v4';
+const SHELL = ['./', './index.html', './manifest.json', './logo.svg', './icon.svg?v=3'];
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
