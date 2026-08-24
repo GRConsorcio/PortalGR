@@ -1316,6 +1316,10 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
           <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 2c0 0-7 3.5-7 8a7 7 0 0014 0c0-4.5-7-8-7-8z"/></svg>
           Benefícios
         </div>
+        <div class="nav-item admin-only" data-page="adm-niveis" onclick="nav('adm-niveis')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="11" width="4" height="5"/><rect x="7" y="7" width="4" height="9"/><rect x="12" y="3" width="4" height="13"/></svg>
+          Níveis
+        </div>
         <div class="nav-item admin-only" data-page="adm-hallfama" onclick="nav('adm-hallfama')">
           <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="9,1 11,7 17,7 12,11 14,17 9,13 4,17 6,11 1,7 7,7"/></svg>
           Hall da Fama
@@ -1960,6 +1964,14 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       <div class="adm-table-wrap" id="adm-benef-list"></div>
     </div>
 
+    <!-- ══ ADM: NÍVEIS ══ -->
+    <div class="page" id="page-adm-niveis">
+      <div class="adm-page-head">
+        <div class="adm-page-title">Níveis de classificação</div>
+      </div>
+      <div class="adm-table-wrap" id="adm-niveis-list"></div>
+    </div>
+
     <!-- ══ ADM: HALL DA FAMA ══ -->
     <div class="page" id="page-adm-hallfama">
       <div class="adm-page-head">
@@ -2037,6 +2049,7 @@ let CU = null, CUP = null;
 let allVendas=[], allMetas=[], allCampanhas=[], allBeneficios=[];
 let allAcademy=[], allNews=[], allSugestoes=[], allHallFama=[], allRegras=[], allAcademyProgresso=[], allBiblioteca=[], allBiblioProgresso=[], allProvaRespostas=[], allCertificados=[];
 let allCopaEquipes=[], allCopaPartidas=[], allAvisos=[], allCarreira=[], allDestaques=[], allCopaEdicoes=[], allCopaChaveamentos=[];
+let allNiveis=[]; // linhas cruas de portal_niveis (formato do banco) — LEVELS é a versão já convertida pro formato usado no cálculo/telas
 // Resumo agregado de vendas vindo do CRM (contagens/somas por vendedor —
 // nunca dado de cliente/lead). Ver fetchCrmResumo(). null até carregar, ou
 // se o e-mail do usuário não bater com nenhum vendedor do CRM (ex: conta
@@ -2046,7 +2059,11 @@ let _currentPage = 'dashboard';
 let _sugAnon = false;
 
 /* ═══ NÍVEIS CONFIG ═══ */
-const LEVELS = [
+// Editável agora pela Administração (tabela portal_niveis) — este array
+// abaixo é só o valor padrão/de segurança, usado até o fetch do banco
+// substituir o conteúdo (ver reloadAdmData('nivel') e o carregamento inicial
+// em loadAll()). Mantido como `let` (não `const`) justamente pra isso.
+let LEVELS = [
   {
     id:'nao_classificado', name:'Não Classificado',
     minCotas:0, minVolume:0, color:'#4A4A5A',
@@ -2429,7 +2446,7 @@ async function loadAll(){
   // série — um round-trip inteiro de rede jogado fora à toa, já que nenhuma
   // dessas 13 consultas depende do perfil. Juntei tudo num Promise.allSettled
   // só, então roda tudo em paralelo e a tela carrega mais rápido.
-  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf,cer,chr,apr,bibr,bpr,pvr,certr]=await Promise.allSettled([
+  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf,cer,chr,apr,bibr,bpr,pvr,certr,nlr]=await Promise.allSettled([
     sb.from('portal_vendas').select('*').eq('user_id',uid).order('data',{ascending:false}),
     sb.from('portal_metas').select('*').eq('user_id',uid),
     sb.from('portal_campanhas').select('*').order('criado_em',{ascending:false}),
@@ -2451,6 +2468,7 @@ async function loadAll(){
     sb.from('portal_biblioteca_progresso').select('*').eq('user_id',uid),
     sb.from('portal_prova_respostas').select('*').eq('user_id',uid),
     sb.from('portal_certificados').select('*').eq('user_id',uid).order('emitido_em',{ascending:false}),
+    sb.from('portal_niveis').select('*').order('ordem'),
   ]);
   if(vr.value?.data)allVendas=vr.value.data;
   if(mr.value?.data)allMetas=mr.value.data;
@@ -2472,6 +2490,10 @@ async function loadAll(){
   if(bpr.value?.data)allBiblioProgresso=bpr.value.data;
   if(pvr.value?.data)allProvaRespostas=pvr.value.data;
   if(certr.value?.data)allCertificados=certr.value.data;
+  if(nlr.value?.data?.length){
+    allNiveis = nlr.value.data;
+    LEVELS = allNiveis.map(r=>({id:r.id,name:r.nome,minCotas:r.min_cotas,minVolume:r.min_volume,color:r.cor,perks:r.perks||[],premios:r.premios||[]}));
+  }
 
   CUP=prf.value?.data||null;
   if(CUP){
@@ -4426,7 +4448,7 @@ const ADM_PAGE_TITLES = {
   'adm-academy':'GR Academy','adm-obrigatorios':'Cursos Obrigatórios','adm-news':'GR News','adm-avisos':'Avisos',
   'adm-copa':'Copa GR','adm-beneficios':'Benefícios','adm-hallfama':'Hall da Fama',
   'adm-regras':'Regras GR','adm-usuarios':'Usuários','adm-sugestoes':'Sugestões',
-  'adm-biblioteca':'Biblioteca',
+  'adm-biblioteca':'Biblioteca', 'adm-niveis':'Níveis',
 };
 
 // Extend existing nav function
@@ -4448,7 +4470,7 @@ window.nav = function(page){
       'adm-copa':renderAdmCopa,'adm-beneficios':renderAdmBeneficios,
       'adm-hallfama':renderAdmHallFama,'adm-regras':renderAdmRegras,
       'adm-usuarios':renderAdmUsuarios,'adm-sugestoes':renderAdmSugestoes,
-      'adm-biblioteca':renderAdmBiblioteca,
+      'adm-biblioteca':renderAdmBiblioteca, 'adm-niveis':renderAdmNiveis,
     };
     admRenderers[page]?.();
     toggleMobileNav(false); // fecha a gaveta ao trocar de página no celular
@@ -4534,7 +4556,7 @@ async function openAdmModal(type, data=null){
     campanha:'Campanha', meta:'Meta', destaque:'Destaque',
     academy:'Conteúdo Academy', news:'Notícia', aviso:'Aviso',
     'copa-equipe':'Equipe Copa', 'copa-edicao':'Edição da Copa', beneficio:'Benefício',
-    hallfama:'Hall da Fama', regra:'Regra', usuario:'Usuário', biblioteca:'Livro',
+    hallfama:'Hall da Fama', regra:'Regra', usuario:'Usuário', biblioteca:'Livro', nivel:'Nível',
   };
   el('adm-modal-title').textContent = (data ? 'Editar ' : 'Nova ') + (titles[type]||type);
   el('adm-modal-body').innerHTML = buildAdmForm(type, data)
@@ -4825,6 +4847,17 @@ function buildAdmForm(type, d={}){
       ${inp('data_admissao','Data admissão',d.data_admissao,'date')}
       ${inp('pontos','Pontos GR Nível',d.pontos,'number','0')}`;
 
+    case 'nivel': return `
+      ${inp('nome','Nome do nível',d.nome)}
+      ${g3(
+        inp('min_cotas','Cotas mínimas (opcional)',d.min_cotas,'number','Ex: 8'),
+        inp('min_volume','Volume mínimo (R$)',d.min_volume,'number','Ex: 350000'),
+        inp('cor','Cor (hex)',d.cor,'text','Ex: #C9A84C')
+      )}
+      <div style="font-size:10px;color:var(--muted2);margin:-6px 0 10px">Quem bater cotas OU volume mínimo já entra no nível — basta um dos dois.</div>
+      ${ta('perks_texto','Benefícios (um por linha)',(d.perks||[]).join('\n'),'Ex: Acesso à Academy')}
+      ${ta('premios_texto','Premiação (um por linha)',(d.premios||[]).join('\n'),'Ex: Brinde GR Ouro')}`;
+
     default: return '<p style="color:var(--muted2)">Formulário não configurado.</p>';
   }
 }
@@ -4913,6 +4946,14 @@ async function saveAdmModal(){
       payload = { nome:av('nome'), cargo:asel('cargo'), equipe:av('equipe'),
         data_admissao:av('data_admissao')||null, pontos:parseInt(av('pontos'))||0 };
       break;
+    case 'nivel':
+      payload = { nome:av('nome'),
+        min_cotas: av('min_cotas')?parseInt(av('min_cotas')):null,
+        min_volume: parseFloat(av('min_volume'))||0,
+        cor: av('cor')||'#4A4A5A',
+        perks: av('perks_texto').split('\n').map(s=>s.trim()).filter(Boolean),
+        premios: av('premios_texto').split('\n').map(s=>s.trim()).filter(Boolean) };
+      break;
   }
 
   // BUGFIX: 'meta' tem 'user_id' como FK obrigatória (NOT NULL) e o select do
@@ -4932,6 +4973,7 @@ async function saveAdmModal(){
     'copa-equipe':'portal_copa_equipes', 'copa-edicao':'portal_copa_edicoes', beneficio:'portal_beneficios',
     'copa-chaveamento':'portal_copa_chaveamento',
     hallfama:'portal_hall_fama', regra:'portal_regras', biblioteca:'portal_biblioteca',
+    nivel:'portal_niveis',
   };
 
   // Só um chaveamento pode ficar "ativo" por competição — o índice único
@@ -4996,6 +5038,13 @@ async function reloadAdmData(type){
     regra:    async()=>{ const {data}=await sb.from('portal_regras').select('*').order('ordem'); if(data)allRegras=data; },
     biblioteca: async()=>{ const {data}=await sb.from('portal_biblioteca').select('*').order('criado_em',{ascending:false}); if(data)allBiblioteca=data; },
     usuario:  async()=>{ const {data}=await sb.from('portal_users').select('*'); if(data){ _admAllUsers=data; } },
+    nivel: async()=>{
+      const {data}=await sb.from('portal_niveis').select('*').order('ordem');
+      if(data?.length){
+        allNiveis = data;
+        LEVELS = allNiveis.map(r=>({id:r.id,name:r.nome,minCotas:r.min_cotas,minVolume:r.min_volume,color:r.cor,perks:r.perks||[],premios:r.premios||[]}));
+      }
+    },
   };
   await reloads[type]?.();
 }
@@ -5471,6 +5520,28 @@ function renderAdmBeneficios(){
     </div>
     <span class="tag" style="background:rgba(255,255,255,0.05);color:var(--muted2)">${b.status||'–'}</span>`;
   });
+}
+
+// Níveis são um conjunto fixo (6 linhas, ids usados na lógica de cálculo em
+// getLevelForStats) — só dá pra editar, não criar/excluir, então não usa o
+// admList() genérico (que sempre inclui um botão de excluir).
+function renderAdmNiveis(){
+  el('adm-niveis-list').innerHTML = (allNiveis||[]).map(n=>{
+    const requisito = [
+      n.min_cotas ? `${n.min_cotas} cotas` : null,
+      n.min_volume ? fmtBRL(n.min_volume)+' em volume' : null,
+    ].filter(Boolean).join(' OU ') || '—';
+    return `<div class="adm-row">
+      <div class="status-dot" style="background:${n.cor}"></div>
+      <div class="adm-row-main">
+        <div class="adm-row-title">${n.nome}</div>
+        <div class="adm-row-sub">${requisito} · ${(n.perks||[]).length} benefício(s) · ${(n.premios||[]).length} premiação(ões)</div>
+      </div>
+      <div class="adm-actions">
+        <button class="btn-edit" onclick='openAdmModal("nivel",${JSON.stringify(n).replace(/'/g,"&#39;")})'>Editar</button>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty" style="padding:32px"><div class="empty-line"></div><div class="empty-text">Nenhum nível cadastrado</div></div>';
 }
 
 function renderAdmBiblioteca(){
