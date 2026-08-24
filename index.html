@@ -1968,6 +1968,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     <div class="page" id="page-adm-niveis">
       <div class="adm-page-head">
         <div class="adm-page-title">Níveis de classificação</div>
+        <button class="btn-primary" onclick="openAdmModal('nivel')">+ Novo nível</button>
       </div>
       <div class="adm-table-wrap" id="adm-niveis-list"></div>
     </div>
@@ -2065,55 +2066,62 @@ let _sugAnon = false;
 // em loadAll()). Mantido como `let` (não `const`) justamente pra isso.
 let LEVELS = [
   {
-    id:'nao_classificado', name:'Não Classificado',
+    id:'nao_classificado', name:'Não Classificado', ordem:0,
     minCotas:0, minVolume:0, color:'#4A4A5A',
     perks:['Acesso ao portal'],
     premios:[]
   },
   {
-    id:'bronze', name:'Bronze',
+    id:'bronze', name:'Bronze', ordem:1,
     minCotas:8, minVolume:350000, color:'#CD7F32',
     perks:['Acesso básico à Academy'],
     premios:['Brinde GR']
   },
   {
-    id:'prata', name:'Prata',
+    id:'prata', name:'Prata', ordem:2,
     minCotas:11, minVolume:500000, color:'#B0B0C0',
     perks:['Brinde exclusivo Prata'],
     premios:['Brinde GR Prata']
   },
   {
-    id:'ouro', name:'Ouro',
+    id:'ouro', name:'Ouro', ordem:3,
     minCotas:15, minVolume:700000, color:'#C9A84C',
     perks:['Acesso a campanhas exclusivas Ouro'],
     premios:['Brinde GR Ouro','Campanha exclusiva Ouro']
   },
   {
-    id:'diamante', name:'Diamante',
+    id:'diamante', name:'Diamante', ordem:4,
     minCotas:18, minVolume:900000, color:'#7DD3FC',
     perks:['Brinde Diamante','Placa de reconhecimento'],
     premios:['Brinde GR Diamante','Campanha premium','Placa de reconhecimento']
   },
   {
-    id:'elite', name:'Elite GR',
+    id:'elite', name:'Elite GR', ordem:5,
     minCotas:null, minVolume:1000000, color:'#8B2FE0',
     perks:['Brinde Elite','Placa de reconhecimento','Campanha exclusiva Elite','Premiação Eletro'],
     premios:['Brinde Elite GR','Folga bônus','Placa de reconhecimento','Campanha exclusiva','Premiação Eletro']
   },
 ];
 
+// BUGFIX (2026-08-24): antes disso os níveis acima de "Não Classificado" e a
+// ordem de progressão (pro cálculo de "próximo nível") eram uma lista de ids
+// FIXA no código ('diamante','ouro','prata','bronze' etc.) — like um nível
+// novo criado pela Administração nunca seria de fato atingível por ninguém
+// (só apareceria decorativamente na tela). Agora tudo deriva do campo `ordem`
+// de cada nível (mesmo campo salvo em portal_niveis), então criar/reordenar
+// níveis pela Administração passa a funcionar de ponta a ponta.
+function nivelOrderIds(){
+  return [...LEVELS].sort((a,b)=>(a.ordem||0)-(b.ordem||0)).map(l=>l.id);
+}
 // Calcula nível baseado em cotas E volume (OR: basta atingir um dos dois critérios)
 function getLevelForStats(cotas, volume){
-  // Elite só por volume
-  if(volume >= 1000000) return LEVELS.find(l=>l.id==='elite');
-  // Do maior para o menor
-  const ordered = ['diamante','ouro','prata','bronze'];
-  for(const id of ordered){
-    const lv = LEVELS.find(l=>l.id===id);
+  // Do maior ordem pro menor, ignorando "Não Classificado" (esse é o piso, não um alvo)
+  const ordenados = [...LEVELS].filter(l=>l.id!=='nao_classificado').sort((a,b)=>(b.ordem||0)-(a.ordem||0));
+  for(const lv of ordenados){
     if((lv.minCotas && cotas >= lv.minCotas) || (lv.minVolume && volume >= lv.minVolume))
       return lv;
   }
-  return LEVELS.find(l=>l.id==='nao_classificado');
+  return LEVELS.find(l=>l.id==='nao_classificado') || LEVELS[0];
 }
 
 const PONTOS_RULES = [
@@ -2492,7 +2500,7 @@ async function loadAll(){
   if(certr.value?.data)allCertificados=certr.value.data;
   if(nlr.value?.data?.length){
     allNiveis = nlr.value.data;
-    LEVELS = allNiveis.map(r=>({id:r.id,name:r.nome,minCotas:r.min_cotas,minVolume:r.min_volume,color:r.cor,perks:r.perks||[],premios:r.premios||[]}));
+    LEVELS = allNiveis.map(r=>({id:r.id,name:r.nome,minCotas:r.min_cotas,minVolume:r.min_volume,color:r.cor,perks:r.perks||[],premios:r.premios||[],ordem:r.ordem||0}));
   }
 
   CUP=prf.value?.data||null;
@@ -2672,7 +2680,7 @@ function getSidebarLevel(){
 }
 function renderSidebar(){
   const {lv,cotas,volume} = getSidebarLevel();
-  const levelOrder = ['nao_classificado','bronze','prata','ouro','diamante','elite'];
+  const levelOrder = nivelOrderIds();
   const curIdx = levelOrder.indexOf(lv.id);
   const nextId = levelOrder[curIdx+1];
   const next = nextId ? LEVELS.find(l=>l.id===nextId) : null;
@@ -2893,13 +2901,13 @@ async function renderDashboardAdminGestao(){
 function renderNiveis(){
   const {cotas,volume}=getMesAtualStats();
   const lv=getLevelForStats(cotas,volume);
-  const levelOrder=['nao_classificado','bronze','prata','ouro','diamante','elite'];
+  const levelOrder=nivelOrderIds();
   const curIdx=levelOrder.indexOf(lv.id);
   const next=levelOrder[curIdx+1]?LEVELS.find(l=>l.id===levelOrder[curIdx+1]):null;
 
-  // Progress ring — based on volume vs next level
+  // Progress ring — based on volume vs next level (sem "next" = já é o nível mais alto)
   let pct=0;
-  if(lv.id==='elite') pct=100;
+  if(!next) pct=100;
   else if(next?.minVolume) pct=Math.min(100,Math.round((volume/next.minVolume)*100));
   else if(next?.minCotas) pct=Math.min(100,Math.round((cotas/next.minCotas)*100));
 
@@ -2923,8 +2931,10 @@ function renderNiveis(){
     const thisIdx=levelOrder.indexOf(l.id);
     const isUnlocked=thisIdx<=curLvIdx;
     const reqText=l.id==='nao_classificado'?'Abaixo dos requisitos mínimos'
-      :l.id==='elite'?'R$ 1.000.000+ em volume'
-      :`${l.minCotas} cotas OU ${fmtBRL(l.minVolume)} em volume`;
+      :(l.minCotas&&l.minVolume)?`${l.minCotas} cotas OU ${fmtBRL(l.minVolume)} em volume`
+      :l.minVolume?`${fmtBRL(l.minVolume)}+ em volume`
+      :l.minCotas?`${l.minCotas}+ cotas`
+      :'—';
     return`<div class="level-card ${isCurrent?'current':''}" style="--lc-color:${l.color};${!isUnlocked&&!isCurrent?'opacity:0.45':''}">
       ${isCurrent?'<span class="lc-badge">ATUAL</span>':''}
       <div class="lc-mark" style="border-color:${l.color};color:${l.color}">${l.id==='nao_classificado'?'NC':l.name.slice(0,2).toUpperCase()}</div>
@@ -4848,13 +4858,16 @@ function buildAdmForm(type, d={}){
       ${inp('pontos','Pontos GR Nível',d.pontos,'number','0')}`;
 
     case 'nivel': return `
+      ${!d.id ? `<div class="adm-field"><label class="adm-label">Identificador único (sem espaços/acentos)</label>
+        <input class="adm-input" id="af-id_slug" type="text" placeholder="Ex: platina"></div>` : ''}
       ${inp('nome','Nome do nível',d.nome)}
       ${g3(
         inp('min_cotas','Cotas mínimas (opcional)',d.min_cotas,'number','Ex: 8'),
         inp('min_volume','Volume mínimo (R$)',d.min_volume,'number','Ex: 350000'),
         inp('cor','Cor (hex)',d.cor,'text','Ex: #C9A84C')
       )}
-      <div style="font-size:10px;color:var(--muted2);margin:-6px 0 10px">Quem bater cotas OU volume mínimo já entra no nível — basta um dos dois.</div>
+      ${inp('ordem','Posição na progressão (0 = mais baixo)',d.ordem,'number','Ex: 3')}
+      <div style="font-size:10px;color:var(--muted2);margin:-6px 0 10px">Quem bater cotas OU volume mínimo já entra no nível — basta um dos dois. A posição decide a ordem de progressão entre os níveis (maior = mais alto).</div>
       ${ta('perks_texto','Benefícios (um por linha)',(d.perks||[]).join('\n'),'Ex: Acesso à Academy')}
       ${ta('premios_texto','Premiação (um por linha)',(d.premios||[]).join('\n'),'Ex: Brinde GR Ouro')}`;
 
@@ -4951,8 +4964,17 @@ async function saveAdmModal(){
         min_cotas: av('min_cotas')?parseInt(av('min_cotas')):null,
         min_volume: parseFloat(av('min_volume'))||0,
         cor: av('cor')||'#4A4A5A',
+        ordem: parseInt(av('ordem'))||0,
         perks: av('perks_texto').split('\n').map(s=>s.trim()).filter(Boolean),
         premios: av('premios_texto').split('\n').map(s=>s.trim()).filter(Boolean) };
+      if(!editId){
+        // Slugifica o que a pessoa digitou (id de portal_niveis não tem
+        // default — é usado como referência estável em getLevelForStats etc.)
+        const slug = av('id_slug').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+          .replace(/[^a-z0-9_]+/g,'_').replace(/^_+|_+$/g,'');
+        if(!slug){ toast('Informe um identificador pro nível (sem espaços/acentos)','err'); return; }
+        payload.id = slug;
+      }
       break;
   }
 
@@ -5042,7 +5064,7 @@ async function reloadAdmData(type){
       const {data}=await sb.from('portal_niveis').select('*').order('ordem');
       if(data?.length){
         allNiveis = data;
-        LEVELS = allNiveis.map(r=>({id:r.id,name:r.nome,minCotas:r.min_cotas,minVolume:r.min_volume,color:r.cor,perks:r.perks||[],premios:r.premios||[]}));
+        LEVELS = allNiveis.map(r=>({id:r.id,name:r.nome,minCotas:r.min_cotas,minVolume:r.min_volume,color:r.cor,perks:r.perks||[],premios:r.premios||[],ordem:r.ordem||0}));
       }
     },
   };
