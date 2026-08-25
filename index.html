@@ -2601,6 +2601,11 @@ async function loadAll(){
 /* ═══ NAV ═══ */
 const PAGE_TITLES={dashboard:'Dashboard',niveis:'GR Níveis',performance:'Performance',destaques:'Destaques do Mês',copa:'Copa GR',campanhas:'Campanhas',beneficios:'Benefícios',academy:'GR Academy',news:'GR News',sugestoes:'Caixinha de Sugestões',hallfama:'Hall da Fama',regras:'Regras GR',carreira:'Carreira',biblioteca:'Biblioteca',certificados:'Meus Certificados'};
 function nav(page){
+  // BUGFIX: sair da Academy (por qualquer item do menu, não só o botão
+  // "Voltar") só escondia a página do curso via CSS — o <iframe>/<video> da
+  // aula continuava no DOM tocando em segundo plano (áudio/vídeo fantasma).
+  // Parar aqui, antes de trocar de página, cobre todo caminho de saída.
+  if(page!=='curso-detalhe') _pararVideoCurso();
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
   const pageEl=el('page-'+page);
@@ -3531,6 +3536,16 @@ function openCurso(id){
 function voltarAcademy(){
   _cursoAtualId=null;
   nav('academy');
+}
+// Para o vídeo da aula (YouTube ou nativo) ao sair da tela do curso. No
+// iframe do YouTube, o jeito confiável de parar de verdade (não só pausar,
+// já que o objetivo é não continuar tocando escondido) é limpar o src —
+// removê-lo do DOM ou zerar o src interrompe o player na hora.
+function _pararVideoCurso(){
+  const iframe=document.getElementById('curso-video-iframe');
+  if(iframe) iframe.src='about:blank';
+  const video=document.getElementById('curso-video-native');
+  if(video) video.pause();
 }
 function renderCurso(){
   const a=allAcademy.find(x=>x.id===_cursoAtualId);
