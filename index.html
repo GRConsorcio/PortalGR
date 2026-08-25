@@ -1510,7 +1510,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
           </div>
           <div style="display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:var(--text)">
             <span style="font-size:17px">🛍️</span>
-            <span>Seus pontos podem ser trocados por prêmios na <strong style="color:var(--gold2)">GR Store</strong>.</span>
+            <span>Seus pontos podem ser trocados por prêmios na <a href="https://grconsorcio.github.io/GRstores/" target="_blank" rel="noopener" style="color:var(--gold2);font-weight:700;text-decoration:underline">GR Store</a>.</span>
           </div>
           <table class="tbl">
             <thead><tr><th>Ação</th><th>Pontos</th><th>Limite</th></tr></thead>
@@ -2133,6 +2133,7 @@ const PONTOS_RULES = [
   {acao:'Indicar colaborador',pts:150,limite:'1x/indicação'},
   {acao:'Destaque do mês',pts:200,limite:'1x/mês'},
   {acao:'Zero inadimplência no mês',pts:100,limite:'1x/mês'},
+  {acao:'Cota inadimplente',pts:-50,limite:'Ilimitado'},
 ];
 
 /* ═══ UTILS ═══ */
@@ -2945,13 +2946,14 @@ function renderNiveis(){
     </div>`;
   }).join('');
 
-  el('pontos-rules').innerHTML=PONTOS_RULES.map(r=>`<tr><td>${r.acao}</td><td style="color:var(--gold2);font-family:var(--font-d);font-weight:700">+${r.pts}</td><td style="color:var(--muted2);font-size:11px">${r.limite}</td></tr>`).join('');
+  el('pontos-rules').innerHTML=PONTOS_RULES.map(r=>`<tr><td>${r.acao}</td><td style="color:${r.pts<0?'var(--red)':'var(--gold2)'};font-family:var(--font-d);font-weight:700">${r.pts>0?'+':''}${r.pts}</td><td style="color:var(--muted2);font-size:11px">${r.limite}</td></tr>`).join('');
   const pontosEl=el('meus-pontos-val');
   if(pontosEl) pontosEl.textContent=(CUP?.pontos||0).toLocaleString('pt-BR');
 }
 
 /* ═══ PERFORMANCE ═══ */
-function renderPerformance(){
+let _qualidadeResumoGeralCache=null;
+async function renderPerformance(){
   const mesAtual=new Date().toISOString().slice(0,7);
   const {cotas,volume}=getMesAtualStats();
   const meta=allMetas.find(m=>m.referencia===mesAtual);
@@ -2959,7 +2961,21 @@ function renderPerformance(){
   const pct=Math.round((cotas/metaCotas)*100);
   el('perf-cotas').textContent=cotas;
   el('perf-volume').textContent=fmtBRL(volume);
-  el('perf-inadim').textContent=_qualidadeResumo?(_qualidadeResumo.pct_inadimplencia_total+'%'):'–';
+  // Admin/coordenador não têm carteira própria de clientes (não vendem
+  // pessoalmente), então _qualidadeResumo nunca vem preenchido pra eles — o
+  // card ficava travado no "–" pra sempre. Mostra a inadimplência geral da
+  // operação nesse caso, em vez de um dado pessoal que não existe.
+  if(_qualidadeResumo){
+    el('perf-inadim').textContent=_qualidadeResumo.pct_inadimplencia_total+'%';
+  } else if(isAdminOrCoord()){
+    if(!_qualidadeResumoGeralCache){
+      try{ _qualidadeResumoGeralCache=await fetchQualidadeResumoGeral(); }
+      catch(e){ console.warn('[renderPerformance] resumo geral falhou:',e.message); }
+    }
+    el('perf-inadim').textContent=_qualidadeResumoGeralCache?(_qualidadeResumoGeralCache.pct_inadimplencia_total+'%'):'–';
+  } else {
+    el('perf-inadim').textContent='–';
+  }
   el('perf-meta-pct').textContent=pct+'%';
 
   // Evolução mensal — usa evolucao_6m do CRM quando disponível (só cotas por
