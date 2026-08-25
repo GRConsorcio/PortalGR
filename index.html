@@ -2159,24 +2159,36 @@ function nivelBadgeSVG(id, color, nome){
   color = color || '#8A8A9A';
   const ord = {nao_classificado:0,bronze:1,prata:2,ouro:3,diamante:4,elite:5}[id] ?? 0;
   const gemR = 20 + ord*2.6;
-  const folhas = 3 + Math.min(ord,3); // 3 a 6 folhas por lado
+  const folhas = 4 + Math.min(ord,3); // 4 a 7 folhas por lado, dentro do medalhão
 
-  // Ramo de louro: folhas (elipses) subindo ao lado do escudo + um caule fino
-  function ramo(mult){
-    const pontos=[[58,172],[50,150],[45,127],[44,104],[47,82],[52,63]].slice(0,folhas);
+  // Louro DENTRO do medalhão, contornando a base do círculo (como na referência)
+  // — folhas em arco (trigonometria simples), da parte de baixo subindo pro lado.
+  function louro(mult){
+    const Rw = gemR + 7;
     let out='';
-    let path=`M${100+mult*pontos[0][0]} ${pontos[0][1]+6}`;
-    pontos.forEach((p,i)=>{
-      const x=100+mult*p[0], y=p[1];
-      const rot=(mult>0?1:-1)*(-70+i*14);
-      out+=`<ellipse cx="${x}" cy="${y}" rx="7" ry="15" fill="${color}" opacity="${(0.95-i*0.06).toFixed(2)}" transform="rotate(${rot} ${x} ${y})"/>`;
-      path+=` L${x} ${y}`;
-    });
-    out+=`<path d="${path}" fill="none" stroke="${color}" stroke-width="2" opacity=".7"/>`;
+    for(let i=0;i<folhas;i++){
+      const ang = (100 + i*(120/(folhas-1))) * Math.PI/180;
+      const x = 100 + mult*Rw*Math.cos(ang);
+      const y = 100 + Rw*Math.sin(ang);
+      const rotDeg = mult>0 ? (ang*180/Math.PI) : (180-ang*180/Math.PI);
+      out+=`<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="5.5" ry="11" fill="${color}" opacity="${(0.95-i*0.05).toFixed(2)}" transform="rotate(${rotDeg.toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)})"/>`;
+    }
     return out;
   }
-  // Espinho central acima do escudo — só a partir de Ouro (prestígio alto)
-  const espinho = ord>=3?`<polygon points="100,4 92,34 100,26 108,34" fill="${color}"/>`:'';
+  // Filigrana decorativa nas laterais externas do escudo (voluta/cacho), fora
+  // do medalhão — puramente ornamental, cresce de tamanho com o prestígio.
+  function filigrana(mult){
+    const s = 0.75 + ord*0.05;
+    return `<g transform="translate(${mult>0?158:42} 95) scale(${mult*s} ${s})">
+      <path d="M0 0 C 22 -14 40 4 34 26 C 30 44 10 48 2 34 C -4 24 6 16 14 20"
+        fill="none" stroke="${color}" stroke-width="3.2" stroke-linecap="round" opacity=".85"/>
+      <circle cx="14" cy="20" r="3" fill="${color}" opacity=".85"/>
+    </g>`;
+  }
+  // Diamante no topo do escudo — presente em todos os níveis (como na
+  // referência); espinhos extras se somam a partir de Ouro (prestígio alto).
+  const topoDiamante = `<polygon points="100,0 108,10 100,20 92,10" fill="${color}"/>`;
+  const espinho = ord>=3?`<polygon points="100,6 92,32 100,25 108,32" fill="${color}" opacity=".9"/>`:'';
 
   const kite=(r)=>`${100},${100-r} ${100+r},100 ${100},${100+r} ${100-r},100`;
   const gems = {
@@ -2202,11 +2214,13 @@ function nivelBadgeSVG(id, color, nome){
     <path d="M175 202 L156 202 L174 224 Z" fill="${color}" opacity=".65"/>
     ${label?`<text x="100" y="222" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="${fSize}" font-weight="700" fill="#fff" letter-spacing="0.5">${label}</text>`:''}`;
   return `<svg viewBox="0 -10 200 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
-    ${ramo(-1)}${ramo(1)}
     <path d="${shieldPath}" fill="${color}1c" stroke="${color}" stroke-width="4"/>
     ${ord>=5?`<path d="${shieldPath}" fill="none" stroke="${color}" stroke-width="1.4" opacity=".6" transform="scale(0.93)" transform-origin="100 115"/>`:''}
+    ${filigrana(-1)}${filigrana(1)}
+    ${topoDiamante}
     ${espinho}
     <circle cx="100" cy="100" r="${gemR+14}" fill="#0006" stroke="${color}" stroke-width="2"/>
+    ${louro(-1)}${louro(1)}
     ${gems[id]||''}
     ${fita}
   </svg>`;
