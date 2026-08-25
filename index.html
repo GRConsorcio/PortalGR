@@ -58,7 +58,7 @@
   --bronze:#C8762A;
   --silver:#A8A8BC;
   --diamond:#6EC6F0;
-  --elite:#8B2FE0;
+  --elite:#E2483B;
   --fame-gold:#D4AF37;
   --fame-gold2:#F4D874;
   --font-d:'Barlow Condensed',sans-serif;
@@ -1187,6 +1187,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
   <!-- Level strip -->
   <div class="sidebar-level" id="sl-wrap" onclick="nav('niveis')">
+    <div id="sl-badge" style="width:34px;height:34px;margin:0 0 8px"></div>
     <div class="sl-label">Seu nível</div>
     <div class="sl-name" id="sl-name">Bronze</div>
     <div class="sl-bar-bg"><div class="sl-bar-fill" id="sl-fill" style="width:30%"></div></div>
@@ -1392,7 +1393,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       <div class="kpi-grid" id="dash-kpis">
         <div class="kpi-card"><div class="kpi-label" id="kpi-cotas-label">Cotas este mês</div><div class="kpi-val" id="kpi-cotas">–</div><div class="kpi-sub" id="kpi-cotas-sub">Meta: <span id="kpi-meta">–</span></div><div class="kpi-delta up" id="kpi-delta">–</div></div>
         <div class="kpi-card"><div class="kpi-label" id="kpi-volume-label">Volume vendido</div><div class="kpi-val gold" id="kpi-volume" style="color:var(--gold2)">–</div><div class="kpi-sub" id="kpi-volume-sub">Mês atual</div></div>
-        <div class="kpi-card" id="kpi-nivel-card"><div class="kpi-label">Nível GR</div><div class="kpi-val" id="kpi-nivel" style="color:var(--gold2)">–</div><div class="kpi-sub" id="kpi-nivel-sub">–</div></div>
+        <div class="kpi-card" id="kpi-nivel-card"><div class="kpi-label">Nível GR</div><div style="display:flex;align-items:center;gap:8px"><div id="kpi-nivel-badge" style="width:22px;height:22px;flex-shrink:0"></div><div class="kpi-val" id="kpi-nivel" style="color:var(--gold2)">–</div></div><div class="kpi-sub" id="kpi-nivel-sub">–</div></div>
         <div class="kpi-card" id="kpi-rank-card"><div class="kpi-label">Ranking equipe</div><div class="kpi-val" id="kpi-rank">–</div><div class="kpi-sub" id="kpi-rank-sub">–</div></div>
         <div class="kpi-card" id="kpi-inadim-card" style="display:none"><div class="kpi-label">Inadimplência</div><div class="kpi-val" id="kpi-inadim" style="color:var(--red)">–</div><div class="kpi-sub" id="kpi-inadim-sub">–</div></div>
       </div>
@@ -1484,6 +1485,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
             </svg>
             <div class="ph-ring-val" id="nivel-pct-val" style="color:var(--gold2)">30%</div>
           </div>
+          <div id="nivel-badge-big" style="width:60px;height:60px;margin:10px auto 4px"></div>
           <div style="font-family:var(--font-d);font-size:18px;font-weight:800;color:var(--gold2)" id="nivel-name-big">Bronze</div>
           <div style="font-size:11px;color:var(--muted2);margin-top:4px">Nível atual</div>
         </div>
@@ -2120,7 +2122,7 @@ let LEVELS = [
   },
   {
     id:'elite', name:'Elite GR', ordem:5,
-    minCotas:null, minVolume:1000000, color:'#8B2FE0',
+    minCotas:null, minVolume:1000000, color:'#E2483B',
     perks:['Brinde Elite','Placa de reconhecimento','Campanha exclusiva Elite','Premiação Eletro'],
     premios:['Brinde Elite GR','Folga bônus','Placa de reconhecimento','Campanha exclusiva','Premiação Eletro']
   },
@@ -2145,6 +2147,41 @@ function getLevelForStats(cotas, volume){
       return lv;
   }
   return LEVELS.find(l=>l.id==='nao_classificado') || LEVELS[0];
+}
+
+/* ═══ EMBLEMAS DE NÍVEL ═══
+   Ícone (brasão/elmo) por nível, no estilo dos ranks de jogos competitivos
+   (pedido do usuário) — desenho próprio (não usa artes de terceiros), com
+   ornamentação crescente por prestígio: Não Classificado (liso) → Bronze
+   (gema simples) → Prata (gema em losango) → Ouro (gema em estrela) →
+   Diamante (gema facetada) → Elite GR (gema facetada + "asas", equivalente
+   ao topo — a pedido, mapeado como o "Grão-Mestre" da escala de referência). */
+function nivelBadgeSVG(id, color){
+  color = color || '#8A8A9A';
+  const shieldPath = 'M50 5 L83 18 L87 48 C87 75 68 90 50 97 C32 90 13 75 13 48 L17 18 Z';
+  const wings = id==='elite' ? `
+    <path d="M13 36 L-6 27 L1 51 L14 49 Z" fill="${color}" opacity=".85"/>
+    <path d="M87 36 L106 27 L99 51 L86 49 Z" fill="${color}" opacity=".85"/>
+    <path d="M50 5 L45 -7 L50 -3 L55 -7 Z" fill="${color}"/>` : '';
+  const gems = {
+    nao_classificado: '',
+    bronze: `<circle cx="50" cy="47" r="9" fill="${color}"/>`,
+    prata: `<polygon points="50,34 61,47 50,60 39,47" fill="${color}"/>`,
+    ouro: `<path d="M50 30 L55 43 L68 47 L55 51 L50 64 L45 51 L32 47 L45 43 Z" fill="${color}"/>`,
+    diamante: `<polygon points="50,26 65,47 50,74 35,47" fill="${color}"/>
+      <line x1="50" y1="26" x2="50" y2="74" stroke="#fff8" stroke-width="1"/>
+      <line x1="35" y1="47" x2="65" y2="47" stroke="#fff8" stroke-width="1"/>`,
+    elite: `<polygon points="50,22 68,47 50,78 32,47" fill="${color}"/>
+      <line x1="50" y1="22" x2="50" y2="78" stroke="#fffc" stroke-width="1.2"/>
+      <line x1="32" y1="47" x2="68" y2="47" stroke="#fffc" stroke-width="1.2"/>
+      <line x1="41" y1="34" x2="59" y2="60" stroke="#fff9" stroke-width=".8"/>
+      <line x1="59" y1="34" x2="41" y2="60" stroke="#fff9" stroke-width=".8"/>`,
+  };
+  return `<svg viewBox="-12 -14 124 116" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+    ${wings}
+    <path d="${shieldPath}" fill="${color}22" stroke="${color}" stroke-width="3"/>
+    ${gems[id]||''}
+  </svg>`;
 }
 
 /* ═══ RESTRIÇÃO POR CLASSE/RANKING — só vale pra vendedor ═══
@@ -2749,6 +2786,7 @@ function renderSidebar(){
   const next = nextId ? LEVELS.find(l=>l.id===nextId) : null;
 
   el('sl-name').textContent=lv.name;
+  el('sl-badge').innerHTML=nivelBadgeSVG(lv.id,lv.color);
   el('sl-fill').style.background=`linear-gradient(90deg,${lv.color}88,${lv.color})`;
   el('sl-wrap').className='sidebar-level level-'+lv.id;
 
@@ -2869,6 +2907,7 @@ async function _renderDashKpisVendaOuEquipe(){
   const nivelAtual=getMinhaClasseObj();
   el('kpi-nivel').textContent=nivelAtual.name;
   el('kpi-nivel').style.color=nivelAtual.color;
+  el('kpi-nivel-badge').innerHTML=nivelBadgeSVG(nivelAtual.id,nivelAtual.color);
   el('kpi-nivel-sub').textContent='Baseado no mês atual';
   const rk=_crmResumo?.ranking_equipe;
   el('kpi-rank').textContent=rk?.posicao?`${rk.posicao}º de ${rk.total_membros}`:'–';
@@ -2981,6 +3020,7 @@ function renderNiveis(){
   el('nivel-pct-val').textContent=pct+'%';
   el('nivel-name-big').textContent=lv.name;
   el('nivel-name-big').style.color=lv.color;
+  el('nivel-badge-big').innerHTML=nivelBadgeSVG(lv.id,lv.color);
   el('nivel-pontos-gr').textContent=(CUP?.pontos||0).toLocaleString('pt-BR');
   el('nivel-pts-total').textContent=fmtBRL(volume);
   el('nivel-proximo').textContent=next?next.name:'Nível máximo ✦';
@@ -3000,7 +3040,7 @@ function renderNiveis(){
       :'—';
     return`<div class="level-card ${isCurrent?'current':''}" style="--lc-color:${l.color};${!isUnlocked&&!isCurrent?'opacity:0.45':''}">
       ${isCurrent?'<span class="lc-badge">ATUAL</span>':''}
-      <div class="lc-mark" style="border-color:${l.color};color:${l.color}">${l.id==='nao_classificado'?'NC':l.name.slice(0,2).toUpperCase()}</div>
+      <div class="lc-mark" style="border-color:${l.color};color:${l.color}">${nivelBadgeSVG(l.id,l.color)}</div>
       <div class="lc-name" style="color:${l.color}">${l.name}</div>
       <div class="lc-pts" style="font-size:10px;margin-bottom:6px">${reqText}</div>
       <div class="lc-perks">${l.perks.map(p=>`· ${p}`).join('<br>')}</div>
