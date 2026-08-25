@@ -2150,80 +2150,12 @@ function getLevelForStats(cotas, volume){
 }
 
 /* ═══ EMBLEMAS DE NÍVEL ═══
-   Brasão por nível (escudo + medalhão + ramos de louro + faixa com o nome),
-   no estilo pedido pelo usuário — desenho próprio (não usa artes de
-   terceiros). Ornamentação cresce por prestígio: mais folhas no louro e
-   espinho no topo a partir de Ouro; Elite GR ganha borda dupla, igual ao
-   topo da escala de referência ("Grão-Mestre"). */
+   Artes reais fornecidas pelo usuário (brasão com elmo espartano, PNG com
+   fundo transparente), uma por nível — arquivos em niveis/<id>.png. Não são
+   mais desenhadas por código; essa função só monta a tag <img>. */
 function nivelBadgeSVG(id, color, nome){
-  color = color || '#8A8A9A';
-  const ord = {nao_classificado:0,bronze:1,prata:2,ouro:3,diamante:4,elite:5}[id] ?? 0;
-  const gemR = 20 + ord*2.6;
-  const folhas = 4 + Math.min(ord,3); // 4 a 7 folhas por lado, dentro do medalhão
-
-  // Louro DENTRO do medalhão, contornando a base do círculo (como na referência)
-  // — folhas em arco (trigonometria simples), da parte de baixo subindo pro lado.
-  function louro(mult){
-    const Rw = gemR + 7;
-    let out='';
-    for(let i=0;i<folhas;i++){
-      const ang = (100 + i*(120/(folhas-1))) * Math.PI/180;
-      const x = 100 + mult*Rw*Math.cos(ang);
-      const y = 100 + Rw*Math.sin(ang);
-      const rotDeg = mult>0 ? (ang*180/Math.PI) : (180-ang*180/Math.PI);
-      out+=`<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="5.5" ry="11" fill="${color}" opacity="${(0.95-i*0.05).toFixed(2)}" transform="rotate(${rotDeg.toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)})"/>`;
-    }
-    return out;
-  }
-  // Filigrana decorativa nas laterais externas do escudo (voluta/cacho), fora
-  // do medalhão — puramente ornamental, cresce de tamanho com o prestígio.
-  function filigrana(mult){
-    const s = 0.75 + ord*0.05;
-    return `<g transform="translate(${mult>0?158:42} 95) scale(${mult*s} ${s})">
-      <path d="M0 0 C 22 -14 40 4 34 26 C 30 44 10 48 2 34 C -4 24 6 16 14 20"
-        fill="none" stroke="${color}" stroke-width="3.2" stroke-linecap="round" opacity=".85"/>
-      <circle cx="14" cy="20" r="3" fill="${color}" opacity=".85"/>
-    </g>`;
-  }
-  // Diamante no topo do escudo — presente em todos os níveis (como na
-  // referência); espinhos extras se somam a partir de Ouro (prestígio alto).
-  const topoDiamante = `<polygon points="100,0 108,10 100,20 92,10" fill="${color}"/>`;
-  const espinho = ord>=3?`<polygon points="100,6 92,32 100,25 108,32" fill="${color}" opacity=".9"/>`:'';
-
-  // Elmo espartano dentro do medalhão — mesmo ícone em todos os níveis, só a
-  // cor muda (igual à referência: o desenho é idêntico, o que diferencia os
-  // níveis é a cor e a ornamentação ao redor, não o ícone em si).
-  const r=gemR;
-  const capacete=`
-    <path d="M100 ${100-r*.9}
-      C ${100+r*.62} ${100-r*.8} ${100+r*.72} ${100-r*.15} ${100+r*.5} ${100+r*.42}
-      C ${100+r*.32} ${100+r*.78} ${100-r*.32} ${100+r*.78} ${100-r*.5} ${100+r*.42}
-      C ${100-r*.72} ${100-r*.15} ${100-r*.62} ${100-r*.8} 100 ${100-r*.9} Z"
-      fill="${color}"/>
-    <line x1="100" y1="${100-r*.85}" x2="100" y2="${100-r*.15}" stroke="#00000055" stroke-width="${Math.max(1.2,r*.05)}"/>
-    <path d="M${100-r*.42} ${100-r*.1} L${100+r*.42} ${100-r*.1} L${100+r*.3} ${100+r*.18} L${100-r*.3} ${100+r*.18} Z" fill="#05050A"/>
-    <rect x="${100-r*.1}" y="${100-r*.1}" width="${r*.2}" height="${r*.6}" fill="#05050A"/>
-  `;
-  const gems = { nao_classificado:capacete, bronze:capacete, prata:capacete, ouro:capacete, diamante:capacete, elite:capacete };
-  const shieldPath='M100 12 L162 30 L162 108 C162 156 134 194 100 218 C66 194 38 156 38 108 L38 30 Z';
-  const label=(nome||'').toUpperCase();
-  const fSize=label.length>13?11:label.length>9?14:label.length>6?16:19;
-  const fita=`
-    <path d="M25 202 L175 202 L175 232 L100 244 L25 232 Z" fill="${color}"/>
-    <path d="M25 202 L44 202 L26 224 Z" fill="${color}" opacity=".65"/>
-    <path d="M175 202 L156 202 L174 224 Z" fill="${color}" opacity=".65"/>
-    ${label?`<text x="100" y="222" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="${fSize}" font-weight="700" fill="#fff" letter-spacing="0.5">${label}</text>`:''}`;
-  return `<svg viewBox="0 -10 200 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
-    <path d="${shieldPath}" fill="${color}1c" stroke="${color}" stroke-width="4"/>
-    ${ord>=5?`<path d="${shieldPath}" fill="none" stroke="${color}" stroke-width="1.4" opacity=".6" transform="scale(0.93)" transform-origin="100 115"/>`:''}
-    ${filigrana(-1)}${filigrana(1)}
-    ${topoDiamante}
-    ${espinho}
-    <circle cx="100" cy="100" r="${gemR+14}" fill="#0006" stroke="${color}" stroke-width="2"/>
-    ${louro(-1)}${louro(1)}
-    ${gems[id]||''}
-    ${fita}
-  </svg>`;
+  const arquivo = {nao_classificado:'nao_classificado',bronze:'bronze',prata:'prata',ouro:'ouro',diamante:'diamante',elite:'elite'}[id] || 'nao_classificado';
+  return `<img src="niveis/${arquivo}.png" alt="${(nome||'').replace(/"/g,'&quot;')}" style="width:100%;height:100%;object-fit:contain" loading="lazy">`;
 }
 
 /* ═══ RESTRIÇÃO POR CLASSE/RANKING — só vale pra vendedor ═══
