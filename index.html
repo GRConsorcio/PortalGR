@@ -2190,21 +2190,21 @@ function nivelBadgeSVG(id, color, nome){
   const topoDiamante = `<polygon points="100,0 108,10 100,20 92,10" fill="${color}"/>`;
   const espinho = ord>=3?`<polygon points="100,6 92,32 100,25 108,32" fill="${color}" opacity=".9"/>`:'';
 
-  const kite=(r)=>`${100},${100-r} ${100+r},100 ${100},${100+r} ${100-r},100`;
-  const gems = {
-    nao_classificado:`<circle cx="100" cy="100" r="${gemR*.7}" fill="none" stroke="${color}" stroke-width="2"/>`,
-    bronze:`<circle cx="100" cy="100" r="${gemR}" fill="${color}"/>`,
-    prata:`<polygon points="${kite(gemR)}" fill="${color}"/>`,
-    ouro:`<polygon points="100,${100-gemR} ${100+gemR*.45},${100-gemR*.32} ${100+gemR},100 ${100+gemR*.45},${100+gemR*.32} 100,${100+gemR} ${100-gemR*.45},${100+gemR*.32} ${100-gemR},100 ${100-gemR*.45},${100-gemR*.32}" fill="${color}"/>`,
-    diamante:`<polygon points="${kite(gemR)}" fill="${color}"/>
-      <line x1="100" y1="${100-gemR}" x2="100" y2="${100+gemR}" stroke="#fff9" stroke-width="1.4"/>
-      <line x1="${100-gemR}" y1="100" x2="${100+gemR}" y2="100" stroke="#fff9" stroke-width="1.4"/>`,
-    elite:`<polygon points="${kite(gemR)}" fill="${color}"/>
-      <line x1="100" y1="${100-gemR}" x2="100" y2="${100+gemR}" stroke="#fffc" stroke-width="1.6"/>
-      <line x1="${100-gemR}" y1="100" x2="${100+gemR}" y2="100" stroke="#fffc" stroke-width="1.6"/>
-      <line x1="${(100-gemR*.6).toFixed(1)}" y1="${(100-gemR*.6).toFixed(1)}" x2="${(100+gemR*.6).toFixed(1)}" y2="${(100+gemR*.6).toFixed(1)}" stroke="#fff9" stroke-width="1"/>
-      <line x1="${(100+gemR*.6).toFixed(1)}" y1="${(100-gemR*.6).toFixed(1)}" x2="${(100-gemR*.6).toFixed(1)}" y2="${(100+gemR*.6).toFixed(1)}" stroke="#fff9" stroke-width="1"/>`,
-  };
+  // Elmo espartano dentro do medalhão — mesmo ícone em todos os níveis, só a
+  // cor muda (igual à referência: o desenho é idêntico, o que diferencia os
+  // níveis é a cor e a ornamentação ao redor, não o ícone em si).
+  const r=gemR;
+  const capacete=`
+    <path d="M100 ${100-r*.9}
+      C ${100+r*.62} ${100-r*.8} ${100+r*.72} ${100-r*.15} ${100+r*.5} ${100+r*.42}
+      C ${100+r*.32} ${100+r*.78} ${100-r*.32} ${100+r*.78} ${100-r*.5} ${100+r*.42}
+      C ${100-r*.72} ${100-r*.15} ${100-r*.62} ${100-r*.8} 100 ${100-r*.9} Z"
+      fill="${color}"/>
+    <line x1="100" y1="${100-r*.85}" x2="100" y2="${100-r*.15}" stroke="#00000055" stroke-width="${Math.max(1.2,r*.05)}"/>
+    <path d="M${100-r*.42} ${100-r*.1} L${100+r*.42} ${100-r*.1} L${100+r*.3} ${100+r*.18} L${100-r*.3} ${100+r*.18} Z" fill="#05050A"/>
+    <rect x="${100-r*.1}" y="${100-r*.1}" width="${r*.2}" height="${r*.6}" fill="#05050A"/>
+  `;
+  const gems = { nao_classificado:capacete, bronze:capacete, prata:capacete, ouro:capacete, diamante:capacete, elite:capacete };
   const shieldPath='M100 12 L162 30 L162 108 C162 156 134 194 100 218 C66 194 38 156 38 108 L38 30 Z';
   const label=(nome||'').toUpperCase();
   const fSize=label.length>13?11:label.length>9?14:label.length>6?16:19;
