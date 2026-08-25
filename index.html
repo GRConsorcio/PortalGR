@@ -2162,6 +2162,15 @@ function getMinhaClasseId(){
   const {cotas,volume}=getMesAtualStats();
   return getLevelForStats(cotas,volume).id;
 }
+// Mesma lógica do getMinhaClasseId, mas devolve o objeto completo de LEVELS
+// (nome/cor/etc) — usado nos lugares que EXIBEM a classe do próprio usuário
+// (sidebar, dashboard, página Níveis), pra que um override manual do admin
+// apareça na hora, e não só na restrição de acesso a academy/campanhas.
+function getMinhaClasseObj(){
+  const {cotas,volume}=getMesAtualStats();
+  if(_classeOverride) return LEVELS.find(l=>l.id===_classeOverride.classe_id)||getLevelForStats(cotas,volume);
+  return getLevelForStats(cotas,volume);
+}
 // Um item (curso/campanha) fica liberado se: quem vê não é restrito por
 // classe (todo mundo, exceto vendedor), OU o item não tem restrição
 // configurada (classes_liberadas vazio/nulo — comportamento de hoje), OU a
@@ -2730,7 +2739,7 @@ function getMesAtualStats(){
 /* ═══ SIDEBAR LEVEL ═══ */
 function getSidebarLevel(){
   const {cotas,volume}=getMesAtualStats();
-  return {lv:getLevelForStats(cotas,volume), cotas, volume};
+  return {lv:getMinhaClasseObj(), cotas, volume};
 }
 function renderSidebar(){
   const {lv,cotas,volume} = getSidebarLevel();
@@ -2857,7 +2866,7 @@ async function _renderDashKpisVendaOuEquipe(){
   el('kpi-cotas').textContent=cotas;
   el('kpi-meta').textContent=metaCotas+' cotas';
   el('kpi-volume').textContent=fmtBRL(volume);el('kpi-volume').style.color='var(--gold2)';
-  const nivelAtual=getLevelForStats(cotas,volume);
+  const nivelAtual=getMinhaClasseObj();
   el('kpi-nivel').textContent=nivelAtual.name;
   el('kpi-nivel').style.color=nivelAtual.color;
   el('kpi-nivel-sub').textContent='Baseado no mês atual';
@@ -2954,7 +2963,7 @@ async function renderDashboardAdminGestao(){
 /* ═══ NÍVEIS ═══ */
 function renderNiveis(){
   const {cotas,volume}=getMesAtualStats();
-  const lv=getLevelForStats(cotas,volume);
+  const lv=getMinhaClasseObj();
   const levelOrder=nivelOrderIds();
   const curIdx=levelOrder.indexOf(lv.id);
   const next=levelOrder[curIdx+1]?LEVELS.find(l=>l.id===levelOrder[curIdx+1]):null;
