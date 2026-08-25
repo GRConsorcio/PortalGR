@@ -2150,65 +2150,65 @@ function getLevelForStats(cotas, volume){
 }
 
 /* ═══ EMBLEMAS DE NÍVEL ═══
-   Ícone (brasão/elmo) por nível, no estilo dos ranks de jogos competitivos
-   (pedido do usuário) — desenho próprio (não usa artes de terceiros), com
-   ornamentação crescente por prestígio: Não Classificado (liso) → Bronze
-   (gema simples) → Prata (gema em losango) → Ouro (gema em estrela) →
-   Diamante (gema facetada) → Elite GR (gema facetada + "asas", equivalente
-   ao topo — a pedido, mapeado como o "Grão-Mestre" da escala de referência). */
-function nivelBadgeSVG(id, color){
+   Brasão por nível (escudo + medalhão + ramos de louro + faixa com o nome),
+   no estilo pedido pelo usuário — desenho próprio (não usa artes de
+   terceiros). Ornamentação cresce por prestígio: mais folhas no louro e
+   espinho no topo a partir de Ouro; Elite GR ganha borda dupla, igual ao
+   topo da escala de referência ("Grão-Mestre"). */
+function nivelBadgeSVG(id, color, nome){
   color = color || '#8A8A9A';
   const ord = {nao_classificado:0,bronze:1,prata:2,ouro:3,diamante:4,elite:5}[id] ?? 0;
-  const wingLayers = ord===0?0 : ord<=2?1 : ord<=4?2 : 3;
-  const gemR = 10 + ord*2.4;
+  const gemR = 20 + ord*2.6;
+  const folhas = 3 + Math.min(ord,3); // 3 a 6 folhas por lado
 
-  // Asas: 1 a 3 lâminas empilhadas por lado, crescendo em alcance com o nível
-  function wingSide(mult){
+  // Ramo de louro: folhas (elipses) subindo ao lado do escudo + um caule fino
+  function ramo(mult){
+    const pontos=[[58,172],[50,150],[45,127],[44,104],[47,82],[52,63]].slice(0,folhas);
     let out='';
-    for(let i=0;i<wingLayers;i++){
-      const reach=34+i*13, y0=80+i*9, cx=58-i*5;
-      const x=v=>100+mult*v;
-      out+=`<path d="M${x(cx)} ${y0} L${x(cx+reach)} ${y0-14-i*4} L${x(cx+reach-9)} ${y0+15} L${x(cx-5)} ${y0+13} Z"
-        fill="${color}" opacity="${(0.92-i*0.16).toFixed(2)}"/>`;
-    }
+    let path=`M${100+mult*pontos[0][0]} ${pontos[0][1]+6}`;
+    pontos.forEach((p,i)=>{
+      const x=100+mult*p[0], y=p[1];
+      const rot=(mult>0?1:-1)*(-70+i*14);
+      out+=`<ellipse cx="${x}" cy="${y}" rx="7" ry="15" fill="${color}" opacity="${(0.95-i*0.06).toFixed(2)}" transform="rotate(${rot} ${x} ${y})"/>`;
+      path+=` L${x} ${y}`;
+    });
+    out+=`<path d="${path}" fill="none" stroke="${color}" stroke-width="2" opacity=".7"/>`;
     return out;
   }
-  // Coroa: 1 espinho central sempre + pares laterais conforme o nível (ordem)
-  function crown(){
-    let out=`<polygon points="100,0 92,28 100,20 108,28" fill="${color}"/>`;
-    for(let i=1;i<=ord;i++){
-      const dx=13*i, h=Math.max(10,22-i*2), y=16+i*2;
-      out+=`<polygon points="${100-dx},${y} ${100-dx-6},${y+h} ${100-dx+6},${y+h}" fill="${color}" opacity=".88"/>`;
-      out+=`<polygon points="${100+dx},${y} ${100+dx-6},${y+h} ${100+dx+6},${y+h}" fill="${color}" opacity=".88"/>`;
-    }
-    return out;
-  }
-  const kite=(r)=>`${100},${60-r} ${100+r},60 ${100},${60+r} ${100-r},60`;
+  // Espinho central acima do escudo — só a partir de Ouro (prestígio alto)
+  const espinho = ord>=3?`<polygon points="100,4 92,34 100,26 108,34" fill="${color}"/>`:'';
+
+  const kite=(r)=>`${100},${100-r} ${100+r},100 ${100},${100+r} ${100-r},100`;
   const gems = {
-    nao_classificado:'',
-    bronze:`<circle cx="100" cy="60" r="${gemR}" fill="${color}"/>`,
+    nao_classificado:`<circle cx="100" cy="100" r="${gemR*.7}" fill="none" stroke="${color}" stroke-width="2"/>`,
+    bronze:`<circle cx="100" cy="100" r="${gemR}" fill="${color}"/>`,
     prata:`<polygon points="${kite(gemR)}" fill="${color}"/>`,
-    ouro:`<polygon points="100,${60-gemR} ${100+gemR*.45},${60-gemR*.32} ${100+gemR},60 ${100+gemR*.45},${60+gemR*.32} 100,${60+gemR} ${100-gemR*.45},${60+gemR*.32} ${100-gemR},60 ${100-gemR*.45},${60-gemR*.32}" fill="${color}"/>`,
+    ouro:`<polygon points="100,${100-gemR} ${100+gemR*.45},${100-gemR*.32} ${100+gemR},100 ${100+gemR*.45},${100+gemR*.32} 100,${100+gemR} ${100-gemR*.45},${100+gemR*.32} ${100-gemR},100 ${100-gemR*.45},${100-gemR*.32}" fill="${color}"/>`,
     diamante:`<polygon points="${kite(gemR)}" fill="${color}"/>
-      <line x1="100" y1="${60-gemR}" x2="100" y2="${60+gemR}" stroke="#fff9" stroke-width="1.2"/>
-      <line x1="${100-gemR}" y1="60" x2="${100+gemR}" y2="60" stroke="#fff9" stroke-width="1.2"/>`,
+      <line x1="100" y1="${100-gemR}" x2="100" y2="${100+gemR}" stroke="#fff9" stroke-width="1.4"/>
+      <line x1="${100-gemR}" y1="100" x2="${100+gemR}" y2="100" stroke="#fff9" stroke-width="1.4"/>`,
     elite:`<polygon points="${kite(gemR)}" fill="${color}"/>
-      <line x1="100" y1="${60-gemR}" x2="100" y2="${60+gemR}" stroke="#fffc" stroke-width="1.4"/>
-      <line x1="${100-gemR}" y1="60" x2="${100+gemR}" y2="60" stroke="#fffc" stroke-width="1.4"/>
-      <line x1="${(100-gemR*.6).toFixed(1)}" y1="${(60-gemR*.6).toFixed(1)}" x2="${(100+gemR*.6).toFixed(1)}" y2="${(60+gemR*.6).toFixed(1)}" stroke="#fff9" stroke-width=".8"/>
-      <line x1="${(100+gemR*.6).toFixed(1)}" y1="${(60-gemR*.6).toFixed(1)}" x2="${(100-gemR*.6).toFixed(1)}" y2="${(60+gemR*.6).toFixed(1)}" stroke="#fff9" stroke-width=".8"/>`,
+      <line x1="100" y1="${100-gemR}" x2="100" y2="${100+gemR}" stroke="#fffc" stroke-width="1.6"/>
+      <line x1="${100-gemR}" y1="100" x2="${100+gemR}" y2="100" stroke="#fffc" stroke-width="1.6"/>
+      <line x1="${(100-gemR*.6).toFixed(1)}" y1="${(100-gemR*.6).toFixed(1)}" x2="${(100+gemR*.6).toFixed(1)}" y2="${(100+gemR*.6).toFixed(1)}" stroke="#fff9" stroke-width="1"/>
+      <line x1="${(100+gemR*.6).toFixed(1)}" y1="${(100-gemR*.6).toFixed(1)}" x2="${(100-gemR*.6).toFixed(1)}" y2="${(100+gemR*.6).toFixed(1)}" stroke="#fff9" stroke-width="1"/>`,
   };
-  const facePath='M100 26 C130 26 152 48 154 78 C156 106 146 132 128 155 C118 168 108 180 100 192 C92 180 82 168 72 155 C54 132 44 106 46 78 C48 48 70 26 100 26 Z';
-  const visor=`
-    <path d="M62 96 L97 96 L90 114 L56 110 Z" fill="#05050A"/>
-    <path d="M138 96 L103 96 L110 114 L144 110 Z" fill="#05050A"/>
-    <path d="M97 96 L103 96 L108 132 L100 148 L92 132 Z" fill="${color}" opacity=".22" stroke="${color}" stroke-width="1.4"/>`;
-  return `<svg viewBox="-30 -10 260 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
-    ${wingSide(-1)}${wingSide(1)}
-    <path d="${facePath}" fill="${color}22" stroke="${color}" stroke-width="4"/>
-    ${crown()}
-    ${visor}
+  const shieldPath='M100 12 L162 30 L162 108 C162 156 134 194 100 218 C66 194 38 156 38 108 L38 30 Z';
+  const label=(nome||'').toUpperCase();
+  const fSize=label.length>13?11:label.length>9?14:label.length>6?16:19;
+  const fita=`
+    <path d="M25 202 L175 202 L175 232 L100 244 L25 232 Z" fill="${color}"/>
+    <path d="M25 202 L44 202 L26 224 Z" fill="${color}" opacity=".65"/>
+    <path d="M175 202 L156 202 L174 224 Z" fill="${color}" opacity=".65"/>
+    ${label?`<text x="100" y="222" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="${fSize}" font-weight="700" fill="#fff" letter-spacing="0.5">${label}</text>`:''}`;
+  return `<svg viewBox="0 -10 200 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+    ${ramo(-1)}${ramo(1)}
+    <path d="${shieldPath}" fill="${color}1c" stroke="${color}" stroke-width="4"/>
+    ${ord>=5?`<path d="${shieldPath}" fill="none" stroke="${color}" stroke-width="1.4" opacity=".6" transform="scale(0.93)" transform-origin="100 115"/>`:''}
+    ${espinho}
+    <circle cx="100" cy="100" r="${gemR+14}" fill="#0006" stroke="${color}" stroke-width="2"/>
     ${gems[id]||''}
+    ${fita}
   </svg>`;
 }
 
@@ -2814,7 +2814,7 @@ function renderSidebar(){
   const next = nextId ? LEVELS.find(l=>l.id===nextId) : null;
 
   el('sl-name').textContent=lv.name;
-  el('sl-badge').innerHTML=nivelBadgeSVG(lv.id,lv.color);
+  el('sl-badge').innerHTML=nivelBadgeSVG(lv.id,lv.color,lv.name);
   el('sl-fill').style.background=`linear-gradient(90deg,${lv.color}88,${lv.color})`;
   el('sl-wrap').className='sidebar-level level-'+lv.id;
 
@@ -2935,7 +2935,7 @@ async function _renderDashKpisVendaOuEquipe(){
   const nivelAtual=getMinhaClasseObj();
   el('kpi-nivel').textContent=nivelAtual.name;
   el('kpi-nivel').style.color=nivelAtual.color;
-  el('kpi-nivel-badge').innerHTML=nivelBadgeSVG(nivelAtual.id,nivelAtual.color);
+  el('kpi-nivel-badge').innerHTML=nivelBadgeSVG(nivelAtual.id,nivelAtual.color,nivelAtual.name);
   el('kpi-nivel-sub').textContent='Baseado no mês atual';
   const rk=_crmResumo?.ranking_equipe;
   el('kpi-rank').textContent=rk?.posicao?`${rk.posicao}º de ${rk.total_membros}`:'–';
@@ -3048,7 +3048,7 @@ function renderNiveis(){
   el('nivel-pct-val').textContent=pct+'%';
   el('nivel-name-big').textContent=lv.name;
   el('nivel-name-big').style.color=lv.color;
-  el('nivel-badge-big').innerHTML=nivelBadgeSVG(lv.id,lv.color);
+  el('nivel-badge-big').innerHTML=nivelBadgeSVG(lv.id,lv.color,lv.name);
   el('nivel-pontos-gr').textContent=(CUP?.pontos||0).toLocaleString('pt-BR');
   el('nivel-pts-total').textContent=fmtBRL(volume);
   el('nivel-proximo').textContent=next?next.name:'Nível máximo ✦';
