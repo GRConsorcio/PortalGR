@@ -2158,28 +2158,56 @@ function getLevelForStats(cotas, volume){
    ao topo — a pedido, mapeado como o "Grão-Mestre" da escala de referência). */
 function nivelBadgeSVG(id, color){
   color = color || '#8A8A9A';
-  const shieldPath = 'M50 5 L83 18 L87 48 C87 75 68 90 50 97 C32 90 13 75 13 48 L17 18 Z';
-  const wings = id==='elite' ? `
-    <path d="M13 36 L-6 27 L1 51 L14 49 Z" fill="${color}" opacity=".85"/>
-    <path d="M87 36 L106 27 L99 51 L86 49 Z" fill="${color}" opacity=".85"/>
-    <path d="M50 5 L45 -7 L50 -3 L55 -7 Z" fill="${color}"/>` : '';
+  const ord = {nao_classificado:0,bronze:1,prata:2,ouro:3,diamante:4,elite:5}[id] ?? 0;
+  const wingLayers = ord===0?0 : ord<=2?1 : ord<=4?2 : 3;
+  const gemR = 10 + ord*2.4;
+
+  // Asas: 1 a 3 lâminas empilhadas por lado, crescendo em alcance com o nível
+  function wingSide(mult){
+    let out='';
+    for(let i=0;i<wingLayers;i++){
+      const reach=34+i*13, y0=80+i*9, cx=58-i*5;
+      const x=v=>100+mult*v;
+      out+=`<path d="M${x(cx)} ${y0} L${x(cx+reach)} ${y0-14-i*4} L${x(cx+reach-9)} ${y0+15} L${x(cx-5)} ${y0+13} Z"
+        fill="${color}" opacity="${(0.92-i*0.16).toFixed(2)}"/>`;
+    }
+    return out;
+  }
+  // Coroa: 1 espinho central sempre + pares laterais conforme o nível (ordem)
+  function crown(){
+    let out=`<polygon points="100,0 92,28 100,20 108,28" fill="${color}"/>`;
+    for(let i=1;i<=ord;i++){
+      const dx=13*i, h=Math.max(10,22-i*2), y=16+i*2;
+      out+=`<polygon points="${100-dx},${y} ${100-dx-6},${y+h} ${100-dx+6},${y+h}" fill="${color}" opacity=".88"/>`;
+      out+=`<polygon points="${100+dx},${y} ${100+dx-6},${y+h} ${100+dx+6},${y+h}" fill="${color}" opacity=".88"/>`;
+    }
+    return out;
+  }
+  const kite=(r)=>`${100},${60-r} ${100+r},60 ${100},${60+r} ${100-r},60`;
   const gems = {
-    nao_classificado: '',
-    bronze: `<circle cx="50" cy="47" r="9" fill="${color}"/>`,
-    prata: `<polygon points="50,34 61,47 50,60 39,47" fill="${color}"/>`,
-    ouro: `<path d="M50 30 L55 43 L68 47 L55 51 L50 64 L45 51 L32 47 L45 43 Z" fill="${color}"/>`,
-    diamante: `<polygon points="50,26 65,47 50,74 35,47" fill="${color}"/>
-      <line x1="50" y1="26" x2="50" y2="74" stroke="#fff8" stroke-width="1"/>
-      <line x1="35" y1="47" x2="65" y2="47" stroke="#fff8" stroke-width="1"/>`,
-    elite: `<polygon points="50,22 68,47 50,78 32,47" fill="${color}"/>
-      <line x1="50" y1="22" x2="50" y2="78" stroke="#fffc" stroke-width="1.2"/>
-      <line x1="32" y1="47" x2="68" y2="47" stroke="#fffc" stroke-width="1.2"/>
-      <line x1="41" y1="34" x2="59" y2="60" stroke="#fff9" stroke-width=".8"/>
-      <line x1="59" y1="34" x2="41" y2="60" stroke="#fff9" stroke-width=".8"/>`,
+    nao_classificado:'',
+    bronze:`<circle cx="100" cy="60" r="${gemR}" fill="${color}"/>`,
+    prata:`<polygon points="${kite(gemR)}" fill="${color}"/>`,
+    ouro:`<polygon points="100,${60-gemR} ${100+gemR*.45},${60-gemR*.32} ${100+gemR},60 ${100+gemR*.45},${60+gemR*.32} 100,${60+gemR} ${100-gemR*.45},${60+gemR*.32} ${100-gemR},60 ${100-gemR*.45},${60-gemR*.32}" fill="${color}"/>`,
+    diamante:`<polygon points="${kite(gemR)}" fill="${color}"/>
+      <line x1="100" y1="${60-gemR}" x2="100" y2="${60+gemR}" stroke="#fff9" stroke-width="1.2"/>
+      <line x1="${100-gemR}" y1="60" x2="${100+gemR}" y2="60" stroke="#fff9" stroke-width="1.2"/>`,
+    elite:`<polygon points="${kite(gemR)}" fill="${color}"/>
+      <line x1="100" y1="${60-gemR}" x2="100" y2="${60+gemR}" stroke="#fffc" stroke-width="1.4"/>
+      <line x1="${100-gemR}" y1="60" x2="${100+gemR}" y2="60" stroke="#fffc" stroke-width="1.4"/>
+      <line x1="${(100-gemR*.6).toFixed(1)}" y1="${(60-gemR*.6).toFixed(1)}" x2="${(100+gemR*.6).toFixed(1)}" y2="${(60+gemR*.6).toFixed(1)}" stroke="#fff9" stroke-width=".8"/>
+      <line x1="${(100+gemR*.6).toFixed(1)}" y1="${(60-gemR*.6).toFixed(1)}" x2="${(100-gemR*.6).toFixed(1)}" y2="${(60+gemR*.6).toFixed(1)}" stroke="#fff9" stroke-width=".8"/>`,
   };
-  return `<svg viewBox="-12 -14 124 116" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
-    ${wings}
-    <path d="${shieldPath}" fill="${color}22" stroke="${color}" stroke-width="3"/>
+  const facePath='M100 26 C130 26 152 48 154 78 C156 106 146 132 128 155 C118 168 108 180 100 192 C92 180 82 168 72 155 C54 132 44 106 46 78 C48 48 70 26 100 26 Z';
+  const visor=`
+    <path d="M62 96 L97 96 L90 114 L56 110 Z" fill="#05050A"/>
+    <path d="M138 96 L103 96 L110 114 L144 110 Z" fill="#05050A"/>
+    <path d="M97 96 L103 96 L108 132 L100 148 L92 132 Z" fill="${color}" opacity=".22" stroke="${color}" stroke-width="1.4"/>`;
+  return `<svg viewBox="-30 -10 260 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+    ${wingSide(-1)}${wingSide(1)}
+    <path d="${facePath}" fill="${color}22" stroke="${color}" stroke-width="4"/>
+    ${crown()}
+    ${visor}
     ${gems[id]||''}
   </svg>`;
 }
