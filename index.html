@@ -6445,13 +6445,23 @@ function orgZoomReset(){
   const {wrap, tree} = _orgTreeEls();
   if(!wrap || !tree) return;
   tree.style.zoom = 1;
-  const natural = tree.scrollWidth;
-  const avail = wrap.clientWidth - 8;
-  let scale = avail > 0 ? avail / natural : 1;
+  // Organograma lateral: profundidade (gerações admin→coord→sup→vendedor)
+  // vira LARGURA e o número de pessoas por geração vira ALTURA — o ajuste
+  // antigo só encolhia pra caber na largura, então uma equipe grande de
+  // vendedores (muitos irmãos empilhados) sobrava pra baixo, exigindo scroll
+  // vertical enorme mesmo com a árvore "cabendo" na tela. Agora encolhe pelo
+  // menor fator entre largura E altura, pra a árvore inteira aparecer de
+  // uma vez sempre que razoável (ainda dá pra dar zoom manual depois).
+  const naturalW = tree.scrollWidth, naturalH = tree.scrollHeight;
+  const availW = wrap.clientWidth - 8, availH = wrap.clientHeight - 8;
+  const scaleW = availW > 0 ? availW / naturalW : 1;
+  const scaleH = availH > 0 ? availH / naturalH : 1;
+  let scale = Math.min(scaleW, scaleH);
   scale = Math.min(1, Math.max(0.3, scale));
   _orgZoom = scale;
   tree.style.zoom = scale;
-  wrap.scrollLeft = (wrap.scrollWidth - wrap.clientWidth) / 2;
+  wrap.scrollLeft = 0;
+  wrap.scrollTop = (wrap.scrollHeight - wrap.clientHeight) / 2;
 }
 function orgZoomBy(delta){
   const {tree} = _orgTreeEls();
