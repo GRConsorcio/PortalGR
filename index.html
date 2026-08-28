@@ -427,6 +427,24 @@ html.sidebar-mini .nav-badge{display:none}
 .biblio-mark-dot[data-cor="azul"]{background:#5aa0e6}
 .biblio-mark-dot[data-cor="rosa"]{background:#e66ea0}
 .biblio-marks-layer{position:absolute;inset:0;pointer-events:none}
+/* Botão fixo de marca-texto: o popup automático (via selectionchange) falha
+   silenciosamente sempre que o range da seleção não bate certinho num span
+   da camada de texto (ex: seleção terminando bem na borda de uma palavra,
+   ou pega por engano um nó que não é span de texto) — comum em toque/mobile
+   ao ajustar a seleção pelas alcinhas nativas. Este botão dá um jeito manual
+   e sempre visível de tentar marcar a seleção atual, com aviso claro se não
+   der (em vez de simplesmente não acontecer nada). Fica no canto inferior
+   direito, longe da barra de topo e do texto, e some quando não há seleção
+   ativa de verdade pra não ocupar espaço à toa na leitura.
+   Otimizado para toque: 52px (acima do mínimo de 44px recomendado). */
+.biblio-fab-marcar{position:fixed;right:18px;bottom:18px;z-index:4000;width:52px;height:52px;border-radius:50%;
+  background:var(--gold2);color:#1a1400;border:none;box-shadow:0 6px 20px rgba(0,0,0,.4);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;transition:transform .12s}
+.biblio-fab-marcar:hover{transform:scale(1.08)}
+.biblio-fab-marcar:active{transform:scale(.95)}
+@media (max-width:640px){
+  .biblio-fab-marcar{right:14px;bottom:max(14px,env(safe-area-inset-bottom))}
+}
 /* Leitor ocupa a tela toda ao abrir (além do Fullscreen API real, disparado
    no clique que abre o livro — ver openBiblioReader) */
 .modal.biblio-reader-modal{width:100vw;height:100vh;max-width:100vw;max-height:100vh;border-radius:0}
@@ -637,31 +655,39 @@ html.sidebar-mini .nav-badge{display:none}
    para", e a posição visual (embaixo do respectivo chefe) vem da estrutura
    pai/filho, com o clássico truque de CSS de display:table pra centralizar
    cada nó sobre seus próprios filhos automaticamente. */
+/* Organograma LATERAL (esquerda→direita): cada geração vira uma coluna à
+   direita da anterior, em vez de uma linha abaixo. É a mesma técnica de
+   conectores em CSS de antes (::before/::after cortando a "barra" ao meio),
+   só que girada 90° — a barra que unia irmãos era horizontal (border-top) e
+   virou vertical (border-left); o "fio" que descia da geração anterior pro
+   nó (border-left) virou um traço horizontal entrando no nó (border-top). */
 .org-tree, .org-tree ul{
-  display:table; margin:0 auto; padding:0; list-style:none; position:relative;
+  display:flex; flex-direction:column; justify-content:center;
+  margin:0; padding:0; list-style:none; position:relative;
 }
 .org-tree li{
-  display:table-cell; vertical-align:top; text-align:center; position:relative;
-  padding:32px 14px 0 14px;
+  display:flex; align-items:center; text-align:left; position:relative;
+  padding:0 14px 14px 32px;
 }
 .org-tree li::before, .org-tree li::after{
-  content:''; position:absolute; top:0; right:50%;
-  border-top:1px solid var(--border2); width:50%; height:24px;
+  content:''; position:absolute; left:0; bottom:50%;
+  border-left:1px solid var(--border2); width:24px; height:50%;
 }
-.org-tree li::after{ right:auto; left:50%; border-left:1px solid var(--border2); }
-.org-tree li:only-child{ padding-top:24px; }
+.org-tree li::after{ bottom:auto; top:50%; border-top:1px solid var(--border2); }
+.org-tree li:only-child{ padding-left:24px; }
 .org-tree li:only-child::before, .org-tree li:only-child::after{ display:none; }
 .org-tree li:first-child::before{ border:0 none; }
-/* BUGFIX: "border:0" no ::after do último irmão apagava a perninha vertical
-   junto com a linha horizontal sobrando — os dois vêm do mesmo pseudo-elemento
-   (::after acumula border-top + border-left). Zera só o border-top, mantém
-   o border-left pra essa carta continuar com a linha descendo até ela. */
-.org-tree li:last-child::after{ border-top:0 none; }
-.org-tree > li{ padding-top:0; }
+/* BUGFIX (herdado da versão vertical): "border:0" no ::after do último irmão
+   apagava o traço horizontal (entrada no nó) junto com a barra vertical
+   sobrando — os dois vêm do mesmo pseudo-elemento (::after acumula
+   border-left + border-top). Zera só o border-left (continuação da barra
+   pros próximos irmãos), mantém o border-top (traço até este nó). */
+.org-tree li:last-child::after{ border-left:0 none; }
+.org-tree > li{ padding-left:0; }
 .org-tree > li::before, .org-tree > li::after{ display:none; }
 .org-tree ul::before{
-  content:''; position:absolute; top:0; left:50%;
-  border-left:1px solid var(--border2); width:0; height:24px;
+  content:''; position:absolute; left:0; top:50%;
+  border-top:1px solid var(--border2); width:24px; height:0;
 }
 .org-node{display:inline-flex;flex-direction:column;align-items:center;position:relative}
 .org-card{background:var(--s2);border:1px solid var(--border);padding:14px 16px;text-align:center;width:150px;position:relative;transition:border-color .15s;cursor:default}
@@ -689,7 +715,7 @@ html.sidebar-mini .nav-badge{display:none}
 #org-container{position:relative;overflow:hidden;width:100%;max-width:100%}
 #org-tree{overflow:auto;max-height:calc(100vh - 220px);max-width:100%;padding:20px 24px 32px;cursor:grab;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y pinch-zoom}
 #org-tree.grabbing{cursor:grabbing;user-select:none}
-#org-tree ul.org-tree{transform-origin:top center}
+#org-tree ul.org-tree{transform-origin:left center}
 .org-zoom-controls{position:absolute;top:0;right:0;display:flex;gap:4px;z-index:5}
 .org-zoom-btn{width:26px;height:26px;border:1px solid var(--border2);background:var(--s2);color:var(--text);cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-b)}
 .org-zoom-btn:hover{border-color:var(--gold-dim);color:var(--gold2)}
@@ -699,7 +725,7 @@ html.sidebar-mini .nav-badge{display:none}
   .org-name{font-size:11px}
   .org-role{font-size:8px;letter-spacing:1px}
   .org-tenure{font-size:8px}
-  .org-tree li{padding:24px 8px 0 8px}
+  .org-tree li{padding:0 8px 8px 24px}
   #org-tree{max-height:calc(100vh - 260px)}
 }
 
@@ -1289,6 +1315,10 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
           <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 1l2.2 5.4L17 7l-4 3.9L14 17l-5-3-5 3 1-6.1-4-3.9 5.8-.6z"/></svg>
           Destaques
         </div>
+        <div class="nav-item admcoord-only" data-page="adm-carreira" onclick="nav('adm-carreira')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 15V9M9 15V3M15 15v-7"/></svg>
+          Carreira
+        </div>
         <div class="nav-item admin-only" data-page="adm-academy" onclick="nav('adm-academy')">
           <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 1L1 5l8 4 8-4-8-4z"/><path d="M5 7v5a4 4 0 008 0V7"/></svg>
           Academy
@@ -1823,6 +1853,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       <div class="adm-table-wrap" id="adm-dest-list"></div>
     </div>
 
+    <!-- ══ ADM: CARREIRA (progressão profissional — só admin/coordenador) ══ -->
+    <div class="page" id="page-adm-carreira">
+      <div class="adm-page-head">
+        <div class="adm-page-title">Progressão de Carreira</div>
+        <button class="btn-primary" onclick="openAdmModal('carreira')">+ Novo marco de carreira</button>
+      </div>
+      <div class="adm-table-wrap" id="adm-carreira-list"></div>
+    </div>
+
     <!-- ══ ADM: ACADEMY ══ -->
     <div class="page" id="page-adm-academy">
       <div class="adm-page-head">
@@ -2075,6 +2114,7 @@ let CU = null, CUP = null;
 let allVendas=[], allMetas=[], allCampanhas=[], allBeneficios=[];
 let allAcademy=[], allNews=[], allSugestoes=[], allHallFama=[], allRegras=[], allAcademyProgresso=[], allBiblioteca=[], allBiblioProgresso=[], allProvaRespostas=[], allCertificados=[];
 let allCopaEquipes=[], allCopaPartidas=[], allAvisos=[], allCarreira=[], allDestaques=[], allCopaEdicoes=[], allCopaChaveamentos=[];
+let allCarreiraAdmin=[]; // trilha de carreira de TODOS os colaboradores (visão admin/coord) — allCarreira é só a do próprio usuário logado
 let allNiveis=[]; // linhas cruas de portal_niveis (formato do banco) — LEVELS é a versão já convertida pro formato usado no cálculo/telas
 // Resumo agregado de vendas vindo do CRM (contagens/somas por vendedor —
 // nunca dado de cliente/lead). Ver fetchCrmResumo(). null até carregar, ou
@@ -2714,6 +2754,11 @@ function renderNav(){
       document.querySelectorAll('.coord-only').forEach(el2=>{
         el2.style.display = isAdminOrCoordOrSup() ? 'flex' : 'none';
       });
+      // Carreira: só admin e coordenador podem adicionar marcos de carreira
+      // (pedido explícito do usuário — nem supervisor deve ver este item).
+      document.querySelectorAll('.admcoord-only').forEach(el2=>{
+        el2.style.display = isAdminOrCoord() ? 'flex' : 'none';
+      });
     } else {
       adminSection.style.display='none';
     }
@@ -3107,7 +3152,7 @@ function renderDestaques(){
   el('dest-top3').innerHTML=ranking.length===0
     ? '<div class="empty" style="grid-column:1/-1"><div class="empty-line"></div><div class="empty-text">Nenhum destaque cadastrado este mês</div></div>'
     : ranking.map((d,i)=>`
-      <div class="destaque-card" style="--dc-color:${cores[d.posicao-1]||'var(--muted2)'}">
+      <div class="destaque-card" style="--dc-color:${cores[d.posicao-1]||'var(--muted2)'};cursor:pointer" onclick="abrirDestaqueModal('${d.id}')">
         <div class="dc-rank">${d.posicao}</div>
         <div class="dc-av">${d.imagem_url?`<img src="${d.imagem_url}" alt="${d.nome||''}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit" onerror="this.parentNode.textContent='${(d.nome||'?')[0].toUpperCase()}'">`:(d.nome||'?')[0].toUpperCase()}</div>
         <div class="dc-name">${d.nome||'–'}</div>
@@ -3119,7 +3164,7 @@ function renderDestaques(){
   const especiais=doMes.filter(d=>d.tipo==='especial');
   el('dest-especial').innerHTML=especiais.length===0
     ?'<div class="empty"><div class="empty-line"></div><div class="empty-text">Nenhum reconhecimento este mês</div></div>'
-    :especiais.map(d=>`<div style="padding:12px 0;border-bottom:1px solid var(--border);font-size:12.5px;display:flex;gap:12px;align-items:center">
+    :especiais.map(d=>`<div style="padding:12px 0;border-bottom:1px solid var(--border);font-size:12.5px;display:flex;gap:12px;align-items:center;cursor:pointer" onclick="abrirDestaqueModal('${d.id}')">
         ${d.imagem_url?`<img src="${d.imagem_url}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0">`:''}
         <div>
           <div style="font-weight:600;margin-bottom:2px">${d.titulo||d.nome||'–'}</div>
@@ -3137,6 +3182,38 @@ function renderDestaques(){
       return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
         <span style="color:var(--muted2)">${ref}</span><span style="font-weight:600">${camp?.nome||'–'}</span></div>`;
     }).join('');
+}
+// Ficha rápida ao clicar num destaque (ranking ou reconhecimento especial) —
+// pedido do usuário pra tornar os cards clicáveis. Mostra só o que já era
+// público no card (nome, cargo, foto, valor/descrição), sem expor nenhum
+// dado novo — os destaques de outra pessoa continuam sem acesso ao
+// desempenho privado dela, igual o resto do Portal já respeita.
+function abrirDestaqueModal(id){
+  const d=allDestaques.find(x=>x.id===id);
+  if(!d) return;
+  const isRanking=d.tipo==='ranking';
+  const modal=document.createElement('div');
+  modal.className='modal-bg on';
+  modal.innerHTML=`<div class="modal" style="width:340px;max-width:92vw;padding:28px;text-align:center">
+    <button class="modal-close" onclick="this.closest('.modal-bg').remove()">✕</button>
+    <div style="width:84px;height:84px;border-radius:50%;margin:0 auto 14px;overflow:hidden;background:var(--s3);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:30px;font-weight:800;color:var(--gold2);border:2px solid var(--border2)">
+      ${d.imagem_url?`<img src="${d.imagem_url}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.textContent='${((d.nome||'?')[0]||'?').toUpperCase()}'">`:((d.nome||'?')[0]||'?').toUpperCase()}
+    </div>
+    <div style="font-family:var(--font-d);font-weight:700;font-size:18px;margin-bottom:2px">${d.nome||d.titulo||'–'}</div>
+    ${d.cargo?`<div style="font-size:12px;color:var(--muted2);margin-bottom:14px">${d.cargo}</div>`:'<div style="margin-bottom:14px"></div>'}
+    ${isRanking?`
+      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--border);padding:10px 18px;border-radius:99px">
+        <span style="font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--gold2)">${d.posicao}º</span>
+        <span style="font-size:13px;color:var(--muted)">${d.valor||''} ${d.valor_label||'cotas'}</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted2);margin-top:10px">Ranking de ${d.referencia||'–'}</div>
+    ` : `
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.6">${d.descricao||'Sem descrição.'}</div>
+      <div style="font-size:11px;color:var(--muted2);margin-top:10px">Reconhecimento de ${d.referencia||'–'}</div>
+    `}
+  </div>`;
+  modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
 }
 
 /* ═══ COPA ═══
@@ -3989,6 +4066,7 @@ function openBiblioReader(id){
           </div>
         </div>
         <div id="${readerId}" class="biblio-reader-body"></div>
+        <button class="biblio-fab-marcar" title="Marcar seleção atual" onclick="_biblioAcionarMarcacaoManual('${readerId}')">🖍</button>
       </div>`
     : `<div class="modal" style="width:520px;max-width:94vw;padding:28px">
         <button class="modal-close" onclick="this.closest('.modal-bg').remove()">✕</button>
@@ -4103,10 +4181,16 @@ async function _biblioRemoverMarcacao(marca, pageWrap){
 let _biblioPopupEl=null;
 function _biblioFecharPopup(){ _biblioPopupEl?.remove(); _biblioPopupEl=null; }
 function _biblioFecharPopupSeForaClique(e){ if(_biblioPopupEl && !_biblioPopupEl.contains(e.target)) _biblioFecharPopup(); }
-function _biblioMostrarPopupSelecao(range, pageWrap, pagina, livroId){
+function _biblioMostrarPopupSelecao(range, pageWrap, pagina, livroId, avisarSeFalhar){
   _biblioFecharPopup();
   const idx=_biblioRangeToIdx(range, pageWrap);
-  if(!idx) return;
+  if(!idx){
+    // Acionado pelo botão fixo (avisarSeFalhar=true): dá retorno claro em vez
+    // de simplesmente não acontecer nada — é exatamente a falha silenciosa
+    // que o botão existe pra contornar.
+    if(avisarSeFalhar) toast('Não consegui marcar esse trecho — tente selecionar um texto um pouco menor, sem cruzar para outra página.','err');
+    return;
+  }
   const rect=range.getBoundingClientRect();
   const popup=document.createElement('div');
   popup.className='biblio-mark-popup';
@@ -4131,6 +4215,26 @@ function _biblioMostrarPopupSelecao(range, pageWrap, pagina, livroId){
   popup.style.transform='translateX(-50%)';
   _biblioPopupEl=popup;
   setTimeout(()=>document.addEventListener('mousedown',_biblioFecharPopupSeForaClique,{once:true}),0);
+}
+// Botão fixo "🖍" do leitor — caminho manual e sempre visível pra marcar a
+// seleção atual, pra quando o popup automático (via selectionchange) não
+// aparecer sozinho. readerId vem no formato 'biblio-reader-<id do livro>'.
+function _biblioAcionarMarcacaoManual(readerId){
+  const livroId=readerId.replace(/^biblio-reader-/,'');
+  const sel=window.getSelection();
+  if(!sel || sel.isCollapsed || !sel.rangeCount || !sel.toString().trim()){
+    toast('Selecione um trecho do texto primeiro, depois toque neste botão para marcar.','err');
+    return;
+  }
+  const range=sel.getRangeAt(0);
+  const noInicio=range.startContainer.nodeType===3?range.startContainer.parentElement:range.startContainer;
+  const pageWrap=noInicio?.closest?.('.biblio-page');
+  const container=el(readerId);
+  if(!pageWrap || !container?.contains(pageWrap) || !pageWrap.contains(range.endContainer)){
+    toast('Selecione um trecho dentro de uma única página para marcar.','err');
+    return;
+  }
+  _biblioMostrarPopupSelecao(range, pageWrap, parseInt(pageWrap.dataset.page,10), livroId, true);
 }
 // Salva/atualiza a última página lida (debounced no chamador) — upsert porque
 // cada usuário só tem UMA linha de progresso por livro (índice único
@@ -4568,7 +4672,7 @@ function renderCarreira(){
 /* ── NAV extension for admin pages ── */
 const ADM_PAGE_TITLES = {
   'adm-vendas-equipe':'Vendas da Equipe',
-  'adm-campanhas':'Campanhas','adm-metas':'Metas','adm-destaques':'Destaques',
+  'adm-campanhas':'Campanhas','adm-metas':'Metas','adm-destaques':'Destaques','adm-carreira':'Carreira',
   'adm-academy':'GR Academy','adm-obrigatorios':'Cursos Obrigatórios','adm-news':'GR News','adm-avisos':'Avisos',
   'adm-copa':'Copa GR','adm-beneficios':'Benefícios','adm-hallfama':'Hall da Fama',
   'adm-regras':'Regras GR','adm-usuarios':'Usuários','adm-sugestoes':'Sugestões',
@@ -4588,7 +4692,7 @@ window.nav = function(page){
     const admRenderers = {
       'adm-vendas-equipe':renderAdmVendasEquipe,
       'adm-campanhas':renderAdmCampanhas,'adm-metas':renderAdmMetas,
-      'adm-destaques':renderAdmDestaques,'adm-academy':renderAdmAcademy,
+      'adm-destaques':renderAdmDestaques,'adm-carreira':renderAdmCarreira,'adm-academy':renderAdmAcademy,
       'adm-obrigatorios':renderAdmObrigatorios,
       'adm-news':renderAdmNews,'adm-avisos':renderAdmAvisos,
       'adm-copa':renderAdmCopa,'adm-beneficios':renderAdmBeneficios,
@@ -4698,7 +4802,7 @@ async function openAdmModal(type, data=null){
   _admModalType = type;
   _admEditId = data?.id || null;
   const titles = {
-    campanha:'Campanha', meta:'Meta', destaque:'Destaque',
+    campanha:'Campanha', meta:'Meta', destaque:'Destaque', carreira:'Marco de Carreira',
     academy:'Conteúdo Academy', news:'Notícia', aviso:'Aviso',
     'copa-equipe':'Equipe Copa', 'copa-edicao':'Edição da Copa', beneficio:'Benefício',
     hallfama:'Hall da Fama', regra:'Regra', usuario:'Usuário', biblioteca:'Livro', nivel:'Nível',
@@ -4768,6 +4872,17 @@ function buildAdmForm(type, d={}){
       ${g2(inp('referencia','Mês (YYYY-MM)',d.referencia,'month',new Date().toISOString().slice(0,7)),
            inp('meta_cotas','Meta (cotas)',d.meta_cotas,'number','10'))}
       ${inp('meta_valor','Meta volume (R$)',d.meta_valor,'number','0')}`;
+
+    case 'carreira': return `
+      ${sel('user_id','Colaborador',[{v:'',l:'Selecionar...'},..._scopedUsers().map(u=>({v:u.user_id,l:u.nome||u.user_id}))],d.user_id)}
+      ${inp('titulo','Cargo / marco',d.titulo,'text','Ex: Vendedor Júnior')}
+      ${ta('descricao','Descrição (opcional)',d.descricao,'Ex: Promovido após 6 meses de bons resultados')}
+      ${g2(inp('data_conclusao','Data',d.data_conclusao,'date'),inp('ordem','Ordem na trilha',d.ordem??0,'number','0'))}
+      <div class="adm-field" style="display:flex;gap:18px;align-items:center">
+        <label style="display:flex;align-items:center;gap:6px;font-weight:400;font-size:12.5px"><input type="checkbox" id="af-concluido" style="width:auto" ${d.concluido?'checked':''}> Já concluído</label>
+        <label style="display:flex;align-items:center;gap:6px;font-weight:400;font-size:12.5px"><input type="checkbox" id="af-atual" style="width:auto" ${d.atual?'checked':''}> Cargo atual</label>
+      </div>
+      <div style="font-size:10px;color:var(--muted2);margin-top:-4px">Só admin e coordenador podem adicionar ou editar marcos de carreira de outra pessoa.</div>`;
 
     case 'destaque': return `
       ${g2(
@@ -5029,6 +5144,12 @@ async function saveAdmModal(){
       payload = { user_id:asel('user_id'), referencia:av('referencia'),
         meta_cotas:parseInt(av('meta_cotas'))||10, meta_valor:parseFloat(av('meta_valor'))||0 };
       break;
+    case 'carreira':
+      payload = { user_id:asel('user_id'), titulo:av('titulo'), descricao:av('descricao')||null,
+        data_conclusao:av('data_conclusao')||null, ordem:parseInt(av('ordem'))||0,
+        concluido: document.getElementById('af-concluido')?.checked||false,
+        atual: document.getElementById('af-atual')?.checked||false };
+      break;
     case 'destaque':{
       const uid=asel('user_id');
       const userVinc=uid?_admAllUsers.find(u=>u.user_id===uid):null;
@@ -5122,14 +5243,14 @@ async function saveAdmModal(){
   // escolher colaborador mandava user_id:'' pro banco e voltava um erro cru
   // tipo "invalid input syntax for type uuid: \"\"" em vez de avisar o que
   // faltar preencher.
-  if(type==='meta' && !payload.user_id){
+  if((type==='meta'||type==='carreira') && !payload.user_id){
     toast('Selecione um colaborador','err');
     return;
   }
 
   // Map type to table
   const tables = {
-    campanha:'portal_campanhas', meta:'portal_metas', destaque:'portal_destaques',
+    campanha:'portal_campanhas', meta:'portal_metas', destaque:'portal_destaques', carreira:'portal_carreira',
     academy:'portal_academy', news:'portal_news', aviso:'portal_avisos',
     'copa-equipe':'portal_copa_equipes', 'copa-edicao':'portal_copa_edicoes', beneficio:'portal_beneficios',
     'copa-chaveamento':'portal_copa_chaveamento',
@@ -5188,6 +5309,7 @@ async function reloadAdmData(type){
     campanha: async()=>{ const {data}=await sb.from('portal_campanhas').select('*').order('criado_em',{ascending:false}); if(data)allCampanhas=data; },
     meta:     async()=>{ const {data}=await sb.from('portal_metas').select('*'); if(data)allMetas=data; },
     destaque: async()=>{ const {data}=await sb.from('portal_destaques').select('*').order('referencia',{ascending:false}); if(data)allDestaques=data; },
+    carreira: async()=>{ const {data}=await sb.from('portal_carreira').select('*').order('data_conclusao',{ascending:false}); if(data)allCarreiraAdmin=data; },
     academy:  async()=>{ const {data}=await sb.from('portal_academy').select('*').order('criado_em',{ascending:false}); if(data)allAcademy=data; },
     news:     async()=>{ const {data}=await sb.from('portal_news').select('*').order('criado_em',{ascending:false}); if(data)allNews=data; },
     aviso:    async()=>{ const {data}=await sb.from('portal_avisos').select('*').order('criado_em',{ascending:false}); if(data)allAvisos=data; },
@@ -5213,7 +5335,7 @@ async function reloadAdmData(type){
 async function deleteAdmItem(type, id){
   if(!confirm('Confirmar exclusão?')) return;
   const tables = {
-    campanha:'portal_campanhas', meta:'portal_metas', destaque:'portal_destaques',
+    campanha:'portal_campanhas', meta:'portal_metas', destaque:'portal_destaques', carreira:'portal_carreira',
     academy:'portal_academy', news:'portal_news', aviso:'portal_avisos',
     'copa-equipe':'portal_copa_equipes', 'copa-edicao':'portal_copa_edicoes', beneficio:'portal_beneficios',
     'copa-chaveamento':'portal_copa_chaveamento',
@@ -5285,6 +5407,25 @@ function renderAdmDestaques(){
     </div>
     <span class="tag" style="background:rgba(255,255,255,0.05);color:var(--muted2)">${(d.tipo||'').toUpperCase()}</span>`;
   });
+}
+// Progressão de carreira (todos os colaboradores) — só admin/coordenador
+// alcançam esta página (nav-item admcoord-only + RLS portal_carreira_write).
+async function renderAdmCarreira(){
+  if(!allCarreiraAdmin.length){
+    const {data}=await sb.from('portal_carreira').select('*').order('data_conclusao',{ascending:false});
+    if(data) allCarreiraAdmin=data;
+  }
+  if(!_admAllUsers.length){
+    const {data:users}=await sb.from('portal_users').select('*').order('nome');
+    if(users) _admAllUsers=users;
+  }
+  const nomeDe=uid=>_admAllUsers.find(u=>u.user_id===uid)?.nome||'—';
+  el('adm-carreira-list').innerHTML = admList(allCarreiraAdmin,'carreira', c=>`
+    <div class="status-dot ${c.atual?'green':'muted'}"></div>
+    <div class="adm-row-main">
+      <div class="adm-row-title">${c.titulo}${c.atual?' <span class="tag" style="background:rgba(62,201,154,0.12);color:var(--green2)">ATUAL</span>':''}</div>
+      <div class="adm-row-sub">${nomeDe(c.user_id)}${c.data_conclusao?' · '+fmtDate(c.data_conclusao):''}</div>
+    </div>`);
 }
 
 /* ═══ ENFORCEMENT: bloqueia navegação enquanto houver curso obrigatório
