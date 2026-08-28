@@ -709,35 +709,52 @@ html.sidebar-mini .nav-badge{display:none}
   #org-tree{max-height:calc(100vh - 260px)}
 }
 
-/* ══ COMUNIDADE (feed social + chat) ══ */
-.com-post{background:var(--s2);border:1px solid var(--border);padding:16px 18px;margin-bottom:12px}
+/* ══ COMUNIDADE (feed social + chat) ══
+   Visual mais "confortável" que o resto do admin (a pedido do usuário):
+   sombra suave em vez de borda dura (mesmo token --shadow-card usado em
+   .panel/.kpi-card), cantos arredondados, e comentários/mensagens como
+   balões de chat de verdade em vez de linhas de texto simples. */
+.com-post{background:var(--s2);border:1px solid transparent;border-radius:var(--radius-card);box-shadow:var(--shadow-card);padding:18px 20px;margin-bottom:16px}
 .com-post-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .com-post-avatar{width:36px;height:36px;border-radius:50%;overflow:hidden;background:var(--s3);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:14px;color:var(--gold2);flex-shrink:0}
 .com-post-avatar img{width:100%;height:100%;object-fit:cover}
 .com-post-author{font-weight:700;font-size:13px}
 .com-post-meta{font-size:10.5px;color:var(--muted2)}
-.com-post-tipo{font-size:9px;letter-spacing:0.8px;text-transform:uppercase;padding:2px 8px;border:1px solid var(--gold-dim);color:var(--gold2);margin-left:auto}
+.com-post-tipo{font-size:9.5px;letter-spacing:0.5px;padding:3px 10px;border-radius:999px;background:color-mix(in srgb,var(--gold2) 14%,transparent);color:var(--gold2);margin-left:auto}
 .com-post-body{font-size:13.5px;line-height:1.5;white-space:pre-wrap;margin-bottom:10px}
-.com-post-img{max-width:100%;max-height:420px;object-fit:contain;display:block;margin-bottom:10px}
-.com-post-actions{display:flex;gap:16px;border-top:1px solid var(--border);padding-top:10px;font-size:12px}
-.com-post-actions button{background:none;border:none;color:var(--muted2);cursor:pointer;font-family:var(--font-b);font-size:12px;display:flex;align-items:center;gap:5px;padding:2px 4px}
-.com-post-actions button:hover{color:var(--gold2)}
+.com-post-img{max-width:100%;max-height:420px;object-fit:contain;display:block;border-radius:var(--radius-sm);margin-bottom:10px}
+.com-post-actions{display:flex;gap:8px;border-top:1px solid var(--border);padding-top:10px;font-size:12px}
+.com-post-actions button{background:none;border:none;color:var(--muted2);cursor:pointer;font-family:var(--font-b);font-size:12px;display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;transition:background .12s,color .12s}
+.com-post-actions button:hover{color:var(--gold2);background:var(--s3)}
 .com-post-actions button.liked{color:var(--gold2);font-weight:700}
-.com-comments{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
-.com-comment{display:flex;gap:8px;margin-bottom:8px;font-size:12.5px}
-.com-comment b{font-weight:700}
+.com-comments{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.com-comment-bubble{display:flex;gap:8px;align-items:flex-start}
+.com-comment-avatar{width:26px;height:26px;border-radius:50%;overflow:hidden;background:var(--s3);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:11px;color:var(--gold2);flex-shrink:0}
+.com-comment-avatar img{width:100%;height:100%;object-fit:cover}
+.com-comment-col{flex:1;min-width:0}
+.com-comment-balloon{background:var(--s3);border-radius:14px;padding:8px 13px;font-size:12.5px;line-height:1.45;display:inline-block;max-width:100%;word-break:break-word}
+.com-comment-balloon b{font-weight:700;display:block;font-size:11.5px;margin-bottom:1px}
+.com-comment-actions{display:flex;gap:12px;margin-top:3px;padding-left:4px;font-size:10.5px;color:var(--muted2)}
+.com-comment-actions span{cursor:pointer;transition:color .12s}
+.com-comment-actions span:hover{color:var(--gold2)}
+.com-comment-actions span.liked{color:var(--gold2);font-weight:700}
 .com-comment-input{display:flex;gap:8px;margin-top:8px}
-.com-chat-layout{display:flex;gap:0;border:1px solid var(--border);height:calc(100vh - 260px);min-height:420px}
+.com-chat-layout{display:flex;gap:0;border:1px solid transparent;border-radius:var(--radius-card);box-shadow:var(--shadow-card);height:calc(100vh - 260px);min-height:420px;overflow:hidden}
 .com-chat-sidebar{width:260px;flex-shrink:0;border-right:1px solid var(--border);padding:12px;overflow-y:auto}
 .com-chat-main{flex:1;display:flex;flex-direction:column;min-width:0}
 .com-chat-main .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%}
-.com-conv-item{display:flex;align-items:center;gap:8px;padding:8px;cursor:pointer;border-radius:6px;font-size:12.5px}
+.com-conv-item{display:flex;align-items:center;gap:8px;padding:8px;cursor:pointer;border-radius:12px;font-size:12.5px}
 .com-conv-item:hover{background:var(--s2)}
 .com-conv-item.on{background:var(--s2);border:1px solid var(--gold-dim)}
 .com-conv-item .nav-badge{margin-left:auto}
-.com-msg{max-width:75%;padding:8px 12px;font-size:13px;line-height:1.4;border-radius:10px;word-break:break-word}
-.com-msg.mine{align-self:flex-end;background:var(--gold-dim);color:var(--gold2)}
-.com-msg.theirs{align-self:flex-start;background:var(--s2);border:1px solid var(--border)}
+.com-msg-row{display:flex;align-items:flex-end;gap:6px}
+.com-msg-row.mine{flex-direction:row-reverse}
+.com-msg{max-width:72%;padding:9px 14px;font-size:13px;line-height:1.4;border-radius:16px;word-break:break-word;box-shadow:0 1px 3px rgba(0,0,0,0.12)}
+.com-msg.mine{background:var(--gold-dim);color:var(--gold2);border-bottom-right-radius:4px}
+.com-msg.theirs{background:var(--s2);border:1px solid var(--border);border-bottom-left-radius:4px}
+.com-msg-del{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:12px;opacity:0;transition:opacity .12s;padding:4px}
+.com-msg-row:hover .com-msg-del{opacity:.7}
+.com-msg-del:hover{opacity:1 !important;color:var(--red)}
 /* BUGFIX: cor fixa (--muted2) presumia fundo claro da página — dentro do
    balão "mine" (fundo escuro sempre, nas duas temas) isso virava texto
    escuro em cima de fundo escuro no tema claro. Herda a cor já escolhida
@@ -4779,6 +4796,9 @@ function renderCarreira(){
 let allComPosts=[], allComCurtidas=[], allComComentarios=[];
 let _diretorio=[]; // cache do portal_diretorio() — nome/cargo/equipe/foto de todo mundo
 let _comConversas=[], _comConversaAtual=null, _comMsgs={}, _comChatChannel=null, _comPostImgUrl=null;
+let _comFeedChannel=null;
+let _comOpenComments=new Set(); // ids de post com a caixa de comentários aberta — sobrevive a re-render (realtime reconstrói o DOM inteiro)
+let _comOpenReplies=new Set(); // ids de comentário com a caixa de resposta aberta
 
 async function _garantirDiretorio(){
   if(_diretorio.length) return;
@@ -4801,6 +4821,7 @@ async function renderComunidade(){
   await _garantirDiretorio();
   await carregarFeed();
   renderConversas();
+  _assinarRealtimeFeed();
 }
 
 /* ── FEED ── */
@@ -4827,6 +4848,7 @@ function renderFeed(){
         const euCurti=curtidasPost.some(c=>c.user_id===CU.id);
         const comentsPost=allComComentarios.filter(c=>c.post_id===p.id);
         const souDono=p.user_id===CU.id;
+        const comentariosAbertos=_comOpenComments.has(p.id);
         return `<div class="com-post" data-post="${p.id}">
           <div class="com-post-head">
             <div class="com-post-avatar">${foto?`<img src="${foto}" alt="">`:autor.charAt(0).toUpperCase()}</div>
@@ -4844,15 +4866,48 @@ function renderFeed(){
             <button class="${euCurti?'liked':''}" onclick="toggleCurtida('${p.id}')">${euCurti?'❤️':'🤍'} Curtir${curtidasPost.length?' ('+curtidasPost.length+')':''}</button>
             <button onclick="toggleComentariosPost('${p.id}')">💬 Comentar${comentsPost.length?' ('+comentsPost.length+')':''}</button>
           </div>
-          <div class="com-comments" id="com-comments-${p.id}" style="display:none">
-            ${comentsPost.map(c=>`<div class="com-comment"><b>${_diretorioNome(c.user_id)}:</b> ${_escHtml(c.conteudo)}</div>`).join('')}
+          <div class="com-comments" id="com-comments-${p.id}" style="display:${comentariosAbertos?'flex':'none'}">
+            ${renderComentariosArvore(p.id)}
             <div class="com-comment-input">
-              <input type="text" class="adm-input" id="com-comment-in-${p.id}" placeholder="Escreva um comentário..." onkeydown="if(event.key==='Enter')enviarComentario('${p.id}')">
-              <button class="btn-outline" style="font-size:11px" onclick="enviarComentario('${p.id}')">Enviar</button>
+              <input type="text" class="adm-input" id="com-comment-in-${p.id}" placeholder="Escreva um comentário..." onkeydown="if(event.key==='Enter')enviarComentario('${p.id}',null,'com-comment-in-${p.id}')">
+              <button class="btn-outline" style="font-size:11px" onclick="enviarComentario('${p.id}',null,'com-comment-in-${p.id}')">Enviar</button>
             </div>
           </div>
         </div>`;
       }).join('');
+}
+
+// Comentários de um post em árvore (1 nível de resposta) — cada bolha mostra
+// autor/texto/curtir/responder/excluir, no mesmo visual de balão do chat.
+function renderComentariosArvore(postId){
+  const todos=allComComentarios.filter(c=>c.post_id===postId);
+  const raiz=todos.filter(c=>!c.parent_id);
+  const respostasDe=pid=>todos.filter(c=>c.parent_id===pid);
+  const renderUm=(c, éResposta)=>{
+    const autor=_diretorioNome(c.user_id), foto=_diretorioFoto(c.user_id);
+    const curtidasC=allComCurtidas.filter(k=>k.comentario_id===c.id);
+    const euCurtiC=curtidasC.some(k=>k.user_id===CU.id);
+    const souDonoC=c.user_id===CU.id;
+    const respostaAberta=_comOpenReplies.has(c.id);
+    return `<div class="com-comment-bubble" style="${éResposta?'margin-left:30px':''}">
+      <div class="com-comment-avatar">${foto?`<img src="${foto}" alt="">`:autor.charAt(0).toUpperCase()}</div>
+      <div class="com-comment-col">
+        <div class="com-comment-balloon"><b>${autor}</b>${_escHtml(c.conteudo)}</div>
+        <div class="com-comment-actions">
+          <span class="${euCurtiC?'liked':''}" onclick="toggleCurtidaComentario('${c.id}')">${euCurtiC?'❤️':'🤍'}${curtidasC.length?' '+curtidasC.length:''}</span>
+          ${!éResposta?`<span onclick="mostrarRespostaInput('${c.id}')">Responder</span>`:''}
+          <span>${fmtDateHora(c.criado_em)}</span>
+          ${(souDonoC||isAdmin())?`<span onclick="excluirComentario('${c.id}')">Excluir</span>`:''}
+        </div>
+        ${!éResposta?`<div class="com-comment-input" id="com-reply-in-${c.id}" style="display:${respostaAberta?'flex':'none'}">
+          <input type="text" class="adm-input" placeholder="Responder ${autor}..." onkeydown="if(event.key==='Enter')enviarComentario('${postId}','${c.id}','com-reply-txt-${c.id}')" id="com-reply-txt-${c.id}">
+          <button class="btn-outline" style="font-size:11px" onclick="enviarComentario('${postId}','${c.id}','com-reply-txt-${c.id}')">Enviar</button>
+        </div>`:''}
+        ${!éResposta?respostasDe(c.id).map(r=>renderUm(r,true)).join(''):''}
+      </div>
+    </div>`;
+  };
+  return raiz.map(c=>renderUm(c,false)).join('');
 }
 
 async function onComPostTipoChange(){
@@ -4926,21 +4981,89 @@ async function toggleCurtida(postId){
   renderFeed();
 }
 
-function toggleComentariosPost(postId){
-  const box=el('com-comments-'+postId);
-  if(box) box.style.display = box.style.display==='none' ? '' : 'none';
+async function toggleCurtidaComentario(comentarioId){
+  const jaCurti=allComCurtidas.find(c=>c.comentario_id===comentarioId && c.user_id===CU.id);
+  if(jaCurti){
+    await sb.from('portal_comunidade_curtidas').delete().eq('id',jaCurti.id);
+    allComCurtidas=allComCurtidas.filter(c=>c.id!==jaCurti.id);
+  } else {
+    const {data}=await sb.from('portal_comunidade_curtidas').insert({comentario_id:comentarioId,user_id:CU.id}).select().single();
+    if(data) allComCurtidas.push(data);
+  }
+  renderFeed();
 }
 
-async function enviarComentario(postId){
-  const input=el('com-comment-in-'+postId);
+function toggleComentariosPost(postId){
+  if(_comOpenComments.has(postId)) _comOpenComments.delete(postId); else _comOpenComments.add(postId);
+  const box=el('com-comments-'+postId);
+  if(box) box.style.display = _comOpenComments.has(postId) ? 'flex' : 'none';
+}
+
+function mostrarRespostaInput(comentarioId){
+  if(_comOpenReplies.has(comentarioId)) _comOpenReplies.delete(comentarioId); else _comOpenReplies.add(comentarioId);
+  const box=el('com-reply-in-'+comentarioId);
+  if(!box) return;
+  const aberto=_comOpenReplies.has(comentarioId);
+  box.style.display = aberto ? 'flex' : 'none';
+  if(aberto) box.querySelector('input')?.focus();
+}
+
+// inputElId identifica onde está o texto digitado — o mesmo input serve pro
+// comentário raiz do post (com-comment-in-X) e pra resposta de um comentário
+// específico (com-reply-txt-Y); parentId (null = comentário raiz) decide qual.
+async function enviarComentario(postId, parentId, inputElId){
+  const input=el(inputElId);
   const texto=(input?.value||'').trim();
   if(!texto) return;
   input.value='';
-  const {data,error}=await sb.from('portal_comunidade_comentarios').insert({post_id:postId,user_id:CU.id,conteudo:texto}).select().single();
+  const {data,error}=await sb.from('portal_comunidade_comentarios').insert({post_id:postId,user_id:CU.id,conteudo:texto,parent_id:parentId||null}).select().single();
   if(error){ toast('Erro: '+error.message,'err'); return; }
-  allComComentarios.push(data);
+  if(!allComComentarios.some(c=>c.id===data.id)) allComComentarios.push(data);
+  _comOpenComments.add(postId);
+  if(parentId) _comOpenReplies.add(parentId);
   renderFeed();
-  const box=el('com-comments-'+postId); if(box) box.style.display=''; // renderFeed reconstrói escondido — reabre
+}
+
+async function excluirComentario(id){
+  if(!confirm('Excluir este comentário?')) return;
+  const {error}=await sb.from('portal_comunidade_comentarios').delete().eq('id',id);
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  allComComentarios=allComComentarios.filter(c=>c.id!==id && c.parent_id!==id);
+  renderFeed();
+}
+
+// Canal único pro feed inteiro (posts/curtidas/comentários) — como o RLS de
+// leitura dessas 3 tabelas é aberto pra qualquer autenticado, todo mundo vê
+// os mesmos eventos; só assina quando a Comunidade é aberta (diferente do
+// chat, que fica ligado a sessão toda pro badge de não lidas).
+function _assinarRealtimeFeed(){
+  if(_comFeedChannel) return;
+  _comFeedChannel = sb.channel('portal-comunidade-feed')
+    .on('postgres_changes', {event:'*', schema:'public', table:'portal_comunidade_posts'}, payload=>{
+      if(payload.eventType==='INSERT'){
+        if(!allComPosts.some(p=>p.id===payload.new.id)){ allComPosts.unshift(payload.new); renderFeed(); }
+      } else if(payload.eventType==='DELETE'){
+        allComPosts=allComPosts.filter(p=>p.id!==payload.old.id);
+        renderFeed();
+      }
+    })
+    .on('postgres_changes', {event:'*', schema:'public', table:'portal_comunidade_curtidas'}, payload=>{
+      if(payload.eventType==='INSERT'){
+        if(!allComCurtidas.some(c=>c.id===payload.new.id)){ allComCurtidas.push(payload.new); renderFeed(); }
+      } else if(payload.eventType==='DELETE'){
+        allComCurtidas=allComCurtidas.filter(c=>c.id!==payload.old.id);
+        renderFeed();
+      }
+    })
+    .on('postgres_changes', {event:'*', schema:'public', table:'portal_comunidade_comentarios'}, payload=>{
+      if(payload.eventType==='INSERT'){
+        if(!allComComentarios.some(c=>c.id===payload.new.id)){ allComComentarios.push(payload.new); renderFeed(); }
+      } else if(payload.eventType==='DELETE'){
+        allComComentarios=allComComentarios.filter(c=>c.id!==payload.old.id);
+        renderFeed();
+      }
+    })
+    .subscribe();
 }
 
 /* ── CHAT (mensagens diretas em tempo real) ── */
@@ -5061,12 +5184,25 @@ function renderMensagens(conversaId){
   const wrap=el('com-chat-msgs');
   if(!wrap) return;
   const msgs=_comMsgs[conversaId]||[];
-  wrap.innerHTML = msgs.map(m=>`
-    <div class="com-msg ${m.user_id===CU.id?'mine':'theirs'}">
-      ${_escHtml(m.conteudo)}
-      <div class="com-msg-time">${fmtDateHora(m.criado_em)}</div>
-    </div>`).join('');
+  wrap.innerHTML = msgs.map(m=>{
+    const mine=m.user_id===CU.id;
+    return `<div class="com-msg-row ${mine?'mine':''}">
+      ${mine?`<button class="com-msg-del" title="Excluir" onclick="excluirMensagem('${m.id}','${conversaId}')">✕</button>`:''}
+      <div class="com-msg ${mine?'mine':'theirs'}">
+        ${_escHtml(m.conteudo)}
+        <div class="com-msg-time">${fmtDateHora(m.criado_em)}</div>
+      </div>
+    </div>`;
+  }).join('');
   wrap.scrollTop=wrap.scrollHeight;
+}
+
+async function excluirMensagem(msgId, conversaId){
+  if(!confirm('Excluir esta mensagem?')) return;
+  const {error}=await sb.from('portal_chat_mensagens').delete().eq('id',msgId);
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  if(_comMsgs[conversaId]) _comMsgs[conversaId]=_comMsgs[conversaId].filter(m=>m.id!==msgId);
+  renderMensagens(conversaId);
 }
 
 async function marcarConversaLida(conversaId){
@@ -5121,6 +5257,13 @@ function _assinarRealtimeChatGlobal(){
       _comConversas.sort((a,b)=> new Date(b.ultima?.criado_em||0) - new Date(a.ultima?.criado_em||0));
       renderConversas();
       atualizarBadgeChat();
+    })
+    .on('postgres_changes', {event:'DELETE', schema:'public', table:'portal_chat_mensagens'}, payload=>{
+      const old=payload.old;
+      if(_comMsgs[old.conversa_id]){
+        _comMsgs[old.conversa_id]=_comMsgs[old.conversa_id].filter(m=>m.id!==old.id);
+        if(_comConversaAtual===old.conversa_id) renderMensagens(old.conversa_id);
+      }
     })
     .subscribe();
 }
