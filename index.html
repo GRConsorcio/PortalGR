@@ -738,7 +738,11 @@ html.sidebar-mini .nav-badge{display:none}
 .com-msg{max-width:75%;padding:8px 12px;font-size:13px;line-height:1.4;border-radius:10px;word-break:break-word}
 .com-msg.mine{align-self:flex-end;background:var(--gold-dim);color:var(--gold2)}
 .com-msg.theirs{align-self:flex-start;background:var(--s2);border:1px solid var(--border)}
-.com-msg-time{font-size:9px;color:var(--muted2);margin-top:2px}
+/* BUGFIX: cor fixa (--muted2) presumia fundo claro da página — dentro do
+   balão "mine" (fundo escuro sempre, nas duas temas) isso virava texto
+   escuro em cima de fundo escuro no tema claro. Herda a cor já escolhida
+   pro balão (legível nele) e só reduz a opacidade pra parecer "secundário". */
+.com-msg-time{font-size:9px;margin-top:2px;opacity:.7}
 @media(max-width:760px){
   .com-chat-layout{flex-direction:column;height:calc(100vh - 220px)}
   .com-chat-sidebar{width:100%;max-height:160px;border-right:none;border-bottom:1px solid var(--border)}
