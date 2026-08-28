@@ -1299,6 +1299,10 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
           <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 15V9M9 15V3M15 15v-7"/></svg>
           Carreira
         </div>
+        <div class="nav-item admin-only" data-page="adm-pontos" onclick="nav('adm-pontos')">
+          <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="9" r="7"/><path d="M9 5.5v3.8l2.6 1.5"/></svg>
+          Pontos
+        </div>
         <div class="nav-item admin-only" data-page="adm-academy" onclick="nav('adm-academy')">
           <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 1L1 5l8 4 8-4-8-4z"/><path d="M5 7v5a4 4 0 008 0V7"/></svg>
           Academy
@@ -1842,6 +1846,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       <div class="adm-table-wrap" id="adm-carreira-list"></div>
     </div>
 
+    <!-- ══ ADM: PONTOS (regras de pontuação GR Nível) ══ -->
+    <div class="page" id="page-adm-pontos">
+      <div class="adm-page-head">
+        <div class="adm-page-title">Regras de Pontuação</div>
+        <button class="btn-primary" onclick="openAdmModal('pontos_regra')">+ Nova regra</button>
+      </div>
+      <div class="adm-table-wrap" id="adm-pontos-list"></div>
+    </div>
+
     <!-- ══ ADM: ACADEMY ══ -->
     <div class="page" id="page-adm-academy">
       <div class="adm-page-head">
@@ -2096,6 +2109,7 @@ let allAcademy=[], allNews=[], allSugestoes=[], allHallFama=[], allRegras=[], al
 let allCopaEquipes=[], allCopaPartidas=[], allAvisos=[], allCarreira=[], allDestaques=[], allCopaEdicoes=[], allCopaChaveamentos=[];
 let allCarreiraAdmin=[]; // trilha de carreira de TODOS os colaboradores (visão admin/coord) — allCarreira é só a do próprio usuário logado
 let allNiveis=[]; // linhas cruas de portal_niveis (formato do banco) — LEVELS é a versão já convertida pro formato usado no cálculo/telas
+let allPontosRegras=[]; // linhas de portal_pontos_regras — editável pela Administração (tela "Pontos")
 // Resumo agregado de vendas vindo do CRM (contagens/somas por vendedor —
 // nunca dado de cliente/lead). Ver fetchCrmResumo(). null até carregar, ou
 // se o e-mail do usuário não bater com nenhum vendedor do CRM (ex: conta
@@ -2171,11 +2185,16 @@ function getLevelForStats(cotas, volume){
 
 /* ═══ EMBLEMAS DE NÍVEL ═══
    Artes reais fornecidas pelo usuário (brasão com elmo espartano, PNG com
-   fundo transparente), uma por nível — arquivos em niveis/<id>.png. Não são
-   mais desenhadas por código; essa função só monta a tag <img>. */
+   fundo transparente), uma por nível — arquivos em niveis/<id>.png. Isso era
+   fixo no código; agora a Administração pode enviar um SVG/PNG próprio por
+   nível (tela "Níveis", campo imagem_url em portal_niveis) que, quando
+   presente, substitui o arquivo local — sem precisar mexer em código pra
+   trocar o emblema de um nível (ex: Elite). */
 function nivelBadgeSVG(id, color, nome){
+  const custom = LEVELS.find(l=>l.id===id)?.imagem;
   const arquivo = {nao_classificado:'nao_classificado',bronze:'bronze',prata:'prata',ouro:'ouro',diamante:'diamante',elite:'elite'}[id] || 'nao_classificado';
-  return `<img src="niveis/${arquivo}.png" alt="${(nome||'').replace(/"/g,'&quot;')}" style="width:100%;height:100%;object-fit:contain" loading="lazy">`;
+  const src = custom || `niveis/${arquivo}.png`;
+  return `<img src="${src}" alt="${(nome||'').replace(/"/g,'&quot;')}" style="width:100%;height:100%;object-fit:contain" loading="lazy">`;
 }
 
 /* ═══ RESTRIÇÃO POR CLASSE/RANKING — só vale pra vendedor ═══
@@ -2215,7 +2234,10 @@ function _classesLabel(ids){
   return (ids||[]).map(id=>LEVELS.find(l=>l.id===id)?.name||id).join(', ');
 }
 
-const PONTOS_RULES = [
+// Editável agora pela Administração (tabela portal_pontos_regras) — igual ao
+// padrão do LEVELS: este array é só o valor padrão/de segurança, usado até o
+// fetch do banco substituir o conteúdo (ver loadAll() e reloadAdmData('pontos_regra')).
+let PONTOS_RULES = [
   {acao:'Cota vendida',pts:25,limite:'Ilimitado'},
   {acao:'Atingir meta mensal',pts:200,limite:'1x/mês'},
   {acao:'Superar meta em 20%+',pts:200,limite:'1x/mês'},
@@ -2546,7 +2568,7 @@ async function loadAll(){
   // série — um round-trip inteiro de rede jogado fora à toa, já que nenhuma
   // dessas 13 consultas depende do perfil. Juntei tudo num Promise.allSettled
   // só, então roda tudo em paralelo e a tela carrega mais rápido.
-  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf,cer,chr,apr,bibr,bpr,pvr,certr,nlr,covr]=await Promise.allSettled([
+  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf,cer,chr,apr,bibr,bpr,pvr,certr,nlr,covr,ptr]=await Promise.allSettled([
     sb.from('portal_vendas').select('*').eq('user_id',uid).order('data',{ascending:false}),
     sb.from('portal_metas').select('*').eq('user_id',uid),
     sb.from('portal_campanhas').select('*').order('criado_em',{ascending:false}),
@@ -2570,6 +2592,7 @@ async function loadAll(){
     sb.from('portal_certificados').select('*').eq('user_id',uid).order('emitido_em',{ascending:false}),
     sb.from('portal_niveis').select('*').order('ordem'),
     sb.from('portal_users_classe_override').select('*').eq('user_id',uid).maybeSingle(),
+    sb.from('portal_pontos_regras').select('*').order('ordem'),
   ]);
   if(vr.value?.data)allVendas=vr.value.data;
   if(mr.value?.data)allMetas=mr.value.data;
@@ -2593,9 +2616,13 @@ async function loadAll(){
   if(certr.value?.data)allCertificados=certr.value.data;
   if(nlr.value?.data?.length){
     allNiveis = nlr.value.data;
-    LEVELS = allNiveis.map(r=>({id:r.id,name:r.nome,minCotas:r.min_cotas,minVolume:r.min_volume,color:r.cor,perks:r.perks||[],premios:r.premios||[],ordem:r.ordem||0}));
+    LEVELS = allNiveis.map(r=>({id:r.id,name:r.nome,minCotas:r.min_cotas,minVolume:r.min_volume,color:r.cor,perks:r.perks||[],premios:r.premios||[],ordem:r.ordem||0,imagem:r.imagem_url||null}));
   }
   _classeOverride = covr.value?.data || null;
+  if(ptr.value?.data?.length){
+    allPontosRegras = ptr.value.data;
+    PONTOS_RULES = allPontosRegras.map(r=>({acao:r.acao,pts:r.pts,limite:r.limite}));
+  }
 
   CUP=prf.value?.data||null;
   if(CUP){
@@ -3878,8 +3905,9 @@ async function submeterProva(){
     if(certs) allCertificados=certs;
     let msg=data.aprovado?`Aprovado com ${data.nota_pct}%! Certificado emitido.`:`Nota: ${data.nota_pct}% — não atingiu os 70%.`;
     if(data.aprovado && !jaTinhaCertificado){
-      const ptsGanhos=await _ganharPontos(25);
-      if(ptsGanhos!=null) msg+=` +25 pontos GR Nível.`;
+      const ptsRegra = PONTOS_RULES.find(r=>r.acao==='Certificado Academy')?.pts ?? 25;
+      const ptsGanhos=await _ganharPontos(ptsRegra);
+      if(ptsGanhos!=null) msg+=` +${ptsRegra} pontos GR Nível.`;
     }
     toast(msg, data.aprovado?'ok':'err');
     renderCurso();
@@ -4639,7 +4667,7 @@ function renderCarreira(){
 /* ── NAV extension for admin pages ── */
 const ADM_PAGE_TITLES = {
   'adm-vendas-equipe':'Vendas da Equipe',
-  'adm-campanhas':'Campanhas','adm-metas':'Metas','adm-destaques':'Destaques','adm-carreira':'Carreira',
+  'adm-campanhas':'Campanhas','adm-metas':'Metas','adm-destaques':'Destaques','adm-carreira':'Carreira','adm-pontos':'Pontos',
   'adm-academy':'GR Academy','adm-obrigatorios':'Cursos Obrigatórios','adm-news':'GR News','adm-avisos':'Avisos',
   'adm-copa':'Copa GR','adm-beneficios':'Benefícios','adm-hallfama':'Hall da Fama',
   'adm-regras':'Regras GR','adm-usuarios':'Usuários','adm-sugestoes':'Sugestões',
@@ -4659,7 +4687,7 @@ window.nav = function(page){
     const admRenderers = {
       'adm-vendas-equipe':renderAdmVendasEquipe,
       'adm-campanhas':renderAdmCampanhas,'adm-metas':renderAdmMetas,
-      'adm-destaques':renderAdmDestaques,'adm-carreira':renderAdmCarreira,'adm-academy':renderAdmAcademy,
+      'adm-destaques':renderAdmDestaques,'adm-carreira':renderAdmCarreira,'adm-pontos':renderAdmPontos,'adm-academy':renderAdmAcademy,
       'adm-obrigatorios':renderAdmObrigatorios,
       'adm-news':renderAdmNews,'adm-avisos':renderAdmAvisos,
       'adm-copa':renderAdmCopa,'adm-beneficios':renderAdmBeneficios,
@@ -4773,6 +4801,7 @@ async function openAdmModal(type, data=null){
     academy:'Conteúdo Academy', news:'Notícia', aviso:'Aviso',
     'copa-equipe':'Equipe Copa', 'copa-edicao':'Edição da Copa', beneficio:'Benefício',
     hallfama:'Hall da Fama', regra:'Regra', usuario:'Usuário', biblioteca:'Livro', nivel:'Nível',
+    pontos_regra:'Regra de Pontuação',
   };
   el('adm-modal-title').textContent = (data ? 'Editar ' : 'Nova ') + (titles[type]||type);
   el('adm-modal-body').innerHTML = buildAdmForm(type, data)
@@ -5088,7 +5117,26 @@ function buildAdmForm(type, d={}){
       ${inp('ordem','Posição na progressão (0 = mais baixo)',d.ordem,'number','Ex: 3')}
       <div style="font-size:10px;color:var(--muted2);margin:-6px 0 10px">Quem bater cotas OU volume mínimo já entra no nível — basta um dos dois. A posição decide a ordem de progressão entre os níveis (maior = mais alto).</div>
       ${ta('perks_texto','Benefícios (um por linha)',(d.perks||[]).join('\n'),'Ex: Acesso à Academy')}
-      ${ta('premios_texto','Premiação (um por linha)',(d.premios||[]).join('\n'),'Ex: Brinde GR Ouro')}`;
+      ${ta('premios_texto','Premiação (um por linha)',(d.premios||[]).join('\n'),'Ex: Brinde GR Ouro')}
+      <div class="adm-field">
+        <label class="adm-label">Emblema (SVG ou PNG, opcional)</label>
+        <div style="font-size:10px;color:var(--muted2);margin:-2px 0 8px">Se não enviar, usa a arte padrão do nível (arquivo local). Enviando aqui, substitui — é assim que você troca o emblema (ex: Elite) sem precisar mexer em código.</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <div class="timeline-photo" id="nivel-photo-preview" style="width:52px;height:52px;background:var(--s3)">${d.imagem_url?`<img src="${d.imagem_url}" alt="" style="object-fit:contain">`:''}</div>
+          <div style="flex:1">
+            <input type="file" id="nivel-photo-file" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none" onchange="handleNivelImagemUpload(event)">
+            <button type="button" class="btn-outline" style="font-size:11px" onclick="document.getElementById('nivel-photo-file').click()">🛡️ Enviar emblema</button>
+            <span id="nivel-photo-status" style="font-size:10px;color:var(--muted2);margin-left:8px"></span>
+          </div>
+        </div>
+        <input class="adm-input" id="af-imagem_url" value="${d.imagem_url||''}" placeholder="ou cole uma URL de imagem..." style="font-size:11px">
+      </div>`;
+
+    case 'pontos_regra': return `
+      ${inp('acao','Ação',d.acao,'text','Ex: Cota vendida')}
+      ${g2(inp('pts','Pontos (negativo para penalidade)',d.pts,'number','Ex: 25'),inp('limite','Limite',d.limite,'text','Ex: 1x/mês ou Ilimitado'))}
+      ${inp('ordem','Ordem de exibição',d.ordem??0,'number','0')}
+      <div style="font-size:10px;color:var(--muted2);margin-top:-4px">A regra "Certificado Academy" também controla os pontos dados de verdade ao aprovar uma prova — as demais são só a tabela de referência mostrada ao vendedor; a pontuação em si continua sendo lançada manualmente no cadastro do usuário.</div>`;
 
     default: return '<p style="color:var(--muted2)">Formulário não configurado.</p>';
   }
@@ -5193,7 +5241,8 @@ async function saveAdmModal(){
         cor: av('cor')||'#4A4A5A',
         ordem: parseInt(av('ordem'))||0,
         perks: av('perks_texto').split('\n').map(s=>s.trim()).filter(Boolean),
-        premios: av('premios_texto').split('\n').map(s=>s.trim()).filter(Boolean) };
+        premios: av('premios_texto').split('\n').map(s=>s.trim()).filter(Boolean),
+        imagem_url: av('imagem_url')||null };
       if(!editId){
         // Slugifica o que a pessoa digitou (id de portal_niveis não tem
         // default — é usado como referência estável em getLevelForStats etc.)
@@ -5202,6 +5251,10 @@ async function saveAdmModal(){
         if(!slug){ toast('Informe um identificador pro nível (sem espaços/acentos)','err'); return; }
         payload.id = slug;
       }
+      break;
+    case 'pontos_regra':
+      payload = { acao:av('acao'), pts:parseInt(av('pts'))||0,
+        limite:av('limite')||'Ilimitado', ordem:parseInt(av('ordem'))||0 };
       break;
   }
 
@@ -5222,7 +5275,7 @@ async function saveAdmModal(){
     'copa-equipe':'portal_copa_equipes', 'copa-edicao':'portal_copa_edicoes', beneficio:'portal_beneficios',
     'copa-chaveamento':'portal_copa_chaveamento',
     hallfama:'portal_hall_fama', regra:'portal_regras', biblioteca:'portal_biblioteca',
-    nivel:'portal_niveis',
+    nivel:'portal_niveis', pontos_regra:'portal_pontos_regras',
   };
 
   // Só um chaveamento pode ficar "ativo" por competição — o índice único
@@ -5292,9 +5345,10 @@ async function reloadAdmData(type){
       const {data}=await sb.from('portal_niveis').select('*').order('ordem');
       if(data?.length){
         allNiveis = data;
-        LEVELS = allNiveis.map(r=>({id:r.id,name:r.nome,minCotas:r.min_cotas,minVolume:r.min_volume,color:r.cor,perks:r.perks||[],premios:r.premios||[],ordem:r.ordem||0}));
+        LEVELS = allNiveis.map(r=>({id:r.id,name:r.nome,minCotas:r.min_cotas,minVolume:r.min_volume,color:r.cor,perks:r.perks||[],premios:r.premios||[],ordem:r.ordem||0,imagem:r.imagem_url||null}));
       }
     },
+    pontos_regra: async()=>{ const {data}=await sb.from('portal_pontos_regras').select('*').order('ordem'); if(data) allPontosRegras=data; },
   };
   await reloads[type]?.();
 }
@@ -5307,6 +5361,7 @@ async function deleteAdmItem(type, id){
     'copa-equipe':'portal_copa_equipes', 'copa-edicao':'portal_copa_edicoes', beneficio:'portal_beneficios',
     'copa-chaveamento':'portal_copa_chaveamento',
     hallfama:'portal_hall_fama', regra:'portal_regras', biblioteca:'portal_biblioteca',
+    pontos_regra:'portal_pontos_regras',
   };
   const {error} = await sb.from(tables[type]).delete().eq('id',id);
   if(error){ toast('Erro: '+error.message,'err'); return; }
@@ -5801,7 +5856,9 @@ function renderAdmNiveis(){
       n.min_volume ? fmtBRL(n.min_volume)+' em volume' : null,
     ].filter(Boolean).join(' OU ') || '—';
     return `<div class="adm-row">
-      <div class="status-dot" style="background:${n.cor}"></div>
+      ${n.imagem_url
+        ? `<div style="width:26px;height:26px;flex-shrink:0"><img src="${n.imagem_url}" alt="" style="width:100%;height:100%;object-fit:contain"></div>`
+        : `<div class="status-dot" style="background:${n.cor}"></div>`}
       <div class="adm-row-main">
         <div class="adm-row-title">${n.nome}</div>
         <div class="adm-row-sub">${requisito} · ${(n.perks||[]).length} benefício(s) · ${(n.premios||[]).length} premiação(ões)</div>
@@ -5811,6 +5868,15 @@ function renderAdmNiveis(){
       </div>
     </div>`;
   }).join('') || '<div class="empty" style="padding:32px"><div class="empty-line"></div><div class="empty-text">Nenhum nível cadastrado</div></div>';
+}
+
+function renderAdmPontos(){
+  el('adm-pontos-list').innerHTML = admList([...allPontosRegras].sort((a,b)=>(a.ordem||0)-(b.ordem||0)), 'pontos_regra', r=>`
+    <div class="status-dot ${r.pts<0?'red':'green'}"></div>
+    <div class="adm-row-main">
+      <div class="adm-row-title">${r.acao}</div>
+      <div class="adm-row-sub" style="color:${r.pts<0?'var(--red)':'var(--gold2)'};font-weight:700">${r.pts>0?'+':''}${r.pts} pts <span style="color:var(--muted2);font-weight:400">· ${r.limite||'Ilimitado'}</span></div>
+    </div>`);
 }
 
 function renderAdmBiblioteca(){
@@ -6709,6 +6775,28 @@ async function handleBeneficioImagemUpload(e){
   urlInput.value = data2.publicUrl;
   statusEl.textContent = 'Enviada ✓';
   statusEl.style.color = 'var(--green2)';
+}
+
+// Emblema de um nível GR (Bronze/Prata/.../Elite) — mesmo padrão de upload
+// direto usado no resto do Portal, mas aceitando SVG além de PNG/JPG/WEBP
+// (pedido explícito do usuário pra poder trocar a arte de um nível, ex:
+// Elite, sem precisar editar código nem substituir arquivo local).
+async function handleNivelImagemUpload(e){
+  const file = e.target.files?.[0];
+  if(!file) return;
+  const statusEl = document.getElementById('nivel-photo-status');
+  const preview = document.getElementById('nivel-photo-preview');
+  const urlInput = document.getElementById('af-imagem_url');
+  if(file.size > 5*1024*1024){ toast('Imagem muito grande (máx. 5MB)','err'); e.target.value=''; return; }
+  preview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="" style="object-fit:contain">`;
+  statusEl.textContent = 'Enviando...'; statusEl.style.color = 'var(--muted2)';
+  const ext = (file.name.split('.').pop()||'png').toLowerCase();
+  const path = `niveis/${Date.now()}.${ext}`;
+  const {error} = await sb.storage.from('portal-uploads').upload(path, file, {upsert:true, contentType:file.type});
+  if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast('Erro ao enviar imagem: '+error.message,'err'); return; }
+  const {data} = sb.storage.from('portal-uploads').getPublicUrl(path);
+  urlInput.value = data.publicUrl;
+  statusEl.textContent = 'Enviada ✓'; statusEl.style.color = 'var(--green2)';
 }
 
 // Foto de uma homenagem do Hall da Fama — mesmo padrão de upload direto
