@@ -813,12 +813,18 @@ html.sidebar-mini .nav-badge{display:none}
 .com-composer-addbar-icons .com-quick-ico span{display:none}
 
 /* ── Carrossel de mídia (várias imagens/vídeo por post, estilo Instagram) ── */
-.com-carrossel{position:relative;margin-bottom:10px;border-radius:var(--radius-sm);overflow:hidden;background:#000}
+/* object-fit:contain nunca corta a imagem (importante — muita gente compartilha
+   print de matéria/tela aqui, cortar texto seria pior que a barra), mas sobra
+   espaço nas laterais/topo quando a proporção não bate com o box. Antes esse
+   espaço era preto puro (destoava e chamava atenção à toa); agora usa o mesmo
+   tom de superfície do próprio card (--s2), então funde com o post em vez de
+   parecer uma borda. */
+.com-carrossel{position:relative;margin-bottom:10px;border-radius:var(--radius-sm);overflow:hidden;background:var(--s2)}
 .com-carrossel-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
 .com-carrossel-track::-webkit-scrollbar{display:none}
 .com-carrossel-slide{flex:0 0 100%;scroll-snap-align:center;display:flex;align-items:center;justify-content:center;max-height:420px;min-height:160px}
 .com-carrossel-slide img{max-width:100%;max-height:420px;object-fit:contain;cursor:zoom-in;display:block}
-.com-carrossel-slide video{max-width:100%;max-height:420px;display:block}
+.com-carrossel-slide video{max-width:100%;max-height:420px;object-fit:contain;display:block}
 .com-carrossel-seta{position:absolute;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:rgba(10,10,10,.55);color:#fff;border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;z-index:2}
 .com-carrossel-seta.esq{left:8px}
 .com-carrossel-seta.dir{right:8px}
