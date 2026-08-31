@@ -5413,7 +5413,7 @@ async function handleComPostMidiaUpload(e){
   for(let i=0;i<aEnviar.length;i++){
     const file=aEnviar[i];
     const isVideo=file.type.startsWith('video/');
-    if(file.size>100*1024*1024){ toast(`"${file.name}" muito grande (máx. 100MB)`,'err'); continue; }
+    if(file.size>500*1024*1024){ toast(`"${file.name}" muito grande (máx. 500MB)`,'err'); continue; }
     statusEl.textContent=`Enviando ${i+1}/${aEnviar.length}...`; statusEl.style.color='var(--muted2)';
     const ext=(file.name.split('.').pop()||(isVideo?'mp4':'jpg')).toLowerCase();
     const path=`comunidade/${Date.now()}-${i}.${ext}`;
