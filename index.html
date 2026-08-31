@@ -2240,7 +2240,10 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     <div class="page" id="page-adm-biblioteca">
       <div class="adm-page-head">
         <div class="adm-page-title">Biblioteca</div>
-        <button class="btn-primary" onclick="openAdmModal('biblioteca')">+ Novo livro</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn-outline" onclick="abrirNovoAudiobook()">🎧 + Audiobook</button>
+          <button class="btn-primary" onclick="openAdmModal('biblioteca')">+ Novo livro</button>
+        </div>
       </div>
       <div class="adm-table-wrap" id="adm-biblio-list"></div>
     </div>
@@ -4820,6 +4823,15 @@ function onBiblioTipoChange(){
   fileInput.value = '';
   fileInput.onchange = isAudio ? handleBiblioAudioUpload : handleBiblioArquivoUpload;
   urlInput.placeholder = 'ou cole um link ' + (isAudio ? 'direto de áudio...' : '(Google Drive, etc.)...');
+}
+// Atalho do admin: abre o mesmo modal de "Novo livro" já com Tipo=Audiobook
+// selecionado — sem isso a única forma de achar a opção era abrir "Novo livro"
+// e reparar que existe um dropdown de Tipo lá dentro (nada óbvio).
+async function abrirNovoAudiobook(){
+  await openAdmModal('biblioteca');
+  const tipoSel=document.getElementById('af-tipo');
+  if(tipoSel){ tipoSel.value='audiobook'; onBiblioTipoChange(); }
+  document.getElementById('adm-modal-title').textContent='Novo Audiobook';
 }
 // Audiobook vai pro bucket dedicado (portal-audiobooks, limite de 500MB) —
 // portal-uploads é de 15MB e não libera tipo de áudio, não dava pra reusar.
