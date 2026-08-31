@@ -729,7 +729,6 @@ html.sidebar-mini .nav-badge{display:none}
 .com-post-body{font-size:13.5px;line-height:1.5;white-space:pre-wrap;margin-bottom:10px}
 .com-tag{color:var(--gold2);font-weight:600;cursor:pointer}
 .com-tag:hover{text-decoration:underline}
-.com-post-img{max-width:100%;max-height:420px;object-fit:contain;display:block;border-radius:var(--radius-sm);margin-bottom:10px;cursor:zoom-in}
 /* ── Ações do post em 3 colunas iguais (Curtir/Comentar/Compartilhar), estilo
    Facebook — direct-child selector evita que os botões pequenos do seletor
    de reações (caret, emojis) herdem o mesmo padding/flex. */
@@ -755,27 +754,77 @@ html.sidebar-mini .nav-badge{display:none}
 .com-repost-embed{border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--s3)}
 .com-repost-embed .com-post-actions{border-top:1px solid var(--border2)}
 .com-repost-missing{font-size:12px;color:var(--muted2);font-style:italic}
-/* ── Toolbar de ordenação do feed (Recentes/Em alta, estilo Reddit) e chip
-   de filtro por hashtag/menção ativa. ── */
+/* ── Toolbar do feed: busca + ordenação (Recentes/Em alta, estilo Reddit). ── */
 .com-feed-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.com-sort-tab{font-size:11px;font-weight:600;letter-spacing:.4px;padding:6px 14px;border-radius:999px;cursor:pointer;color:var(--muted2);background:var(--s2);border:1px solid transparent;transition:all .12s}
+.com-sort-tab{font-size:11px;font-weight:600;letter-spacing:.4px;padding:6px 14px;border-radius:999px;cursor:pointer;color:var(--muted2);background:var(--s2);border:1px solid transparent;transition:all .12s;flex-shrink:0}
 .com-sort-tab:hover{color:var(--text)}
 .com-sort-tab.on{background:var(--gold-dim);color:var(--gold2);border-color:var(--gold-line)}
-.com-hashtag-chip{margin-left:auto;font-size:11px;font-weight:600;padding:6px 12px;border-radius:999px;background:var(--gold-dim);color:var(--gold2);display:flex;align-items:center;gap:8px}
-.com-hashtag-chip span{cursor:pointer;opacity:.75}
-.com-hashtag-chip span:hover{opacity:1}
-/* ── Composer estilo Facebook: avatar do usuário ao lado do campo de texto,
-   contador de caracteres e miniatura removível da imagem anexada. ── */
-.com-composer-head{display:flex;gap:10px;align-items:flex-start;margin-bottom:6px}
+.com-busca-wrap{position:relative;flex:1;min-width:200px}
+.com-busca-ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:12px;opacity:.6;pointer-events:none}
+.com-busca-input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:999px;padding:9px 34px;font-size:12.5px;color:var(--text);font-family:var(--font-b);outline:none;transition:border-color .15s,background .15s}
+.com-busca-input:focus{border-color:var(--gold-dim);background:var(--s1)}
+.com-busca-input::placeholder{color:var(--muted2)}
+.com-busca-clear{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted2);cursor:pointer;opacity:.75}
+.com-busca-clear:hover{opacity:1;color:var(--gold2)}
+
+/* ── Barra "gatilho" do composer (fechada) — clique abre o modal de criar
+   publicação, estilo Facebook: nada de formulário grande sempre visível
+   poluindo o topo do feed, só avatar + placeholder + 3 atalhos coloridos. ── */
+.com-composer-trigger-panel{display:flex;align-items:center;gap:10px;padding:12px 16px;margin-bottom:16px}
+.com-composer-trigger{flex:1;display:flex;align-items:center;gap:10px;cursor:pointer;min-width:0}
+.com-composer-trigger-fake{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:999px;padding:10px 16px;font-size:13px;color:var(--muted2);transition:background .12s}
+.com-composer-trigger:hover .com-composer-trigger-fake{background:var(--s3)}
+.com-composer-trigger-icons{display:flex;gap:4px;flex-shrink:0}
+.com-quick-ico{background:none;border:none;cursor:pointer;font-size:17px;padding:7px 9px;border-radius:8px;display:flex;align-items:center;gap:5px;color:var(--muted2);font-family:var(--font-b);font-weight:600;transition:background .12s;flex-shrink:0}
+.com-quick-ico:hover{background:var(--s2)}
+.com-quick-ico span{font-size:11px}
+.com-composer-trigger-icons .com-quick-ico span{display:none}
+@media(min-width:640px){ .com-composer-trigger-icons .com-quick-ico span{display:inline} }
+.com-quick-ico.ico-video{color:#e5484d}
+.com-quick-ico.ico-foto{color:#3ba55c}
+.com-quick-ico.ico-cert{color:var(--gold2)}
+
+/* ── Modal de criação — avatar do usuário ao lado do tipo de publicação,
+   contador de caracteres, chip de certificado marcado, miniaturas removíveis
+   de mídia e barra "Adicionar à publicação" com os mesmos atalhos coloridos. ── */
+.com-composer-modal{width:520px;max-width:94vw;padding:18px 20px;max-height:88vh;overflow-y:auto}
+.com-composer-modal-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--border)}
+.com-composer-modal-title{font-family:var(--font-d);font-weight:700;font-size:15px;text-align:center;flex:1}
+.com-composer-modal-user{display:flex;gap:10px;align-items:center;margin-bottom:10px}
 .com-composer-avatar{width:40px;height:40px;border-radius:50%;overflow:hidden;background:var(--s3);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:15px;color:var(--gold2);flex-shrink:0}
 .com-composer-avatar img{width:100%;height:100%;object-fit:cover}
-.com-composer-body{flex:1;min-width:0}
+.com-composer-modal-username{font-weight:700;font-size:13px;margin-bottom:3px}
+.com-composer-tipo-select{background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;padding:3px 8px;font-family:var(--font-b);outline:none;cursor:pointer}
+.com-composer-textarea{width:100%;background:transparent;border:none;color:var(--text);font-size:15px;font-family:var(--font-b);outline:none;resize:none;overflow:hidden;padding:4px 0;min-height:60px}
+.com-composer-textarea::placeholder{color:var(--muted2)}
 .com-char-count{font-size:10px;color:var(--muted2);text-align:right;margin-top:2px;height:12px}
 .com-char-count.warn{color:var(--gold2)}
 .com-char-count.limit{color:var(--red)}
-.com-img-preview{position:relative;display:inline-block;margin-top:8px;max-width:220px}
-.com-img-preview img{max-width:100%;max-height:160px;border-radius:var(--radius-sm);display:block;object-fit:cover}
+.com-cert-chip{display:inline-flex;align-items:center;gap:8px;background:var(--gold-dim);color:var(--gold2);font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px;margin-top:6px}
+.com-cert-chip span{cursor:pointer;opacity:.7}
+.com-cert-chip span:hover{opacity:1}
+#com-post-img-preview{display:flex;gap:8px;flex-wrap:wrap}
+.com-img-preview{position:relative;display:inline-block;margin-top:8px;max-width:140px}
+.com-img-preview img,.com-img-preview video{max-width:100%;max-height:140px;border-radius:var(--radius-sm);display:block;object-fit:cover;background:#000}
 .com-img-preview button{position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:var(--s1);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center}
+.com-composer-addbar{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-top:12px}
+.com-composer-addbar-label{font-size:12px;font-weight:600;color:var(--muted2)}
+.com-composer-addbar-icons{display:flex;gap:2px}
+.com-composer-addbar-icons .com-quick-ico span{display:none}
+
+/* ── Carrossel de mídia (várias imagens/vídeo por post, estilo Instagram) ── */
+.com-carrossel{position:relative;margin-bottom:10px;border-radius:var(--radius-sm);overflow:hidden;background:#000}
+.com-carrossel-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.com-carrossel-track::-webkit-scrollbar{display:none}
+.com-carrossel-slide{flex:0 0 100%;scroll-snap-align:center;display:flex;align-items:center;justify-content:center;max-height:420px;min-height:160px}
+.com-carrossel-slide img{max-width:100%;max-height:420px;object-fit:contain;cursor:zoom-in;display:block}
+.com-carrossel-slide video{max-width:100%;max-height:420px;display:block}
+.com-carrossel-seta{position:absolute;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:rgba(10,10,10,.55);color:#fff;border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;z-index:2}
+.com-carrossel-seta.esq{left:8px}
+.com-carrossel-seta.dir{right:8px}
+.com-carrossel-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:2}
+.com-carrossel-dots .dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4)}
+.com-carrossel-dots .dot.on{background:#fff}
 /* ── Lightbox de imagem em tela cheia (estilo Instagram). ── */
 .com-lightbox{position:fixed;inset:0;background:rgba(8,9,11,0.92);z-index:9999;display:none;align-items:center;justify-content:center;padding:30px}
 .com-lightbox.on{display:flex}
@@ -1817,44 +1866,66 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       </div>
 
       <div id="com-feed-view">
-        <div class="panel" style="margin-bottom:16px">
-          <div class="panel-body">
-            <div class="com-composer-head">
-              <div class="com-composer-avatar" id="com-composer-avatar"></div>
-              <div class="com-composer-body">
-                <textarea id="com-post-texto" class="adm-input" rows="2" placeholder="Compartilhe uma conquista, novidade ou publicação com o time... use #hashtags e @menções" style="resize:none;overflow:hidden" oninput="_comAutoGrow(this);_comAtualizarContador()"></textarea>
-                <div class="com-char-count" id="com-char-count"></div>
-                <div id="com-post-img-preview"></div>
-              </div>
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between">
-              <select id="com-post-tipo" class="adm-input" style="width:auto;min-width:150px" onchange="onComPostTipoChange()">
-                <option value="geral">Publicação geral</option>
-                <option value="conquista">Conquista</option>
-                <option value="certificado">Certificado</option>
-                <option value="novidade">Novidade da empresa</option>
-              </select>
-              <div id="com-post-cert-wrap" style="display:none">
-                <select id="com-post-cert" class="adm-input" style="width:auto;min-width:180px"></select>
-              </div>
-              <div style="display:flex;gap:8px;align-items:center;margin-left:auto">
-                <input type="file" id="com-post-img-file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none" onchange="handleComPostImgUpload(event)">
-                <button type="button" class="btn-outline" style="font-size:11px" onclick="document.getElementById('com-post-img-file').click()">🖼️ Imagem</button>
-                <span id="com-post-img-status" style="font-size:10px;color:var(--muted2)"></span>
-                <button class="btn-primary" onclick="criarComPost()">Publicar</button>
-              </div>
-            </div>
+        <div class="panel com-composer-trigger-panel">
+          <div class="com-composer-trigger" onclick="abrirComposerModal()">
+            <div class="com-composer-avatar" id="com-composer-avatar-mini"></div>
+            <div class="com-composer-trigger-fake">No que você está pensando?</div>
+          </div>
+          <div class="com-composer-trigger-icons">
+            <button type="button" class="com-quick-ico ico-video" title="Vídeo" onclick="abrirComposerModal('midia')">🎥<span>Vídeo</span></button>
+            <button type="button" class="com-quick-ico ico-foto" title="Foto" onclick="abrirComposerModal('midia')">🖼️<span>Foto</span></button>
+            <button type="button" class="com-quick-ico ico-cert" title="Certificado" onclick="abrirComposerModal('cert')">🎓<span>Certificado</span></button>
           </div>
         </div>
+
         <div class="com-feed-toolbar">
+          <div class="com-busca-wrap">
+            <span class="com-busca-ico">🔍</span>
+            <input type="text" id="com-busca-input" class="com-busca-input" placeholder="Buscar publicações, pessoas, #hashtags..." oninput="comBuscar(this.value)">
+            <span class="com-busca-clear" id="com-busca-clear" style="display:none" onclick="comLimparFiltro()" title="Limpar busca">✕</span>
+          </div>
           <div class="com-sort-tab on" id="com-sort-recentes" onclick="comSetFeedSort('recentes')">🕐 Recentes</div>
           <div class="com-sort-tab" id="com-sort-alta" onclick="comSetFeedSort('alta')">🔥 Em alta</div>
-          <div class="com-hashtag-chip" id="com-hashtag-chip" style="display:none">
-            <span id="com-hashtag-chip-label"></span>
-            <span onclick="comLimparFiltro()" title="Limpar filtro">✕</span>
-          </div>
         </div>
         <div id="com-feed-list"></div>
+      </div>
+
+      <!-- Modal de criação de post (estilo Facebook: fica escondido até clicar na barra) -->
+      <div class="modal-bg" id="modal-com-composer">
+        <div class="modal com-composer-modal">
+          <div class="com-composer-modal-head">
+            <div class="com-composer-modal-title">Criar publicação</div>
+            <button class="modal-close" style="position:static" onclick="fecharComposerModal()">✕</button>
+          </div>
+          <div class="com-composer-modal-user">
+            <div class="com-composer-avatar" id="com-composer-avatar"></div>
+            <div>
+              <div class="com-composer-modal-username" id="com-composer-nome">Você</div>
+              <select id="com-post-tipo" class="com-composer-tipo-select">
+                <option value="geral">🌐 Publicação geral</option>
+                <option value="conquista">🏆 Conquista</option>
+                <option value="novidade">📣 Novidade da empresa</option>
+              </select>
+            </div>
+          </div>
+          <textarea id="com-post-texto" class="com-composer-textarea" rows="3" placeholder="No que você está pensando, GR Consórcio?... use #hashtags e @menções" oninput="_comAutoGrow(this);_comAtualizarContador()"></textarea>
+          <div class="com-char-count" id="com-char-count"></div>
+          <div id="com-post-cert-chip"></div>
+          <div id="com-post-img-preview"></div>
+          <div id="com-post-cert-wrap" style="display:none;margin-top:4px">
+            <select id="com-post-cert" class="adm-input" onchange="onComCertSelect()"></select>
+          </div>
+          <div class="com-composer-addbar">
+            <div class="com-composer-addbar-label">Adicionar à publicação</div>
+            <div class="com-composer-addbar-icons">
+              <button type="button" class="com-quick-ico ico-foto" title="Foto/Vídeo" onclick="document.getElementById('com-post-img-file').click()">🖼️</button>
+              <button type="button" class="com-quick-ico ico-cert" title="Certificado" onclick="toggleCertPicker()">🎓</button>
+            </div>
+          </div>
+          <input type="file" id="com-post-img-file" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm,video/quicktime" multiple style="display:none" onchange="handleComPostMidiaUpload(event)">
+          <div id="com-post-img-status" style="font-size:10px;color:var(--muted2);margin-top:4px"></div>
+          <button class="btn-primary" style="width:100%;margin-top:12px" onclick="criarComPost()">Publicar</button>
+        </div>
       </div>
 
       <div class="com-lightbox" id="com-lightbox" onclick="fecharLightbox()">
@@ -4983,12 +5054,12 @@ function renderCarreira(){
 ═══════════════════════════════════════════════ */
 let allComPosts=[], allComCurtidas=[], allComComentarios=[];
 let _diretorio=[]; // cache do portal_diretorio() — nome/cargo/equipe/foto de todo mundo
-let _comConversas=[], _comConversaAtual=null, _comMsgs={}, _comChatChannel=null, _comPostImgUrl=null;
+let _comConversas=[], _comConversaAtual=null, _comMsgs={}, _comChatChannel=null, _comPostMidias=[];
 let _comFeedChannel=null;
 let _comOpenComments=new Set(); // ids de post com a caixa de comentários aberta — sobrevive a re-render (realtime reconstrói o DOM inteiro)
 let _comOpenReplies=new Set(); // ids de comentário com a caixa de resposta aberta
 let _comFeedSort='recentes'; // 'recentes' | 'alta' — abas de ordenação estilo Reddit
-let _comHashtagFiltro=null; // #hashtag ou @menção ativa filtrando o feed (clique num com-tag)
+let _comBusca=''; // texto ativo na barra de busca do feed (publicações/pessoas/#hashtags)
 let _comOpenReactPicker=null; // id do post com o seletor de reações aberto
 let _comReactTimer=null;
 
@@ -5037,10 +5108,34 @@ async function renderComunidade(){
 }
 
 function _comPreencherAvatarComposer(){
-  const wrap=el('com-composer-avatar'); if(!wrap) return;
   const foto=CUP?.foto_url, nome=CUP?.nome||'Você';
-  wrap.innerHTML = foto?`<img src="${foto}" alt="">`:nome.charAt(0).toUpperCase();
+  const html = foto?`<img src="${foto}" alt="">`:nome.charAt(0).toUpperCase();
+  const mini=el('com-composer-avatar-mini'); if(mini) mini.innerHTML=html;
+  const modalAv=el('com-composer-avatar'); if(modalAv) modalAv.innerHTML=html;
+  const nomeEl=el('com-composer-nome'); if(nomeEl) nomeEl.textContent=nome;
 }
+
+// Modal de criação (estilo Facebook: a barra do feed só abre isso — sem
+// formulário sempre visível poluindo o topo do feed). `foco` decide o que
+// abrir automaticamente: 'midia' já dispara o seletor de arquivo, 'cert' já
+// abre o seletor de certificado — clicar direto no ícone de atalho da barra
+// vai direto ao ponto em vez de exigir dois cliques.
+function abrirComposerModal(foco){
+  el('modal-com-composer').classList.add('on');
+  _comPreencherAvatarComposer();
+  setTimeout(()=>{
+    if(foco==='midia') document.getElementById('com-post-img-file').click();
+    else if(foco==='cert') toggleCertPicker();
+    else el('com-post-texto')?.focus();
+  },50);
+}
+function fecharComposerModal(){
+  el('modal-com-composer').classList.remove('on');
+}
+// Fechar com Esc precisa desse hook (ver keydown global) — sem ele, Esc
+// tentava .remove() um modal ESTÁTICO (fora do DOM pra sempre depois disso)
+// em vez de só escondê-lo com a classe 'on', igual todo outro modal do app.
+(function(){ const m=document.getElementById('modal-com-composer'); if(m) m._customClose=fecharComposerModal; })();
 
 /* ── FEED ── */
 async function carregarFeed(){
@@ -5073,13 +5168,22 @@ function comSetFeedSort(modo){
   renderFeed();
 }
 
-// Clique num #hashtag/@menção do corpo de um post filtra o feed (client-side,
-// sobre os posts já carregados — sem índice de busca dedicado no banco).
-function comFiltrarHashtag(termo){
-  _comHashtagFiltro = (_comHashtagFiltro===termo) ? null : termo;
+// Barra de busca única (publicações, pessoas, #hashtags/@menções) — client-side,
+// sobre os posts já carregados, sem índice de busca dedicado no banco. Clicar
+// numa #hashtag/@menção do corpo de um post só preenche essa mesma busca.
+function comBuscar(valor){
+  _comBusca=(valor||'').trim();
+  el('com-busca-clear').style.display=_comBusca?'':'none';
   renderFeed();
 }
-function comLimparFiltro(){ _comHashtagFiltro=null; renderFeed(); }
+function comFiltrarHashtag(termo){
+  el('com-busca-input').value=termo;
+  comBuscar(termo);
+}
+function comLimparFiltro(){
+  el('com-busca-input').value='';
+  comBuscar('');
+}
 
 // Escapa o texto e só depois transforma #hashtag/@menção em spans clicáveis —
 // nessa ordem os caracteres do próprio token (#,@,letras) nunca colidem com
@@ -5094,9 +5198,13 @@ function _comFormatarTexto(texto){
 
 function renderFeed(){
   let posts=allComPosts;
-  if(_comHashtagFiltro){
-    const termo=_comHashtagFiltro.toLowerCase();
-    posts=posts.filter(p=>(p.conteudo||'').toLowerCase().includes(termo)||(p.titulo||'').toLowerCase().includes(termo));
+  if(_comBusca){
+    const termo=_comBusca.toLowerCase().replace(/^[#@]/,'');
+    posts=posts.filter(p=>
+      (p.conteudo||'').toLowerCase().includes(termo)
+      || (p.titulo||'').toLowerCase().includes(termo)
+      || _diretorioNome(p.user_id).toLowerCase().includes(termo)
+    );
   }
   if(_comFeedSort==='alta'){
     posts=[...posts].sort((a,b)=>{
@@ -5104,13 +5212,8 @@ function renderFeed(){
       return d!==0 ? d : new Date(b.criado_em)-new Date(a.criado_em);
     });
   }
-  const chip=el('com-hashtag-chip');
-  if(chip){
-    chip.style.display=_comHashtagFiltro?'flex':'none';
-    const lbl=el('com-hashtag-chip-label'); if(lbl) lbl.textContent='Filtrando: '+_comHashtagFiltro;
-  }
   el('com-feed-list').innerHTML = posts.length===0
-    ? `<div class="empty" style="padding:40px"><div class="empty-line"></div><div class="empty-text">${_comHashtagFiltro?'Nenhuma publicação encontrada':'Nenhuma publicação ainda — seja o primeiro!'}</div></div>`
+    ? `<div class="empty" style="padding:40px"><div class="empty-line"></div><div class="empty-text">${_comBusca?'Nenhuma publicação encontrada':'Nenhuma publicação ainda — seja o primeiro!'}</div></div>`
     : posts.map(p=>renderComPostWrapper(p)).join('');
 }
 
@@ -5142,6 +5245,37 @@ function _comReactSummary(curtidasPost){
   return `${top} ${curtidasPost.length}`;
 }
 
+// Carrossel de mídia do post — várias imagens e/ou vídeo, estilo Instagram
+// (scroll-snap horizontal + setas + bolinhas). imagem_url é o fallback pra
+// posts publicados antes do carrossel existir (continuam mostrando 1 imagem).
+function _comRenderCarrossel(p){
+  const midias=(p.midias&&p.midias.length)?p.midias:(p.imagem_url?[{tipo:'imagem',url:p.imagem_url}]:[]);
+  if(!midias.length) return '';
+  const cid='com-carrossel-'+p.id;
+  const slides=midias.map(m=>`<div class="com-carrossel-slide">${
+    m.tipo==='video'
+      ? `<video src="${m.url}" controls></video>`
+      : `<img src="${m.url}" alt="" onclick="abrirLightbox('${m.url}')">`
+  }</div>`).join('');
+  const nav=midias.length>1?`
+    <button class="com-carrossel-seta esq" type="button" onclick="event.stopPropagation();_comCarrosselNav('${cid}',-1)">‹</button>
+    <button class="com-carrossel-seta dir" type="button" onclick="event.stopPropagation();_comCarrosselNav('${cid}',1)">›</button>
+    <div class="com-carrossel-dots">${midias.map((_,i)=>`<span class="dot${i===0?' on':''}"></span>`).join('')}</div>
+  `:'';
+  return `<div class="com-carrossel" id="${cid}">
+    <div class="com-carrossel-track" onscroll="_comCarrosselScroll(this)">${slides}</div>
+    ${nav}
+  </div>`;
+}
+function _comCarrosselNav(cid,dir){
+  const track=document.querySelector('#'+cid+' .com-carrossel-track');
+  if(track) track.scrollBy({left:track.clientWidth*dir,behavior:'smooth'});
+}
+function _comCarrosselScroll(track){
+  const i=Math.round(track.scrollLeft/Math.max(1,track.clientWidth));
+  track.closest('.com-carrossel')?.querySelectorAll('.com-carrossel-dots .dot').forEach((d,idx)=>d.classList.toggle('on',idx===i));
+}
+
 function _comPostCardInner(p){
   const autor=_diretorioNome(p.user_id), foto=_diretorioFoto(p.user_id);
   const curtidasPost=allComCurtidas.filter(c=>c.post_id===p.id);
@@ -5161,7 +5295,7 @@ function _comPostCardInner(p){
   </div>
   ${p.titulo?`<div style="font-weight:700;font-size:14px;margin-bottom:4px">${_escHtml(p.titulo)}</div>`:''}
   ${p.conteudo?`<div class="com-post-body">${_comFormatarTexto(p.conteudo)}</div>`:''}
-  ${p.imagem_url?`<img class="com-post-img" src="${p.imagem_url}" alt="" onclick="abrirLightbox('${p.imagem_url}')">`:''}
+  ${_comRenderCarrossel(p)}
   <div class="com-post-actions">
     <div class="com-react-wrap">
       <button class="com-react-btn ${minhaReacao?'liked':''}" onclick="onReactBtnClick('${p.id}')" onmouseenter="if(matchMedia('(hover:hover)').matches) abrirReactPicker('${p.id}')" onmouseleave="fecharReactPickerAdiado()">${_comReactSummary(curtidasPost)}</button>
@@ -5215,18 +5349,33 @@ function renderComentariosArvore(postId){
   return raiz.map(c=>renderUm(c,false)).join('');
 }
 
-async function onComPostTipoChange(){
-  const tipo=el('com-post-tipo').value;
+// Marcar certificado é uma ação própria (ícone 🎓), independente do tipo da
+// publicação — igual "marcar sentimento/atividade" no Facebook, não faz mais
+// parte do dropdown de tipo (que agora só tem geral/conquista/novidade).
+async function toggleCertPicker(){
   const wrap=el('com-post-cert-wrap');
-  if(tipo!=='certificado'){ wrap.style.display='none'; return; }
+  const abrindo=wrap.style.display==='none';
+  if(!abrindo){ wrap.style.display='none'; return; }
   wrap.style.display='';
   if(!allCertificados.length){
     const {data}=await sb.from('portal_certificados').select('*').eq('user_id',CU.id).order('emitido_em',{ascending:false});
     if(data) allCertificados=data;
   }
-  el('com-post-cert').innerHTML = allCertificados.length
+  el('com-post-cert').innerHTML = '<option value="">Selecione um certificado...</option>'+(allCertificados.length
     ? allCertificados.map(c=>`<option value="${c.id}">${c.titulo_curso} (${c.nota_pct}%)</option>`).join('')
-    : '<option value="">Nenhum certificado emitido ainda</option>';
+    : '<option value="" disabled>Nenhum certificado emitido ainda</option>');
+}
+function onComCertSelect(){
+  const id=el('com-post-cert').value;
+  const cert=allCertificados.find(c=>c.id===id);
+  el('com-post-cert-wrap').style.display='none';
+  el('com-post-cert-chip').innerHTML = cert
+    ? `<div class="com-cert-chip">🎓 ${_escHtml(cert.titulo_curso)} <span onclick="limparCertSelecionado()" title="Remover">✕</span></div>`
+    : '';
+}
+function limparCertSelecionado(){
+  el('com-post-cert').value='';
+  el('com-post-cert-chip').innerHTML='';
 }
 
 // Autocresce a textarea do composer conforme digita (sem barra de rolagem
@@ -5241,48 +5390,70 @@ function _comAtualizarContador(){
   c.className='com-char-count'+(len>1000?' limit':len>900?' warn':'');
 }
 
-async function handleComPostImgUpload(e){
-  const file=e.target.files?.[0];
-  if(!file) return;
+const COM_MIDIA_MAX=4; // limite de itens no carrossel de um post, estilo Instagram
+// Carrossel: aceita várias imagens e/ou vídeo no mesmo post (bucket dedicado
+// portal-comunidade-midia, 100MB/arquivo — portal-uploads é 15MB e usado por
+// avatar/PDF/etc, não dava pra reusar pra vídeo). Envia um por vez (upload
+// paralelo de vários vídeos grandes travaria a conexão) e vai preenchendo a
+// prévia conforme cada um termina.
+async function handleComPostMidiaUpload(e){
+  const files=Array.from(e.target.files||[]);
+  if(!files.length) return;
   const statusEl=el('com-post-img-status');
-  if(file.size>5*1024*1024){ toast('Imagem muito grande (máx. 5MB)','err'); e.target.value=''; return; }
-  statusEl.textContent='Enviando...'; statusEl.style.color='var(--muted2)';
-  const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
-  const path=`comunidade/${Date.now()}.${ext}`;
-  const {error}=await sb.storage.from('portal-uploads').upload(path,file,{upsert:true});
-  if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast('Erro ao enviar imagem: '+error.message,'err'); return; }
-  const {data}=sb.storage.from('portal-uploads').getPublicUrl(path);
-  _comPostImgUrl=data.publicUrl;
+  const vagas=COM_MIDIA_MAX-_comPostMidias.length;
+  if(vagas<=0){ toast(`Máximo de ${COM_MIDIA_MAX} itens por publicação`,'err'); e.target.value=''; return; }
+  const aEnviar=files.slice(0,vagas);
+  if(files.length>vagas) toast(`Só cabem mais ${vagas} — o restante foi ignorado`,'err');
+  for(let i=0;i<aEnviar.length;i++){
+    const file=aEnviar[i];
+    const isVideo=file.type.startsWith('video/');
+    if(file.size>100*1024*1024){ toast(`"${file.name}" muito grande (máx. 100MB)`,'err'); continue; }
+    statusEl.textContent=`Enviando ${i+1}/${aEnviar.length}...`; statusEl.style.color='var(--muted2)';
+    const ext=(file.name.split('.').pop()||(isVideo?'mp4':'jpg')).toLowerCase();
+    const path=`comunidade/${Date.now()}-${i}.${ext}`;
+    const {error}=await sb.storage.from('portal-comunidade-midia').upload(path,file,{upsert:true});
+    if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast(`Erro ao enviar "${file.name}": `+error.message,'err'); continue; }
+    const {data}=sb.storage.from('portal-comunidade-midia').getPublicUrl(path);
+    _comPostMidias.push({tipo:isVideo?'video':'imagem', url:data.publicUrl});
+  }
   statusEl.textContent='';
-  el('com-post-img-preview').innerHTML=`<div class="com-img-preview"><img src="${_comPostImgUrl}" alt=""><button type="button" title="Remover imagem" onclick="removerComPostImg()">✕</button></div>`;
+  e.target.value='';
+  _renderComPostMidiaPreview();
 }
-
-function removerComPostImg(){
-  _comPostImgUrl=null;
-  el('com-post-img-preview').innerHTML='';
+function _renderComPostMidiaPreview(){
+  el('com-post-img-preview').innerHTML=_comPostMidias.map((m,i)=>`<div class="com-img-preview">
+    ${m.tipo==='video'?`<video src="${m.url}" muted></video>`:`<img src="${m.url}" alt="">`}
+    <button type="button" title="Remover" onclick="removerComPostImg(${i})">✕</button>
+  </div>`).join('');
+}
+function removerComPostImg(idx){
+  if(idx===undefined) _comPostMidias=[]; else _comPostMidias.splice(idx,1);
+  _renderComPostMidiaPreview();
   el('com-post-img-file').value='';
 }
 
 async function criarComPost(){
   const conteudo=el('com-post-texto').value.trim();
-  const tipo=el('com-post-tipo').value;
-  let titulo=null, certificadoId=null;
-  if(tipo==='certificado'){
-    certificadoId = el('com-post-cert').value || null;
-    if(!certificadoId){ toast('Selecione um certificado','err'); return; }
+  let tipo=el('com-post-tipo').value;
+  let titulo=null;
+  const certificadoId=el('com-post-cert').value||null;
+  if(certificadoId){
     const cert=allCertificados.find(c=>c.id===certificadoId);
     titulo = cert ? `Certificado: ${cert.titulo_curso}` : null;
+    tipo='certificado'; // marcar um certificado sempre vira esse tipo, não importa o que o dropdown diz
   }
-  if(!conteudo && !_comPostImgUrl && tipo!=='certificado'){ toast('Escreva algo antes de publicar','err'); return; }
-  const payload={ user_id:CU.id, tipo, titulo, conteudo:conteudo||null, imagem_url:_comPostImgUrl, certificado_id:certificadoId };
+  if(!conteudo && !_comPostMidias.length && !certificadoId){ toast('Escreva algo antes de publicar','err'); return; }
+  const payload={ user_id:CU.id, tipo, titulo, conteudo:conteudo||null, midias:_comPostMidias, imagem_url:null, certificado_id:certificadoId };
   const {error}=await sb.from('portal_comunidade_posts').insert(payload);
   if(error){ toast('Erro ao publicar: '+error.message,'err'); return; }
   el('com-post-texto').value='';
   el('com-post-texto').style.height='auto';
   el('com-post-tipo').value='geral';
+  limparCertSelecionado();
   el('com-post-cert-wrap').style.display='none';
   removerComPostImg();
   _comAtualizarContador();
+  fecharComposerModal();
   toast('Publicado!','ok');
   await carregarFeed();
 }
