@@ -4304,6 +4304,7 @@ function openBiblioReader(id){
         <div style="font-size:12.5px;color:var(--muted);line-height:1.6;text-align:center">${b.descricao||'Sem arquivo anexado ainda.'}</div>
       </div>`;
   modal.addEventListener('click', e=>{ if(e.target===modal) _fecharBiblioReader(b.arquivo_url?readerId:null, modal); });
+  modal._customClose=()=>_fecharBiblioReader(b.arquivo_url?readerId:null, modal); // usado pelo Esc — ver keydown global
   document.body.appendChild(modal);
   // Abre já em tela cheia real (o clique no card é o "gesto do usuário" que a
   // Fullscreen API exige) — se o navegador recusar ou nem suportar (comum no
@@ -4374,6 +4375,7 @@ function openAudiobookPlayer(id){
         <div style="font-size:12.5px;color:var(--muted);line-height:1.6;text-align:center">${b.descricao||'Sem arquivo anexado ainda.'}</div>
       </div>`;
   modal.addEventListener('click', e=>{ if(e.target===modal) _fecharAudiobookPlayer(modal); });
+  modal._customClose=()=>_fecharAudiobookPlayer(modal); // usado pelo Esc — ver keydown global
   document.body.appendChild(modal);
   if(!b.arquivo_url) return;
   const audio=el('biblio-audio-player');
@@ -4589,6 +4591,14 @@ async function renderBiblioPdfPages(url, container, livroId){
     try{
       const textLayer=document.createElement('div');
       textLayer.className='biblio-text-layer';
+      // BUGFIX: precisa estar anexado ANTES do loop — cada span usa
+      // getBoundingClientRect() pra medir a largura real e corrigi-la pro
+      // valor que o pdf.js calculou (scaleX). Um elemento fora do DOM sempre
+      // mede 0x0, então essa correção nunca rodava (o texto por baixo do
+      // canvas ficava com a fonte "sans-serif" genérica, sem bater largura
+      // com o pdf real) — marcação/seleção de texto desalinhava do visível
+      // conforme a linha ia ficando mais longa.
+      pageWrap.appendChild(textLayer);
       const textContent=await page.getTextContent();
       let _cursor=0; // offset acumulado de caracteres na página — base das marcações (idx_inicio/idx_fim)
       textContent.items.forEach(item=>{
@@ -4616,7 +4626,6 @@ async function renderBiblioPdfPages(url, container, livroId){
           }
         }
       });
-      pageWrap.appendChild(textLayer);
       // Clique simples (sem arrastar) em cima de um trecho já marcado remove
       // a marcação — funciona igual em toque, 'click' é sintetizado de forma
       // confiável em qualquer navegador mobile pra um tap simples.
@@ -7338,10 +7347,24 @@ window.nav = function(page){
 };
 
 // Fecha modais/gaveta com a tecla Esc — acessibilidade de teclado
+// BUGFIX: fechar com Esc chamava openModal.remove() direto pra qualquer modal
+// que não fosse o modal-adm — pulava a limpeza própria de modais criados
+// dinamicamente (leitor de livro/audiobook da Biblioteca), que precisam
+// desligar IntersectionObserver e o listener de selectionchange antes de
+// sumir. Sem isso, fechar o leitor com Esc e abrir outro livro deixava o
+// listener de seleção de texto antigo ainda ativo — cada seleção de texto
+// disparava o popup de marcar/marcação MÚLTIPLAS vezes (uma por listener
+// "fantasma" acumulado), criando marcações duplicadas no banco. Modais que
+// precisam de limpeza própria setam `modal._customClose` na criação.
 document.addEventListener('keydown', e=>{
   if(e.key!=='Escape') return;
   const openModal = document.querySelector('.modal-bg.on');
-  if(openModal){ openModal===el('modal-adm') ? closeAdmModal() : openModal.remove(); return; }
+  if(openModal){
+    if(openModal===el('modal-adm')) closeAdmModal();
+    else if(openModal._customClose) openModal._customClose();
+    else openModal.remove();
+    return;
+  }
   if(el('sidebar')?.classList.contains('mobile-open')) toggleMobileNav(false);
 });
 
