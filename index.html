@@ -5202,7 +5202,8 @@ async function reagirPost(postId, tipo){
     allComCurtidas=allComCurtidas.filter(c=>c.id!==minha.id);
   } else if(minha){
     const {data,error}=await sb.from('portal_comunidade_curtidas').update({reacao:tipo}).eq('id',minha.id).select().single();
-    if(!error && data) allComCurtidas=allComCurtidas.map(c=>c.id===data.id?data:c);
+    if(error){ toast('Erro ao trocar reação: '+error.message,'err'); return; }
+    if(data) allComCurtidas=allComCurtidas.map(c=>c.id===data.id?data:c);
   } else {
     const {data}=await sb.from('portal_comunidade_curtidas').insert({post_id:postId,user_id:CU.id,reacao:tipo}).select().single();
     if(data) allComCurtidas.push(data);
