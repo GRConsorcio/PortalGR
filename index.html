@@ -404,6 +404,7 @@ html.sidebar-mini .nav-badge{display:none}
 .biblio-cover img{width:100%;height:100%;object-fit:cover}
 .biblio-cover-fallback{font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--gold-dim);text-align:center;padding:14px;line-height:1.25}
 .biblio-tag{position:absolute;top:8px;left:8px;font-size:8.5px;font-weight:700;letter-spacing:1.2px;padding:3px 7px;background:var(--s1);border:1px solid var(--border);color:var(--gold2);border-radius:3px;text-transform:uppercase}
+.biblio-audio-badge{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:rgba(10,10,10,0.55);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;font-size:12px}
 .biblio-info{padding:12px}
 .biblio-title{font-family:var(--font-d);font-size:12.5px;font-weight:700;line-height:1.3;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .biblio-autor{font-size:10px;color:var(--muted2)}
@@ -1784,7 +1785,11 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
     <!-- BIBLIOTECA -->
     <div class="page" id="page-biblioteca">
-      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+      <div class="adm-tabs" style="margin-bottom:16px">
+        <div class="adm-tab on" id="bib-tab-livro" onclick="switchBiblioTipo('livro')">📖 Livros</div>
+        <div class="adm-tab" id="bib-tab-audiobook" onclick="switchBiblioTipo('audiobook')">🎧 Audiobooks</div>
+      </div>
+      <div id="biblio-cat-filters" style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
         <button class="btn-primary" onclick="filterBiblio('todos',this)">Todos</button>
         <button class="btn-outline" onclick="filterBiblio('Negócios',this)">Negócios</button>
         <button class="btn-outline" onclick="filterBiblio('Persuasão',this)">Persuasão</button>
@@ -2864,7 +2869,7 @@ function nav(page){
   document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('on');
   el('topbar-title').textContent=PAGE_TITLES[page]||page;
   _currentPage=page;
-  const renderers={dashboard:renderDashboard,niveis:renderNiveis,performance:renderPerformance,destaques:renderDestaques,copa:renderCopa,campanhas:()=>renderCampanhas('ativa'),beneficios:renderBeneficios,academy:()=>{_acadCategoriaAtiva='todos';renderAcademyTabs();renderAcademy('todos');},news:renderNews,sugestoes:renderSugestoes,hallfama:renderHallFama,regras:renderRegras,carreira:renderCarreira,biblioteca:()=>renderBiblioteca('todos'),certificados:renderCertificados,comunidade:renderComunidade};
+  const renderers={dashboard:renderDashboard,niveis:renderNiveis,performance:renderPerformance,destaques:renderDestaques,copa:renderCopa,campanhas:()=>renderCampanhas('ativa'),beneficios:renderBeneficios,academy:()=>{_acadCategoriaAtiva='todos';renderAcademyTabs();renderAcademy('todos');},news:renderNews,sugestoes:renderSugestoes,hallfama:renderHallFama,regras:renderRegras,carreira:renderCarreira,biblioteca:()=>{_biblioTipoAtual='livro';_biblioCatAtual='todos';el('bib-tab-livro')?.classList.add('on');el('bib-tab-audiobook')?.classList.remove('on');document.querySelectorAll('#biblio-cat-filters button').forEach((b,i)=>b.className=i===0?'btn-primary':'btn-outline');renderBiblioteca('todos');},certificados:renderCertificados,comunidade:renderComunidade};
   renderers[page]?.();
   toggleMobileNav(false); // fecha a gaveta ao trocar de página no celular
   // Academy pede mais espaço horizontal pra ler o conteúdo do curso — recolhe
@@ -4223,18 +4228,30 @@ async function renderPdfPages(url, container){
 }
 
 /* ═══ BIBLIOTECA ═══ */
+let _biblioTipoAtual='livro'; // 'livro' | 'audiobook' — aba ativa acima dos filtros de categoria
+let _biblioCatAtual='todos';
+function switchBiblioTipo(tipo){
+  _biblioTipoAtual=tipo;
+  el('bib-tab-livro').classList.toggle('on',tipo==='livro');
+  el('bib-tab-audiobook').classList.toggle('on',tipo==='audiobook');
+  renderBiblioteca(_biblioCatAtual);
+}
 function filterBiblio(cat,btn){
-  document.querySelectorAll('#page-biblioteca > div:first-child button').forEach(b=>b.className='btn-outline');
+  document.querySelectorAll('#biblio-cat-filters button').forEach(b=>b.className='btn-outline');
   btn.className='btn-primary';
+  _biblioCatAtual=cat;
   renderBiblioteca(cat);
 }
 function renderBiblioteca(cat){
-  const list=cat==='todos'?allBiblioteca:allBiblioteca.filter(b=>b.categoria===cat);
+  const porTipo=allBiblioteca.filter(b=>(b.tipo||'livro')===_biblioTipoAtual);
+  const list=cat==='todos'?porTipo:porTipo.filter(b=>b.categoria===cat);
+  const vazioTexto=_biblioTipoAtual==='audiobook'?'Nenhum audiobook cadastrado ainda':'Nenhum livro cadastrado ainda';
   el('biblio-grid').innerHTML=list.length===0
-    ?'<div class="empty" style="grid-column:1/-1"><div class="empty-line"></div><div class="empty-text">Nenhum livro cadastrado ainda</div></div>'
-    :list.map(b=>`<div class="biblio-card" onclick="openBiblioReader('${b.id}')">
+    ?`<div class="empty" style="grid-column:1/-1"><div class="empty-line"></div><div class="empty-text">${vazioTexto}</div></div>`
+    :list.map(b=>`<div class="biblio-card" onclick="${b.tipo==='audiobook'?'openAudiobookPlayer':'openBiblioReader'}('${b.id}')">
       <div class="biblio-cover">
         ${b.categoria?`<span class="biblio-tag">${b.categoria}</span>`:''}
+        ${b.tipo==='audiobook'?'<span class="biblio-audio-badge">🎧</span>':''}
         ${b.capa_url?`<img src="${b.capa_url}" alt="">`:`<div class="biblio-cover-fallback">${b.titulo}</div>`}
       </div>
       <div class="biblio-info">
@@ -4318,6 +4335,63 @@ function _fecharBiblioReader(readerId, elDentroDoModal){
   if(document.fullscreenElement) document.exitFullscreen?.().catch(()=>{});
   _biblioFecharPopup();
   elDentroDoModal.closest('.modal-bg').remove();
+}
+
+/* ── AUDIOBOOK: player com retomada de posição (ultima_posicao_seg, mesma
+   tabela/linha de progresso dos livros — só o campo usado muda) ── */
+let _biblioAudioUltimoSalvo=0; // segundos já persistidos nesta sessão do player, evita upsert a cada timeupdate
+async function _salvarProgressoAudio(livroId, segundos){
+  const payload={user_id:CU.id, livro_id:livroId, ultima_posicao_seg:Math.floor(segundos), atualizado_em:new Date().toISOString()};
+  const{data,error}=await sb.from('portal_biblioteca_progresso').upsert(payload,{onConflict:'user_id,livro_id'}).select().maybeSingle();
+  if(error){ console.warn('[biblioteca] erro ao salvar progresso de áudio:',error.message); return; }
+  const prog=allBiblioProgresso.find(p=>p.livro_id===livroId);
+  if(prog) Object.assign(prog,payload); else allBiblioProgresso.push(data||payload);
+}
+function openAudiobookPlayer(id){
+  const b=allBiblioteca.find(x=>x.id===id);
+  if(!b) return;
+  const prog=allBiblioProgresso.find(p=>p.livro_id===id);
+  const posicaoInicial=prog?.ultima_posicao_seg||0;
+  _biblioAudioUltimoSalvo=posicaoInicial;
+  const modal=document.createElement('div');
+  modal.className='modal-bg on';
+  const capaHtml=b.capa_url
+    ?`<div style="width:130px;aspect-ratio:2/3;margin:0 auto 16px;border-radius:6px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.3)"><img src="${b.capa_url}" style="width:100%;height:100%;object-fit:cover" alt=""></div>`
+    :`<div style="width:130px;aspect-ratio:2/3;margin:0 auto 16px;border-radius:6px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:36px">🎧</div>`;
+  modal.innerHTML = b.arquivo_url
+    ? `<div class="modal" style="width:440px;max-width:94vw;padding:28px">
+        <button class="modal-close" onclick="_fecharAudiobookPlayer(this)">✕</button>
+        ${capaHtml}
+        <div style="font-family:var(--font-d);font-weight:700;font-size:17px;text-align:center;margin-bottom:2px">${b.titulo}</div>
+        <div style="font-size:11.5px;color:var(--muted2);text-align:center;margin-bottom:18px">${b.autor||''}</div>
+        <audio id="biblio-audio-player" controls style="width:100%" src="${b.arquivo_url}"></audio>
+      </div>`
+    : `<div class="modal" style="width:440px;max-width:94vw;padding:28px">
+        <button class="modal-close" onclick="this.closest('.modal-bg').remove()">✕</button>
+        ${capaHtml}
+        <div style="font-family:var(--font-d);font-weight:700;font-size:18px;text-align:center;margin-bottom:2px">${b.titulo}</div>
+        <div style="font-size:11.5px;color:var(--muted2);text-align:center;margin-bottom:16px">${b.autor||''}</div>
+        <div style="font-size:12.5px;color:var(--muted);line-height:1.6;text-align:center">${b.descricao||'Sem arquivo anexado ainda.'}</div>
+      </div>`;
+  modal.addEventListener('click', e=>{ if(e.target===modal) _fecharAudiobookPlayer(modal); });
+  document.body.appendChild(modal);
+  if(!b.arquivo_url) return;
+  const audio=el('biblio-audio-player');
+  audio._livroId=id;
+  audio.addEventListener('loadedmetadata',()=>{ if(posicaoInicial>0 && posicaoInicial<audio.duration-5) audio.currentTime=posicaoInicial; },{once:true});
+  audio.addEventListener('timeupdate',()=>{
+    if(audio.currentTime-_biblioAudioUltimoSalvo>=10){
+      _biblioAudioUltimoSalvo=audio.currentTime;
+      _salvarProgressoAudio(id,audio.currentTime);
+    }
+  });
+  audio.addEventListener('pause',()=>_salvarProgressoAudio(id,audio.currentTime));
+}
+function _fecharAudiobookPlayer(elDentroDoModal){
+  const modal=elDentroDoModal.closest('.modal-bg');
+  const audio=document.getElementById('biblio-audio-player');
+  if(audio) _salvarProgressoAudio(audio._livroId,audio.currentTime);
+  modal?.remove();
 }
 // --- Marcações (highlights estilo Kindle) ---------------------------------
 // Cada marcação é guardada como um intervalo de caracteres [idx_inicio,idx_fim)
@@ -4643,6 +4717,38 @@ async function handleBiblioArquivoUpload(e){
   const {error} = await sb.storage.from('portal-uploads').upload(path, file, {upsert:true});
   if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast('Erro ao enviar arquivo: '+error.message,'err'); return; }
   const {data} = sb.storage.from('portal-uploads').getPublicUrl(path);
+  urlInput.value = data.publicUrl;
+  statusEl.textContent = 'Enviado ✓'; statusEl.style.color = 'var(--green2)';
+}
+// Troca o rótulo/botão/aceite do campo "Arquivo" ao alternar Livro<->Audiobook
+// no formulário admin — o input de URL (af-arquivo_url) é o mesmo pros dois
+// tipos (o "tipo" já discrimina o que é), só a forma de enviar muda.
+function onBiblioTipoChange(){
+  const isAudio = document.getElementById('af-tipo')?.value==='audiobook';
+  const label=document.getElementById('bib-arquivo-label'), btn=document.getElementById('bib-arquivo-btn'),
+    fileInput=document.getElementById('bib-arquivo-file'), urlInput=document.getElementById('af-arquivo_url');
+  if(!label||!btn||!fileInput||!urlInput) return;
+  label.textContent = isAudio ? 'Arquivo de áudio (MP3, M4B, M4A...)' : 'Arquivo (PDF ou link — Drive, etc.)';
+  btn.textContent = isAudio ? '🎧 Enviar áudio' : '📄 Enviar PDF';
+  fileInput.accept = isAudio ? 'audio/*' : 'application/pdf';
+  fileInput.value = '';
+  fileInput.onchange = isAudio ? handleBiblioAudioUpload : handleBiblioArquivoUpload;
+  urlInput.placeholder = 'ou cole um link ' + (isAudio ? 'direto de áudio...' : '(Google Drive, etc.)...');
+}
+// Audiobook vai pro bucket dedicado (portal-audiobooks, limite de 500MB) —
+// portal-uploads é de 15MB e não libera tipo de áudio, não dava pra reusar.
+async function handleBiblioAudioUpload(e){
+  const file = e.target.files?.[0];
+  if(!file) return;
+  const statusEl = document.getElementById('bib-arquivo-status');
+  const urlInput = document.getElementById('af-arquivo_url');
+  if(!file.type.startsWith('audio/')){ toast('Selecione um arquivo de áudio','err'); e.target.value=''; return; }
+  if(file.size > 500*1024*1024){ toast('Arquivo muito grande (máx. 500MB) — nesse caso, cole um link direto em vez de enviar','err'); e.target.value=''; return; }
+  statusEl.textContent = 'Enviando... (arquivo grande, pode demorar)'; statusEl.style.color = 'var(--muted2)';
+  const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+  const {error} = await sb.storage.from('portal-audiobooks').upload(path, file, {upsert:true});
+  if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast('Erro ao enviar áudio: '+error.message,'err'); return; }
+  const {data} = sb.storage.from('portal-audiobooks').getPublicUrl(path);
   urlInput.value = data.publicUrl;
   statusEl.textContent = 'Enviado ✓'; statusEl.style.color = 'var(--green2)';
 }
@@ -5919,10 +6025,20 @@ function buildAdmForm(type, d={}){
       ${g2(inp('validade','Válido até',d.validade,'date'),
            sel('status','Status',[{v:'Disponível',l:'Disponível'},{v:'Usado',l:'Usado'},{v:'Expirado',l:'Expirado'}],d.status))}`;
 
-    case 'biblioteca': return `
+    case 'biblioteca': {
+      const bibTipo = d.tipo==='audiobook' ? 'audiobook' : 'livro';
+      const bibIsAudio = bibTipo==='audiobook';
+      return `
       ${inp('titulo','Título',d.titulo)}
       ${g2(inp('autor','Autor',d.autor),
            sel('categoria','Categoria',[{v:'Negócios',l:'Negócios'},{v:'Persuasão',l:'Persuasão'},{v:'Comunicação',l:'Comunicação'},{v:'Neurolinguagem',l:'Neurolinguagem'},{v:'Retórica',l:'Retórica'},{v:'Outros',l:'Outros'}],d.categoria||'Negócios'))}
+      <div class="adm-field">
+        <label class="adm-label">Tipo</label>
+        <select class="adm-select" id="af-tipo" onchange="onBiblioTipoChange()">
+          <option value="livro" ${!bibIsAudio?'selected':''}>📖 Livro (PDF)</option>
+          <option value="audiobook" ${bibIsAudio?'selected':''}>🎧 Audiobook (áudio)</option>
+        </select>
+      </div>
       ${ta('descricao','Descrição (opcional)',d.descricao)}
       <div class="adm-field">
         <label class="adm-label">Capa (opcional)</label>
@@ -5937,14 +6053,15 @@ function buildAdmForm(type, d={}){
         <input class="adm-input" id="af-capa_url" value="${d.capa_url||''}" placeholder="ou cole uma URL de imagem..." style="font-size:11px">
       </div>
       <div class="adm-field">
-        <label class="adm-label">Arquivo (PDF ou link — Drive, audiobook, etc.)</label>
+        <label class="adm-label" id="bib-arquivo-label">${bibIsAudio?'Arquivo de áudio (MP3, M4B, M4A...)':'Arquivo (PDF ou link — Drive, etc.)'}</label>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <input type="file" id="bib-arquivo-file" accept="application/pdf" style="display:none" onchange="handleBiblioArquivoUpload(event)">
-          <button type="button" class="btn-outline" style="font-size:11px" onclick="document.getElementById('bib-arquivo-file').click()">📄 Enviar PDF</button>
+          <input type="file" id="bib-arquivo-file" accept="${bibIsAudio?'audio/*':'application/pdf'}" style="display:none" onchange="${bibIsAudio?'handleBiblioAudioUpload':'handleBiblioArquivoUpload'}(event)">
+          <button type="button" class="btn-outline" style="font-size:11px" id="bib-arquivo-btn" onclick="document.getElementById('bib-arquivo-file').click()">${bibIsAudio?'🎧 Enviar áudio':'📄 Enviar PDF'}</button>
           <span id="bib-arquivo-status" style="font-size:10px;color:var(--muted2)"></span>
         </div>
-        <input class="adm-input" id="af-arquivo_url" type="url" value="${d.arquivo_url||''}" placeholder="ou cole um link (Google Drive, etc.)...">
+        <input class="adm-input" id="af-arquivo_url" type="url" value="${d.arquivo_url||''}" placeholder="ou cole um link ${bibIsAudio?'direto de áudio':'(Google Drive, etc.)'}...">
       </div>`;
+    }
 
     case 'hallfama': return `
       ${inp('nome','Nome',d.nome)}
@@ -6072,6 +6189,7 @@ async function saveAdmModal(){
     }
     case 'biblioteca':
       payload = { titulo:av('titulo'), autor:av('autor'), categoria:asel('categoria')||'Negócios',
+        tipo:asel('tipo')||'livro',
         descricao:av('descricao'), capa_url:av('capa_url')||null, arquivo_url:av('arquivo_url')||null };
       break;
     case 'news':
@@ -6767,8 +6885,8 @@ function renderAdmPontos(){
 function renderAdmBiblioteca(){
   el('adm-biblio-list').innerHTML = admList(allBiblioteca,'biblioteca', b=>`
     <div class="adm-row-main">
-      <div class="adm-row-title">${b.titulo}</div>
-      <div class="adm-row-sub">${b.autor||'–'} · ${b.categoria||'–'}${b.arquivo_url?' · 📄 arquivo':''}</div>
+      <div class="adm-row-title">${b.tipo==='audiobook'?'🎧':'📖'} ${b.titulo}</div>
+      <div class="adm-row-sub">${b.autor||'–'} · ${b.categoria||'–'}${b.arquivo_url?(b.tipo==='audiobook'?' · 🎧 áudio':' · 📄 arquivo'):''}</div>
     </div>`);
 }
 function renderAdmHallFama(){
