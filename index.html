@@ -721,12 +721,65 @@ html.sidebar-mini .nav-badge{display:none}
 .com-post-author{font-weight:700;font-size:13px}
 .com-post-meta{font-size:10.5px;color:var(--muted2)}
 .com-post-tipo{font-size:9.5px;letter-spacing:0.5px;padding:3px 10px;border-radius:999px;background:color-mix(in srgb,var(--gold2) 14%,transparent);color:var(--gold2);margin-left:auto}
+.com-post-tipo.t-geral{background:var(--s3);color:var(--muted2)}
+.com-post-tipo.t-conquista{background:color-mix(in srgb,var(--gold2) 16%,transparent);color:var(--gold2)}
+.com-post-tipo.t-certificado{background:color-mix(in srgb,#3E9B6F 18%,transparent);color:#3E9B6F}
+.com-post-tipo.t-novidade{background:color-mix(in srgb,#4C8DD9 18%,transparent);color:#4C8DD9}
 .com-post-body{font-size:13.5px;line-height:1.5;white-space:pre-wrap;margin-bottom:10px}
-.com-post-img{max-width:100%;max-height:420px;object-fit:contain;display:block;border-radius:var(--radius-sm);margin-bottom:10px}
-.com-post-actions{display:flex;gap:8px;border-top:1px solid var(--border);padding-top:10px;font-size:12px}
-.com-post-actions button{background:none;border:none;color:var(--muted2);cursor:pointer;font-family:var(--font-b);font-size:12px;display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;transition:background .12s,color .12s}
-.com-post-actions button:hover{color:var(--gold2);background:var(--s3)}
-.com-post-actions button.liked{color:var(--gold2);font-weight:700}
+.com-tag{color:var(--gold2);font-weight:600;cursor:pointer}
+.com-tag:hover{text-decoration:underline}
+.com-post-img{max-width:100%;max-height:420px;object-fit:contain;display:block;border-radius:var(--radius-sm);margin-bottom:10px;cursor:zoom-in}
+/* ── Ações do post em 3 colunas iguais (Curtir/Comentar/Compartilhar), estilo
+   Facebook — direct-child selector evita que os botões pequenos do seletor
+   de reações (caret, emojis) herdem o mesmo padding/flex. */
+.com-post-actions{display:flex;gap:4px;border-top:1px solid var(--border);padding-top:10px;font-size:12px}
+.com-post-actions>button,.com-post-actions .com-react-btn{background:none;border:none;color:var(--muted2);cursor:pointer;font-family:var(--font-b);font-size:12px;display:flex;align-items:center;justify-content:center;gap:5px;padding:5px 10px;border-radius:999px;transition:background .12s,color .12s;flex:1}
+.com-post-actions>button:hover,.com-post-actions .com-react-btn:hover{color:var(--gold2);background:var(--s3)}
+.com-post-actions>button.liked,.com-post-actions .com-react-btn.liked{color:var(--gold2);font-weight:700}
+/* ── Reações estilo Facebook: toque rápido = reação padrão (❤️ "amei",
+   preserva o gesto de curtir de 1 toque de antes); o "▾" abre o seletor
+   com as 6 reações (like/amei/haha/uau/triste/grr) — funciona em touch
+   (clique explícito) e desktop (também abre no hover, com delay). */
+.com-react-wrap{position:relative;flex:1;display:flex;gap:2px}
+.com-react-caret{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:10px;padding:5px 6px;border-radius:999px;flex-shrink:0}
+.com-react-caret:hover{background:var(--s3);color:var(--gold2)}
+.com-react-picker{position:absolute;bottom:calc(100% + 6px);left:0;display:none;gap:2px;background:var(--s1);border:1px solid var(--border);border-radius:999px;padding:5px;box-shadow:var(--shadow-card);z-index:20}
+.com-react-picker.on{display:flex}
+.com-react-emoji{font-size:19px;padding:5px 7px;border-radius:50%;cursor:pointer;transition:transform .12s,background .12s;background:none;border:none;line-height:1}
+.com-react-emoji:hover{transform:scale(1.35) translateY(-2px);background:var(--s3)}
+/* ── Repost estilo X: banner "Fulano compartilhou" + card aninhado com a
+   publicação original (mesmo id de interações — curtir/comentar num
+   repost afeta a publicação original, igual no X). */
+.com-repost-tag{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--muted2);margin-bottom:8px;letter-spacing:.2px}
+.com-repost-embed{border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--s3)}
+.com-repost-embed .com-post-actions{border-top:1px solid var(--border2)}
+.com-repost-missing{font-size:12px;color:var(--muted2);font-style:italic}
+/* ── Toolbar de ordenação do feed (Recentes/Em alta, estilo Reddit) e chip
+   de filtro por hashtag/menção ativa. ── */
+.com-feed-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.com-sort-tab{font-size:11px;font-weight:600;letter-spacing:.4px;padding:6px 14px;border-radius:999px;cursor:pointer;color:var(--muted2);background:var(--s2);border:1px solid transparent;transition:all .12s}
+.com-sort-tab:hover{color:var(--text)}
+.com-sort-tab.on{background:var(--gold-dim);color:var(--gold2);border-color:var(--gold-line)}
+.com-hashtag-chip{margin-left:auto;font-size:11px;font-weight:600;padding:6px 12px;border-radius:999px;background:var(--gold-dim);color:var(--gold2);display:flex;align-items:center;gap:8px}
+.com-hashtag-chip span{cursor:pointer;opacity:.75}
+.com-hashtag-chip span:hover{opacity:1}
+/* ── Composer estilo Facebook: avatar do usuário ao lado do campo de texto,
+   contador de caracteres e miniatura removível da imagem anexada. ── */
+.com-composer-head{display:flex;gap:10px;align-items:flex-start;margin-bottom:6px}
+.com-composer-avatar{width:40px;height:40px;border-radius:50%;overflow:hidden;background:var(--s3);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:15px;color:var(--gold2);flex-shrink:0}
+.com-composer-avatar img{width:100%;height:100%;object-fit:cover}
+.com-composer-body{flex:1;min-width:0}
+.com-char-count{font-size:10px;color:var(--muted2);text-align:right;margin-top:2px;height:12px}
+.com-char-count.warn{color:var(--gold2)}
+.com-char-count.limit{color:var(--red)}
+.com-img-preview{position:relative;display:inline-block;margin-top:8px;max-width:220px}
+.com-img-preview img{max-width:100%;max-height:160px;border-radius:var(--radius-sm);display:block;object-fit:cover}
+.com-img-preview button{position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:var(--s1);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center}
+/* ── Lightbox de imagem em tela cheia (estilo Instagram). ── */
+.com-lightbox{position:fixed;inset:0;background:rgba(8,9,11,0.92);z-index:9999;display:none;align-items:center;justify-content:center;padding:30px}
+.com-lightbox.on{display:flex}
+.com-lightbox img{max-width:100%;max-height:100%;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+.com-lightbox-close{position:absolute;top:18px;right:22px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .com-comments{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
 .com-comment-bubble{display:flex;gap:8px;align-items:flex-start}
 .com-comment-avatar{width:26px;height:26px;border-radius:50%;overflow:hidden;background:var(--s3);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:11px;color:var(--gold2);flex-shrink:0}
@@ -1761,7 +1814,14 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       <div id="com-feed-view">
         <div class="panel" style="margin-bottom:16px">
           <div class="panel-body">
-            <textarea id="com-post-texto" class="adm-input" rows="3" placeholder="Compartilhe uma conquista, novidade ou publicação com o time..." style="resize:vertical;margin-bottom:10px"></textarea>
+            <div class="com-composer-head">
+              <div class="com-composer-avatar" id="com-composer-avatar"></div>
+              <div class="com-composer-body">
+                <textarea id="com-post-texto" class="adm-input" rows="2" placeholder="Compartilhe uma conquista, novidade ou publicação com o time... use #hashtags e @menções" style="resize:none;overflow:hidden" oninput="_comAutoGrow(this);_comAtualizarContador()"></textarea>
+                <div class="com-char-count" id="com-char-count"></div>
+                <div id="com-post-img-preview"></div>
+              </div>
+            </div>
             <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between">
               <select id="com-post-tipo" class="adm-input" style="width:auto;min-width:150px" onchange="onComPostTipoChange()">
                 <option value="geral">Publicação geral</option>
@@ -1781,7 +1841,20 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
             </div>
           </div>
         </div>
+        <div class="com-feed-toolbar">
+          <div class="com-sort-tab on" id="com-sort-recentes" onclick="comSetFeedSort('recentes')">🕐 Recentes</div>
+          <div class="com-sort-tab" id="com-sort-alta" onclick="comSetFeedSort('alta')">🔥 Em alta</div>
+          <div class="com-hashtag-chip" id="com-hashtag-chip" style="display:none">
+            <span id="com-hashtag-chip-label"></span>
+            <span onclick="comLimparFiltro()" title="Limpar filtro">✕</span>
+          </div>
+        </div>
         <div id="com-feed-list"></div>
+      </div>
+
+      <div class="com-lightbox" id="com-lightbox" onclick="fecharLightbox()">
+        <button class="com-lightbox-close" type="button" onclick="event.stopPropagation();fecharLightbox()">✕</button>
+        <img id="com-lightbox-img" src="" alt="" onclick="event.stopPropagation()">
       </div>
 
       <div id="com-chat-view" style="display:none">
@@ -4799,6 +4872,29 @@ let _comConversas=[], _comConversaAtual=null, _comMsgs={}, _comChatChannel=null,
 let _comFeedChannel=null;
 let _comOpenComments=new Set(); // ids de post com a caixa de comentários aberta — sobrevive a re-render (realtime reconstrói o DOM inteiro)
 let _comOpenReplies=new Set(); // ids de comentário com a caixa de resposta aberta
+let _comFeedSort='recentes'; // 'recentes' | 'alta' — abas de ordenação estilo Reddit
+let _comHashtagFiltro=null; // #hashtag ou @menção ativa filtrando o feed (clique num com-tag)
+let _comOpenReactPicker=null; // id do post com o seletor de reações aberto
+let _comReactTimer=null;
+
+// Reações estilo Facebook — toque rápido no botão = 'amei' (preserva o gesto
+// de curtir de 1 toque de antes); o "▾" abre este seletor com as 6 opções.
+const COM_REACOES={
+  like:{emoji:'👍',label:'Curti'},
+  amei:{emoji:'❤️',label:'Amei'},
+  haha:{emoji:'😂',label:'Haha'},
+  uau:{emoji:'😮',label:'Uau'},
+  triste:{emoji:'😢',label:'Triste'},
+  grr:{emoji:'😡',label:'Grr'},
+};
+
+// Fecha qualquer seletor de reação aberto ao clicar fora dele.
+document.addEventListener('click', e=>{
+  if(_comOpenReactPicker && !e.target.closest('.com-react-wrap')) fecharReactPicker();
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ fecharLightbox(); fecharReactPicker(); }
+});
 
 async function _garantirDiretorio(){
   if(_diretorio.length) return;
@@ -4819,9 +4915,16 @@ function comSwitchTab(tab){
 
 async function renderComunidade(){
   await _garantirDiretorio();
+  _comPreencherAvatarComposer();
   await carregarFeed();
   renderConversas();
   _assinarRealtimeFeed();
+}
+
+function _comPreencherAvatarComposer(){
+  const wrap=el('com-composer-avatar'); if(!wrap) return;
+  const foto=CUP?.foto_url, nome=CUP?.nome||'Você';
+  wrap.innerHTML = foto?`<img src="${foto}" alt="">`:nome.charAt(0).toUpperCase();
 }
 
 /* ── FEED ── */
@@ -4837,44 +4940,131 @@ async function carregarFeed(){
   renderFeed();
 }
 
-const COM_TIPO_LABEL={geral:'Publicação',conquista:'🏆 Conquista',certificado:'🎓 Certificado',novidade:'📣 Novidade'};
+const COM_TIPO_LABEL={geral:'Publicação',conquista:'🏆 Conquista',certificado:'🎓 Certificado',novidade:'📣 Novidade',repost:'🔁 Compartilhado'};
+
+// Pontuação usada na aba "Em alta" (Reddit-style) — comentário e repost pesam
+// mais que curtida porque exigem mais esforço de quem interage.
+function _comPostScore(p){
+  const curtidas=allComCurtidas.filter(c=>c.post_id===p.id).length;
+  const coments=allComComentarios.filter(c=>c.post_id===p.id).length;
+  const reposts=allComPosts.filter(x=>x.repost_de===p.id).length;
+  return curtidas*2 + coments*3 + reposts*4;
+}
+
+function comSetFeedSort(modo){
+  _comFeedSort=modo;
+  el('com-sort-recentes').classList.toggle('on',modo==='recentes');
+  el('com-sort-alta').classList.toggle('on',modo==='alta');
+  renderFeed();
+}
+
+// Clique num #hashtag/@menção do corpo de um post filtra o feed (client-side,
+// sobre os posts já carregados — sem índice de busca dedicado no banco).
+function comFiltrarHashtag(termo){
+  _comHashtagFiltro = (_comHashtagFiltro===termo) ? null : termo;
+  renderFeed();
+}
+function comLimparFiltro(){ _comHashtagFiltro=null; renderFeed(); }
+
+// Escapa o texto e só depois transforma #hashtag/@menção em spans clicáveis —
+// nessa ordem os caracteres do próprio token (#,@,letras) nunca colidem com
+// o que _escHtml() escapa (<,>,&,",').
+function _comFormatarTexto(texto){
+  const esc=_escHtml(texto);
+  return esc.replace(/(^|[\s])([#@][^\s<]+)/g,(m,pre,tag)=>{
+    const termo=tag.slice(1).replace(/'/g,"\\'");
+    return `${pre}<span class="com-tag" onclick="comFiltrarHashtag('${termo}')">${tag}</span>`;
+  });
+}
 
 function renderFeed(){
-  el('com-feed-list').innerHTML = allComPosts.length===0
-    ? '<div class="empty" style="padding:40px"><div class="empty-line"></div><div class="empty-text">Nenhuma publicação ainda — seja o primeiro!</div></div>'
-    : allComPosts.map(p=>{
-        const autor=_diretorioNome(p.user_id), foto=_diretorioFoto(p.user_id);
-        const curtidasPost=allComCurtidas.filter(c=>c.post_id===p.id);
-        const euCurti=curtidasPost.some(c=>c.user_id===CU.id);
-        const comentsPost=allComComentarios.filter(c=>c.post_id===p.id);
-        const souDono=p.user_id===CU.id;
-        const comentariosAbertos=_comOpenComments.has(p.id);
-        return `<div class="com-post" data-post="${p.id}">
-          <div class="com-post-head">
-            <div class="com-post-avatar">${foto?`<img src="${foto}" alt="">`:autor.charAt(0).toUpperCase()}</div>
-            <div>
-              <div class="com-post-author">${autor}</div>
-              <div class="com-post-meta">${fmtDateHora(p.criado_em)}</div>
-            </div>
-            <div class="com-post-tipo">${COM_TIPO_LABEL[p.tipo]||p.tipo}</div>
-            ${(souDono||isAdmin())?`<button onclick="excluirComPost('${p.id}')" title="Excluir" style="background:none;border:none;color:var(--muted2);cursor:pointer;margin-left:6px;font-size:13px">✕</button>`:''}
-          </div>
-          ${p.titulo?`<div style="font-weight:700;font-size:14px;margin-bottom:4px">${_escHtml(p.titulo)}</div>`:''}
-          ${p.conteudo?`<div class="com-post-body">${_escHtml(p.conteudo)}</div>`:''}
-          ${p.imagem_url?`<img class="com-post-img" src="${p.imagem_url}" alt="">`:''}
-          <div class="com-post-actions">
-            <button class="${euCurti?'liked':''}" onclick="toggleCurtida('${p.id}')">${euCurti?'❤️':'🤍'} Curtir${curtidasPost.length?' ('+curtidasPost.length+')':''}</button>
-            <button onclick="toggleComentariosPost('${p.id}')">💬 Comentar${comentsPost.length?' ('+comentsPost.length+')':''}</button>
-          </div>
-          <div class="com-comments" id="com-comments-${p.id}" style="display:${comentariosAbertos?'flex':'none'}">
-            ${renderComentariosArvore(p.id)}
-            <div class="com-comment-input">
-              <input type="text" class="adm-input" id="com-comment-in-${p.id}" placeholder="Escreva um comentário..." onkeydown="if(event.key==='Enter')enviarComentario('${p.id}',null,'com-comment-in-${p.id}')">
-              <button class="btn-outline" style="font-size:11px" onclick="enviarComentario('${p.id}',null,'com-comment-in-${p.id}')">Enviar</button>
-            </div>
-          </div>
-        </div>`;
-      }).join('');
+  let posts=allComPosts;
+  if(_comHashtagFiltro){
+    const termo=_comHashtagFiltro.toLowerCase();
+    posts=posts.filter(p=>(p.conteudo||'').toLowerCase().includes(termo)||(p.titulo||'').toLowerCase().includes(termo));
+  }
+  if(_comFeedSort==='alta'){
+    posts=[...posts].sort((a,b)=>{
+      const d=_comPostScore(b)-_comPostScore(a);
+      return d!==0 ? d : new Date(b.criado_em)-new Date(a.criado_em);
+    });
+  }
+  const chip=el('com-hashtag-chip');
+  if(chip){
+    chip.style.display=_comHashtagFiltro?'flex':'none';
+    const lbl=el('com-hashtag-chip-label'); if(lbl) lbl.textContent='Filtrando: '+_comHashtagFiltro;
+  }
+  el('com-feed-list').innerHTML = posts.length===0
+    ? `<div class="empty" style="padding:40px"><div class="empty-line"></div><div class="empty-text">${_comHashtagFiltro?'Nenhuma publicação encontrada':'Nenhuma publicação ainda — seja o primeiro!'}</div></div>`
+    : posts.map(p=>renderComPostWrapper(p)).join('');
+}
+
+// Repost (estilo X): a linha vira só um banner "Fulano compartilhou" — o card
+// de verdade (curtir/comentar/compartilhar) é o da publicação ORIGINAL, então
+// interagir a partir de um repost afeta o post original, igual no X/Twitter.
+function renderComPostWrapper(p){
+  if(p.repost_de){
+    const original=allComPosts.find(x=>x.id===p.repost_de);
+    const autorRepost=_diretorioNome(p.user_id);
+    const podeExcluirRepost=p.user_id===CU.id||isAdmin();
+    return `<div class="com-post" data-post="${p.id}">
+      <div class="com-repost-tag">
+        <span>🔁</span> ${autorRepost} compartilhou
+        <span class="com-post-meta">${fmtDateHora(p.criado_em)}</span>
+        ${podeExcluirRepost?`<button onclick="excluirComPost('${p.id}')" title="Remover compartilhamento" style="margin-left:auto;background:none;border:none;color:var(--muted2);cursor:pointer;font-size:12px">✕</button>`:''}
+      </div>
+      ${original?`<div class="com-repost-embed">${_comPostCardInner(original)}</div>`:'<div class="com-repost-missing">Esta publicação não está mais disponível.</div>'}
+    </div>`;
+  }
+  return `<div class="com-post" data-post="${p.id}">${_comPostCardInner(p)}</div>`;
+}
+
+function _comReactSummary(curtidasPost){
+  if(!curtidasPost.length) return '🤍 Reagir';
+  const counts={};
+  curtidasPost.forEach(c=>{ counts[c.reacao]=(counts[c.reacao]||0)+1; });
+  const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k])=>COM_REACOES[k]?.emoji||'❤️').join('');
+  return `${top} ${curtidasPost.length}`;
+}
+
+function _comPostCardInner(p){
+  const autor=_diretorioNome(p.user_id), foto=_diretorioFoto(p.user_id);
+  const curtidasPost=allComCurtidas.filter(c=>c.post_id===p.id);
+  const minhaReacao=curtidasPost.find(c=>c.user_id===CU.id);
+  const comentsPost=allComComentarios.filter(c=>c.post_id===p.id);
+  const repostsPost=allComPosts.filter(x=>x.repost_de===p.id);
+  const souDono=p.user_id===CU.id;
+  const comentariosAbertos=_comOpenComments.has(p.id);
+  return `<div class="com-post-head">
+    <div class="com-post-avatar">${foto?`<img src="${foto}" alt="">`:autor.charAt(0).toUpperCase()}</div>
+    <div>
+      <div class="com-post-author">${autor}</div>
+      <div class="com-post-meta">${fmtDateHora(p.criado_em)}</div>
+    </div>
+    <div class="com-post-tipo t-${p.tipo||'geral'}">${COM_TIPO_LABEL[p.tipo]||p.tipo}</div>
+    ${(souDono||isAdmin())?`<button onclick="excluirComPost('${p.id}')" title="Excluir" style="background:none;border:none;color:var(--muted2);cursor:pointer;margin-left:6px;font-size:13px">✕</button>`:''}
+  </div>
+  ${p.titulo?`<div style="font-weight:700;font-size:14px;margin-bottom:4px">${_escHtml(p.titulo)}</div>`:''}
+  ${p.conteudo?`<div class="com-post-body">${_comFormatarTexto(p.conteudo)}</div>`:''}
+  ${p.imagem_url?`<img class="com-post-img" src="${p.imagem_url}" alt="" onclick="abrirLightbox('${p.imagem_url}')">`:''}
+  <div class="com-post-actions">
+    <div class="com-react-wrap">
+      <button class="com-react-btn ${minhaReacao?'liked':''}" onclick="onReactBtnClick('${p.id}')" onmouseenter="if(matchMedia('(hover:hover)').matches) abrirReactPicker('${p.id}')" onmouseleave="fecharReactPickerAdiado()">${_comReactSummary(curtidasPost)}</button>
+      <button class="com-react-caret" type="button" title="Escolher reação" onclick="event.stopPropagation();toggleReactPicker('${p.id}')">▾</button>
+      <div class="com-react-picker" id="com-react-picker-${p.id}" onmouseenter="clearTimeout(_comReactTimer)" onmouseleave="fecharReactPickerAdiado()">
+        ${Object.entries(COM_REACOES).map(([k,r])=>`<button class="com-react-emoji" type="button" title="${r.label}" onclick="event.stopPropagation();reagirPost('${p.id}','${k}')">${r.emoji}</button>`).join('')}
+      </div>
+    </div>
+    <button onclick="toggleComentariosPost('${p.id}')">💬 Comentar${comentsPost.length?' ('+comentsPost.length+')':''}</button>
+    <button onclick="compartilharPost('${p.id}')">🔁 Compartilhar${repostsPost.length?' ('+repostsPost.length+')':''}</button>
+  </div>
+  <div class="com-comments" id="com-comments-${p.id}" style="display:${comentariosAbertos?'flex':'none'}">
+    ${renderComentariosArvore(p.id)}
+    <div class="com-comment-input">
+      <input type="text" class="adm-input" id="com-comment-in-${p.id}" placeholder="Escreva um comentário..." onkeydown="if(event.key==='Enter')enviarComentario('${p.id}',null,'com-comment-in-${p.id}')">
+      <button class="btn-outline" style="font-size:11px" onclick="enviarComentario('${p.id}',null,'com-comment-in-${p.id}')">Enviar</button>
+    </div>
+  </div>`;
 }
 
 // Comentários de um post em árvore (1 nível de resposta) — cada bolha mostra
@@ -4924,6 +5114,18 @@ async function onComPostTipoChange(){
     : '<option value="">Nenhum certificado emitido ainda</option>';
 }
 
+// Autocresce a textarea do composer conforme digita (sem barra de rolagem
+// interna, estilo X/Facebook) e atualiza o contador de caracteres (só
+// orientativo — não bloqueia publicar, igual ao resto do app não valida
+// campos que não têm uma razão de negócio pra travar o usuário).
+function _comAutoGrow(t){ t.style.height='auto'; t.style.height=t.scrollHeight+'px'; }
+function _comAtualizarContador(){
+  const len=(el('com-post-texto').value||'').length;
+  const c=el('com-char-count');
+  c.textContent = len>0 ? len+'/1000' : '';
+  c.className='com-char-count'+(len>1000?' limit':len>900?' warn':'');
+}
+
 async function handleComPostImgUpload(e){
   const file=e.target.files?.[0];
   if(!file) return;
@@ -4936,7 +5138,14 @@ async function handleComPostImgUpload(e){
   if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast('Erro ao enviar imagem: '+error.message,'err'); return; }
   const {data}=sb.storage.from('portal-uploads').getPublicUrl(path);
   _comPostImgUrl=data.publicUrl;
-  statusEl.textContent='Imagem anexada ✓'; statusEl.style.color='var(--green2)';
+  statusEl.textContent='';
+  el('com-post-img-preview').innerHTML=`<div class="com-img-preview"><img src="${_comPostImgUrl}" alt=""><button type="button" title="Remover imagem" onclick="removerComPostImg()">✕</button></div>`;
+}
+
+function removerComPostImg(){
+  _comPostImgUrl=null;
+  el('com-post-img-preview').innerHTML='';
+  el('com-post-img-file').value='';
 }
 
 async function criarComPost(){
@@ -4954,10 +5163,11 @@ async function criarComPost(){
   const {error}=await sb.from('portal_comunidade_posts').insert(payload);
   if(error){ toast('Erro ao publicar: '+error.message,'err'); return; }
   el('com-post-texto').value='';
+  el('com-post-texto').style.height='auto';
   el('com-post-tipo').value='geral';
   el('com-post-cert-wrap').style.display='none';
-  _comPostImgUrl=null;
-  el('com-post-img-status').textContent='';
+  removerComPostImg();
+  _comAtualizarContador();
   toast('Publicado!','ok');
   await carregarFeed();
 }
@@ -4969,16 +5179,79 @@ async function excluirComPost(id){
   await carregarFeed();
 }
 
-async function toggleCurtida(postId){
-  const jaCurti=allComCurtidas.find(c=>c.post_id===postId && c.user_id===CU.id);
-  if(jaCurti){
-    await sb.from('portal_comunidade_curtidas').delete().eq('id',jaCurti.id);
-    allComCurtidas=allComCurtidas.filter(c=>c.id!==jaCurti.id);
+// Compartilhar (repost estilo X): cria uma publicação nova que só referencia
+// a original via repost_de. Compartilhar um repost aponta pro original de
+// verdade (repost_de||postId), pra não empilhar cadeias de reposts.
+async function compartilharPost(postId){
+  const original=allComPosts.find(p=>p.id===postId);
+  if(!original) return;
+  if(!confirm('Compartilhar esta publicação no feed da Comunidade?')) return;
+  const payload={ user_id:CU.id, tipo:'repost', repost_de: original.repost_de||postId, titulo:null, conteudo:null, imagem_url:null, certificado_id:null };
+  const {error}=await sb.from('portal_comunidade_posts').insert(payload);
+  if(error){ toast('Erro ao compartilhar: '+error.message,'err'); return; }
+  toast('Compartilhado!','ok');
+  await carregarFeed();
+}
+
+/* ── Reações (like/amei/haha/uau/triste/grr) ── */
+async function reagirPost(postId, tipo){
+  fecharReactPicker();
+  const minha=allComCurtidas.find(c=>c.post_id===postId && c.user_id===CU.id);
+  if(minha && minha.reacao===tipo){
+    await sb.from('portal_comunidade_curtidas').delete().eq('id',minha.id);
+    allComCurtidas=allComCurtidas.filter(c=>c.id!==minha.id);
+  } else if(minha){
+    const {data,error}=await sb.from('portal_comunidade_curtidas').update({reacao:tipo}).eq('id',minha.id).select().single();
+    if(!error && data) allComCurtidas=allComCurtidas.map(c=>c.id===data.id?data:c);
   } else {
-    const {data}=await sb.from('portal_comunidade_curtidas').insert({post_id:postId,user_id:CU.id}).select().single();
+    const {data}=await sb.from('portal_comunidade_curtidas').insert({post_id:postId,user_id:CU.id,reacao:tipo}).select().single();
     if(data) allComCurtidas.push(data);
   }
   renderFeed();
+}
+
+// Toque rápido no botão principal: sem reação ainda → aplica 'amei' (o mesmo
+// gesto de 1 toque do "curtir" de antes); já reagiu → remove (toggle off).
+function onReactBtnClick(postId){
+  const minha=allComCurtidas.find(c=>c.post_id===postId && c.user_id===CU.id);
+  reagirPost(postId, minha?minha.reacao:'amei');
+}
+
+function abrirReactPicker(postId){
+  clearTimeout(_comReactTimer);
+  _comReactTimer=setTimeout(()=>{
+    document.querySelectorAll('.com-react-picker.on').forEach(p=>p.classList.remove('on'));
+    const picker=el('com-react-picker-'+postId);
+    if(picker) picker.classList.add('on');
+    _comOpenReactPicker=postId;
+  },380);
+}
+function fecharReactPickerAdiado(){ clearTimeout(_comReactTimer); _comReactTimer=setTimeout(fecharReactPicker,250); }
+function fecharReactPicker(){
+  clearTimeout(_comReactTimer);
+  document.querySelectorAll('.com-react-picker.on').forEach(p=>p.classList.remove('on'));
+  _comOpenReactPicker=null;
+}
+// Botão "▾": abre/fecha o seletor explicitamente por clique — funciona igual
+// em touch e desktop, sem depender de hover (que touchscreens não disparam).
+function toggleReactPicker(postId){
+  const picker=el('com-react-picker-'+postId);
+  if(!picker) return;
+  const abrindo=!picker.classList.contains('on');
+  fecharReactPicker();
+  if(abrindo){ picker.classList.add('on'); _comOpenReactPicker=postId; }
+}
+
+/* ── Lightbox de imagem (estilo Instagram) ── */
+function abrirLightbox(url){
+  const lb=el('com-lightbox'); if(!lb) return;
+  el('com-lightbox-img').src=url;
+  lb.classList.add('on');
+}
+function fecharLightbox(){
+  const lb=el('com-lightbox'); if(!lb) return;
+  lb.classList.remove('on');
+  el('com-lightbox-img').src='';
 }
 
 async function toggleCurtidaComentario(comentarioId){
