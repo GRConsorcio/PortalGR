@@ -2539,6 +2539,17 @@ function _escHtml(s){
   return d.innerHTML;
 }
 function toast(msg,type='ok'){const w=document.getElementById('toast-wrap');const d=document.createElement('div');d.className='toast '+type;d.textContent=msg;w.appendChild(d);setTimeout(()=>d.remove(),3500)}
+// BUGFIX: toast-wrap é um filho fixo de <body> — igual ao popup de marca-texto
+// (ver _biblioMostrarPopupSelecao), qualquer toast disparado com algo em tela
+// cheia (ex: erro ao marcar texto no leitor da Biblioteca) ficava invisível,
+// porque a Fullscreen API só renderiza o elemento em fullscreen e seus
+// descendentes. Reancora o container no elemento certo toda vez que o estado
+// de fullscreen muda, em vez de mexer em cada chamada de toast() espalhada
+// pelo app inteiro.
+document.addEventListener('fullscreenchange',()=>{
+  const tw=document.getElementById('toast-wrap');
+  if(tw) (document.fullscreenElement||document.body).appendChild(tw);
+});
 // Traduz os dois erros do Supabase que mais confundem: tabela que ainda não
 // foi criada (falta rodar o SQL) e coluna NOT NULL que não deixa salvar em
 // branco — em vez de mostrar o erro cru do Postgres, diz o que fazer.
@@ -4564,7 +4575,14 @@ function _biblioMostrarPopupSelecao(range, pageWrap, pagina, livroId){
       window.getSelection().removeAllRanges();
     };
   });
-  document.body.appendChild(popup);
+  // BUGFIX: anexar sempre em document.body deixava o popup invisível com o
+  // leitor em tela cheia — a Fullscreen API só renderiza o elemento que virou
+  // fullscreen (o modal do leitor) e o que está DENTRO dele; um filho direto
+  // de <body> (fora dessa árvore) some da tela mesmo continuando no DOM. Por
+  // isso "não funcionava" em tela cheia e "aparecia" ao apertar Esc (que sai
+  // do fullscreen). position:fixed do popup continua relativo à viewport
+  // normalmente mesmo anexado aqui dentro (nenhum ancestral tem transform).
+  (document.fullscreenElement || document.body).appendChild(popup);
   // Só dá pra centralizar/travar nas bordas da tela depois de anexado (precisa
   // da largura real renderizada) — sem isso, marcar um trecho colado na
   // margem esquerda/direita da página jogava os pontinhos de cor pra fora
