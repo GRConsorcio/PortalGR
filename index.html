@@ -310,6 +310,59 @@ html.sidebar-mini .nav-badge{display:none}
 .bm-team.winner{color:var(--gold2);font-weight:600}
 .bm-score{font-family:var(--font-d);font-size:13px;font-weight:700;color:var(--gold)}
 
+/* Copinhas — torneio eliminatório individual (colaborador x colaborador) */
+.copinha-card{position:relative;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:transform .15s,border-color .15s;background:var(--s2);min-height:140px}
+.copinha-card:hover{transform:translateY(-2px);border-color:var(--gold)}
+.copinha-card-capa{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.55}
+.copinha-card-body{position:relative;padding:16px;display:flex;flex-direction:column;justify-content:flex-end;min-height:140px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.75))}
+.copinha-card-titulo{font-family:var(--font-d);font-weight:700;font-size:16px;color:#fff}
+.copinha-card-sub{font-size:11px;color:rgba(255,255,255,.75);margin-top:2px}
+.copinha-status-badge{position:absolute;top:10px;right:10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:20px;font-weight:700}
+.copinha-status-ativa{background:rgba(62,201,154,.18);color:var(--green2)}
+.copinha-status-encerrada{background:rgba(107,107,136,.18);color:var(--muted2)}
+.copinha-status-rascunho{background:rgba(201,168,76,.18);color:var(--gold2)}
+
+.copinha-hero{position:relative;border-radius:var(--radius);overflow:hidden;margin-bottom:20px;min-height:130px;border:1px solid var(--border)}
+.copinha-hero-fundo{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.5)}
+.copinha-hero-body{position:relative;padding:22px;display:flex;align-items:center;gap:16px}
+.copinha-hero-logo{width:56px;height:56px;border-radius:10px;object-fit:cover;background:var(--s3);flex-shrink:0}
+.copinha-hero-titulo{font-family:var(--font-d);font-weight:800;font-size:22px;color:#fff}
+.copinha-hero-sub{font-size:12px;color:rgba(255,255,255,.8);margin-top:2px}
+
+.copinha-bracket-wrap{position:relative;overflow-x:auto;padding-bottom:8px}
+.copinha-bracket-cols{display:flex;gap:36px;min-width:max-content;position:relative;z-index:1}
+.copinha-fase-col{display:flex;flex-direction:column;gap:18px;min-width:210px}
+.copinha-fase-label{font-family:var(--font-d);font-weight:700;font-size:12px;color:var(--gold2);text-transform:uppercase;letter-spacing:1px;text-align:center}
+.copinha-fase-col.repescagem .copinha-fase-label{color:var(--muted2)}
+.copinha-confronto{background:var(--s2);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:box-shadow .2s,border-color .2s}
+.copinha-confronto.proximo{border-color:var(--gold);animation:copinhaProximoPulse 2.2s ease-in-out infinite}
+.copinha-confronto.finalizado{opacity:.92}
+.copinha-confronto.flash{animation:copinhaFlash 1s ease-out}
+@keyframes copinhaProximoPulse{0%,100%{box-shadow:0 0 0 0 var(--gold-glow,rgba(201,168,76,.5))}50%{box-shadow:0 0 0 6px rgba(201,168,76,0)}}
+@keyframes copinhaFlash{0%{background:rgba(201,168,76,.35)}100%{background:var(--s2)}}
+.copinha-confronto-meta{font-size:10px;color:var(--muted2);padding:6px 10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:6px}
+.copinha-confronto.proximo .copinha-confronto-meta{color:var(--gold2);font-weight:700}
+.copinha-slot{padding:8px 10px;display:flex;align-items:center;gap:8px;font-size:12.5px;border-bottom:1px solid var(--border)}
+.copinha-slot:last-child{border-bottom:none}
+.copinha-slot.vazio{color:var(--muted2);font-style:italic}
+.copinha-slot.vencedor{color:var(--gold2);font-weight:700;background:rgba(201,168,76,.08)}
+.copinha-slot.eliminado{opacity:.55;text-decoration:line-through}
+.copinha-slot-foto{width:24px;height:24px;border-radius:50%;object-fit:cover;background:var(--s3);flex-shrink:0}
+.copinha-slot-coloc{margin-left:auto;font-size:10px;color:var(--muted2);font-weight:700}
+.copinha-bracket-lines{position:absolute;top:0;left:0;pointer-events:none;z-index:0}
+.copinha-bracket-lines path{stroke:var(--border2);stroke-width:1.5;fill:none}
+
+.copinha-champ-banner{display:flex;align-items:center;gap:12px;background:linear-gradient(90deg,rgba(201,168,76,.15),transparent);border:1px solid var(--gold);border-radius:10px;padding:14px 18px;margin-bottom:18px}
+.copinha-champ-foto{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--gold)}
+
+/* Editor de copinha (admin) — roster com drag-and-drop nativo */
+.copinha-roster-item{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:8px;cursor:grab;font-size:12.5px}
+.copinha-roster-item.dragging{opacity:.4}
+.copinha-roster-item.selecionado{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.copinha-roster-foto{width:28px;height:28px;border-radius:50%;object-fit:cover;background:var(--s3);flex-shrink:0}
+.copinha-slot-editavel{cursor:pointer;transition:background .12s}
+.copinha-slot-editavel.vazio:hover{background:rgba(201,168,76,.1)}
+
 /* Campanhas */
 .camp-card{background:var(--s2);border:1px solid var(--border);padding:22px;position:relative}
 .camp-active-dot{width:6px;height:6px;background:var(--green2);position:absolute;top:20px;right:20px;border-radius:50%;box-shadow:0 0 8px var(--green2)}
@@ -1760,29 +1813,44 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       <div style="display:flex;gap:8px;margin-bottom:16px" id="copa-subtabs">
         <button class="btn-primary" id="copa-tab-copa" onclick="renderCopa('copa')">Copa</button>
         <button class="btn-outline" id="copa-tab-copinha" onclick="renderCopa('copinha')">Copinha</button>
+        <button class="btn-outline" id="copa-tab-individual" onclick="renderCopa('individual')">🥊 Copinhas</button>
       </div>
-      <div class="panel" id="copa-chaveamento-panel" style="display:none;margin-bottom:16px">
-        <div class="panel-head">
-          <div class="panel-title" id="copa-chaveamento-title">🔀 Chaveamento</div>
-          <button class="btn-sm" id="copa-chaveamento-toggle" onclick="toggleCopaChaveamento()">Ver chaveamento</button>
+
+      <!-- COPINHAS individuais (torneio eliminatório colaborador x colaborador) -->
+      <div id="copa-individual-wrap" style="display:none">
+        <div id="copinha-lista-view">
+          <div class="grid-3" id="copinha-lista-grid" style="gap:16px"></div>
         </div>
-        <div class="panel-body" id="copa-chaveamento-body" style="display:none;overflow-x:auto"></div>
-      </div>
-      <div class="panel" id="copa-standings-panel" style="display:none;margin-bottom:16px">
-        <div class="panel-head"><div class="panel-title">📊 Classificação</div></div>
-        <div class="panel-body" style="padding:0;overflow-x:auto">
-          <table class="tbl">
-            <thead><tr><th>Equipe</th><th>Pts</th><th>J</th><th>V</th><th>E</th><th>D</th><th>Gols</th><th>SG</th></tr></thead>
-            <tbody id="copa-standings-body"></tbody>
-          </table>
+        <div id="copinha-detalhe-view" style="display:none">
+          <button class="btn-sm" style="margin-bottom:14px" onclick="fecharCopinhaDetalhe()">← Voltar</button>
+          <div id="copinha-detalhe-body"></div>
         </div>
       </div>
-      <div class="panel">
-        <div class="panel-head">
-          <div class="panel-title" id="copa-timeline-title">🏆 Copa GR — Campeões por edição</div>
-          <span class="tag" style="background:rgba(201,168,76,0.12);color:var(--gold2)" id="copa-ed-count"></span>
+
+      <div id="copa-equipe-wrap">
+        <div class="panel" id="copa-chaveamento-panel" style="display:none;margin-bottom:16px">
+          <div class="panel-head">
+            <div class="panel-title" id="copa-chaveamento-title">🔀 Chaveamento</div>
+            <button class="btn-sm" id="copa-chaveamento-toggle" onclick="toggleCopaChaveamento()">Ver chaveamento</button>
+          </div>
+          <div class="panel-body" id="copa-chaveamento-body" style="display:none;overflow-x:auto"></div>
         </div>
-        <div class="panel-body" id="copa-timeline"></div>
+        <div class="panel" id="copa-standings-panel" style="display:none;margin-bottom:16px">
+          <div class="panel-head"><div class="panel-title">📊 Classificação</div></div>
+          <div class="panel-body" style="padding:0;overflow-x:auto">
+            <table class="tbl">
+              <thead><tr><th>Equipe</th><th>Pts</th><th>J</th><th>V</th><th>E</th><th>D</th><th>Gols</th><th>SG</th></tr></thead>
+              <tbody id="copa-standings-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title" id="copa-timeline-title">🏆 Copa GR — Campeões por edição</div>
+            <span class="tag" style="background:rgba(201,168,76,0.12);color:var(--gold2)" id="copa-ed-count"></span>
+          </div>
+          <div class="panel-body" id="copa-timeline"></div>
+        </div>
       </div>
     </div>
 
@@ -2285,7 +2353,24 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         <button class="btn-primary" onclick="openAdmModal('copa-chaveamento')">+ Novo chaveamento</button>
       </div>
       <div style="font-size:11px;color:var(--muted2);margin:-8px 0 12px;line-height:1.6">Só um chaveamento pode ficar "ativo" por competição (Copa/Copinha) — ativar um novo desativa automaticamente o anterior do mesmo tipo. Sem nenhum ativo, a seção some pros colaboradores.</div>
-      <div class="adm-table-wrap" id="adm-copa-chaveamento-list"></div>
+      <div class="adm-table-wrap" id="adm-copa-chaveamento-list" style="margin-bottom:24px"></div>
+
+      <div id="adm-copinhas-lista-view">
+        <div class="adm-page-head">
+          <div class="adm-page-title">Copa GR — Copinhas (torneio individual)</div>
+          <button class="btn-primary" onclick="openAdmModal('copinha')">+ Nova copinha</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted2);margin:-8px 0 12px;line-height:1.6">Chaveamento colaborador x colaborador, montado à mão. Clique em "Gerenciar" numa copinha pra editar participantes, fases e confrontos.</div>
+        <div class="adm-table-wrap" id="adm-copinhas-list"></div>
+      </div>
+
+      <div id="adm-copinha-builder-view" style="display:none">
+        <div class="adm-page-head">
+          <div class="adm-page-title" id="adm-copinha-builder-titulo">Gerenciar copinha</div>
+          <button class="btn-outline" onclick="fecharCopinhaBuilder()">← Voltar</button>
+        </div>
+        <div id="adm-copinha-builder-body"></div>
+      </div>
     </div>
 
     <!-- ══ ADM: BENEFÍCIOS ══ -->
@@ -2383,6 +2468,9 @@ let CU = null, CUP = null;
 let allVendas=[], allMetas=[], allCampanhas=[], allBeneficios=[];
 let allAcademy=[], allNews=[], allSugestoes=[], allHallFama=[], allRegras=[], allAcademyProgresso=[], allBiblioteca=[], allBiblioProgresso=[], allProvaRespostas=[], allCertificados=[];
 let allCopaEquipes=[], allCopaPartidas=[], allAvisos=[], allCarreira=[], allDestaques=[], allCopaEdicoes=[], allCopaChaveamentos=[];
+// Copinhas: torneio eliminatório individual (colaborador x colaborador), separado do
+// chaveamento por equipe acima — ver bloco "COPINHAS" mais abaixo no arquivo.
+let allCopinhas=[], allCopinhaParticipantes=[], allCopinhaConfrontos=[], allCopinhaConfrontoParticipantes=[];
 let allCarreiraAdmin=[]; // trilha de carreira de TODOS os colaboradores (visão admin/coord) — allCarreira é só a do próprio usuário logado
 let allNiveis=[]; // linhas cruas de portal_niveis (formato do banco) — LEVELS é a versão já convertida pro formato usado no cálculo/telas
 let allPontosRegras=[]; // linhas de portal_pontos_regras — editável pela Administração (tela "Pontos")
@@ -2868,7 +2956,7 @@ async function loadAll(){
   // série — um round-trip inteiro de rede jogado fora à toa, já que nenhuma
   // dessas 13 consultas depende do perfil. Juntei tudo num Promise.allSettled
   // só, então roda tudo em paralelo e a tela carrega mais rápido.
-  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf,cer,chr,apr,bibr,bpr,pvr,certr,nlr,covr,ptr]=await Promise.allSettled([
+  const [vr,mr,cr,br,ar,nr,sr,hr,rr,cpr,avr,carr,der,prf,cer,chr,apr,bibr,bpr,pvr,certr,nlr,covr,ptr,cphr,cppr,ccfr,ccpp]=await Promise.allSettled([
     sb.from('portal_vendas').select('*').eq('user_id',uid).order('data',{ascending:false}),
     sb.from('portal_metas').select('*').eq('user_id',uid),
     sb.from('portal_campanhas').select('*').order('criado_em',{ascending:false}),
@@ -2893,6 +2981,10 @@ async function loadAll(){
     sb.from('portal_niveis').select('*').order('ordem'),
     sb.from('portal_users_classe_override').select('*').eq('user_id',uid).maybeSingle(),
     sb.from('portal_pontos_regras').select('*').order('ordem'),
+    sb.from('portal_copinhas').select('*').order('criado_em',{ascending:false}),
+    sb.from('portal_copinha_participantes').select('*').order('ordem'),
+    sb.from('portal_copinha_confrontos').select('*').order('fase_ordem').order('ordem'),
+    sb.from('portal_copinha_confronto_participantes').select('*'),
   ]);
   if(vr.value?.data)allVendas=vr.value.data;
   if(mr.value?.data)allMetas=mr.value.data;
@@ -2914,6 +3006,10 @@ async function loadAll(){
   if(bpr.value?.data)allBiblioProgresso=bpr.value.data;
   if(pvr.value?.data)allProvaRespostas=pvr.value.data;
   if(certr.value?.data)allCertificados=certr.value.data;
+  if(cphr.value?.data)allCopinhas=cphr.value.data;
+  if(cppr.value?.data)allCopinhaParticipantes=cppr.value.data;
+  if(ccfr.value?.data)allCopinhaConfrontos=ccfr.value.data;
+  if(ccpp.value?.data)allCopinhaConfrontoParticipantes=ccpp.value.data;
   if(nlr.value?.data?.length){
     allNiveis = nlr.value.data;
     LEVELS = allNiveis.map(r=>({id:r.id,name:r.nome,minCotas:r.min_cotas,minVolume:r.min_volume,color:r.cor,perks:r.perks||[],premios:r.premios||[],ordem:r.ordem||0,imagem:r.imagem_url||null}));
@@ -3536,6 +3632,14 @@ function renderCopa(tab){
   el('copa-tab-copa')?.classList.toggle('btn-outline',_copaTab!=='copa');
   el('copa-tab-copinha')?.classList.toggle('btn-primary',_copaTab==='copinha');
   el('copa-tab-copinha')?.classList.toggle('btn-outline',_copaTab!=='copinha');
+  el('copa-tab-individual')?.classList.toggle('btn-primary',_copaTab==='individual');
+  el('copa-tab-individual')?.classList.toggle('btn-outline',_copaTab!=='individual');
+
+  const ehIndividual = _copaTab==='individual';
+  el('copa-equipe-wrap').style.display = ehIndividual ? 'none' : 'block';
+  el('copa-individual-wrap').style.display = ehIndividual ? 'block' : 'none';
+  if(ehIndividual){ fecharCopinhaDetalhe(); return; }
+
   el('copa-timeline-title').textContent = _copaTab==='copinha' ? '🏆 Copinha — Campeões por edição' : '🏆 Copa GR — Campeões por edição';
   renderCopaTimeline();
   renderCopaChaveamento();
@@ -3695,6 +3799,255 @@ function renderAdmCopaEdicoes(){
       <div class="adm-row-title">${ed.ano} — ${ed.equipe_campea}</div>
       <div class="adm-row-sub">${[ed.pais,ed.capitao?`Capitão: ${ed.capitao}`:''].filter(Boolean).join(' · ')}</div>
     </div>`);
+}
+
+/* ═══ COPINHAS — torneio eliminatório individual (colaborador x colaborador) ═══
+   Separado do chaveamento por equipe acima (portal_copa_chaveamento): aqui cada
+   "copinha" é um torneio próprio com roster de participantes (com foto),
+   confrontos organizados em fases livres (texto digitado pelo admin — sem
+   geração automática de chaveamento/bye, é tudo montado à mão) e um bracket
+   paralelo opcional de repescagem. Um confronto pode ter mais de 2 participantes
+   (usado na final, ex: pódio de 4) — por isso os participantes de um confronto
+   ficam numa tabela à parte (portal_copinha_confronto_participantes) em vez de
+   colunas fixas A/B. */
+let _copinhaAtualId = null;
+let _copinhaRealtimeChannel = null;
+let _copinhaResizeHandler = null;
+
+function copinhaParticipante(id){ return allCopinhaParticipantes.find(p=>p.id===id); }
+function copinhaConfrontosDe(copinhaId){ return allCopinhaConfrontos.filter(c=>c.copinha_id===copinhaId); }
+function copinhaParticipantesDoConfronto(confrontoId){
+  return allCopinhaConfrontoParticipantes.filter(cp=>cp.confronto_id===confrontoId).sort((a,b)=>a.slot-b.slot);
+}
+function copinhaFotoOuPlaceholder(url){
+  return url || 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" fill="%23262636"/><circle cx="12" cy="9" r="4" fill="%236B6B88"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" fill="%236B6B88"/></svg>');
+}
+
+function renderCopinhasLista(){
+  const grid = el('copinha-lista-grid');
+  if(!grid) return;
+  const visiveis = isAdminOrCoordOrSup() ? allCopinhas : allCopinhas.filter(c=>c.status!=='rascunho');
+  if(!visiveis.length){
+    grid.innerHTML = `<div class="empty" style="padding:32px;grid-column:1/-1"><div class="empty-line"></div><div class="empty-text">Nenhuma copinha cadastrada ainda${isAdminOrCoordOrSup()?' — adicione em Gestão → Copa GR':''}</div></div>`;
+    return;
+  }
+  const ordenadas=[...visiveis].sort((a,b)=>(b.criado_em||'').localeCompare(a.criado_em||''));
+  grid.innerHTML = ordenadas.map(c=>{
+    const nPart = allCopinhaParticipantes.filter(p=>p.copinha_id===c.id).length;
+    return `<div class="copinha-card" onclick="abrirCopinhaDetalhe('${c.id}')">
+      ${c.capa_url?`<div class="copinha-card-capa" style="background-image:url('${c.capa_url}')"></div>`:''}
+      <span class="copinha-status-badge copinha-status-${c.status}">${c.status}</span>
+      <div class="copinha-card-body">
+        <div class="copinha-card-titulo">${c.titulo}</div>
+        <div class="copinha-card-sub">${[c.subtitulo,`${nPart} participante${nPart!==1?'s':''}`].filter(Boolean).join(' · ')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function fecharCopinhaDetalhe(){
+  _copinhaAtualId = null;
+  _dessubscreverRealtimeCopinha();
+  if(_copinhaResizeHandler){ window.removeEventListener('resize',_copinhaResizeHandler); _copinhaResizeHandler=null; }
+  const listaView=el('copinha-lista-view'), detView=el('copinha-detalhe-view');
+  if(listaView) listaView.style.display='block';
+  if(detView) detView.style.display='none';
+  renderCopinhasLista();
+}
+
+async function abrirCopinhaDetalhe(id){
+  _copinhaAtualId = id;
+  el('copinha-lista-view').style.display='none';
+  el('copinha-detalhe-view').style.display='block';
+  renderCopinhaDetalhe();
+  _assinarRealtimeCopinha(id);
+  _copinhaResizeHandler = ()=>desenharLinhasCopinha();
+  window.addEventListener('resize',_copinhaResizeHandler);
+}
+
+// Rótulo de colocação — só usado quando o confronto já tem resultado (colocacao
+// preenchida), tipicamente a final com pódio de 3-4 participantes.
+function copinhaColocacaoLabel(n){
+  return n===1?'🥇 1º':n===2?'🥈 2º':n===3?'🥉 3º':`${n}º`;
+}
+
+function renderCopinhaDetalhe(){
+  const c = allCopinhas.find(x=>x.id===_copinhaAtualId);
+  const body = el('copinha-detalhe-body');
+  if(!c){ body.innerHTML='<div class="empty">Copinha não encontrada.</div>'; return; }
+
+  const campeao = c.campeao_participante_id ? copinhaParticipante(c.campeao_participante_id) : null;
+  const confrontos = copinhaConfrontosDe(c.id);
+  const principal = confrontos.filter(x=>x.bracket_tipo==='principal');
+  const repescagem = confrontos.filter(x=>x.bracket_tipo==='repescagem');
+
+  // Confronto ainda não realizado com data mais próxima = "próximo embate" —
+  // usado pra destacar visualmente (borda pulsante) qual card olhar primeiro.
+  const agendados = confrontos.filter(x=>x.status==='agendado' && x.data_hora);
+  const proximoId = agendados.length
+    ? agendados.reduce((min,x)=> new Date(x.data_hora)<new Date(min.data_hora)?x:min).id
+    : null;
+
+  body.innerHTML = `
+    <div class="copinha-hero">
+      ${c.fundo_url?`<div class="copinha-hero-fundo" style="background-image:url('${c.fundo_url}')"></div>`:''}
+      <div class="copinha-hero-body">
+        ${c.logo_url?`<img class="copinha-hero-logo" src="${c.logo_url}" alt="">`:''}
+        <div>
+          <div class="copinha-hero-titulo">${c.titulo}</div>
+          ${c.subtitulo?`<div class="copinha-hero-sub">${c.subtitulo}</div>`:''}
+        </div>
+      </div>
+    </div>
+    ${campeao?`<div class="copinha-champ-banner">
+      <img class="copinha-champ-foto" src="${copinhaFotoOuPlaceholder(campeao.foto_url)}" alt="">
+      <div><div style="font-size:11px;color:var(--gold2);text-transform:uppercase;letter-spacing:1px;font-weight:700">🏆 Campeão</div>
+      <div style="font-family:var(--font-d);font-weight:700;font-size:16px">${campeao.nome}</div></div>
+    </div>`:''}
+    ${renderCopinhaBracketCols(principal,'Chaveamento principal')}
+    ${c.permite_repescagem && repescagem.length ? renderCopinhaBracketCols(repescagem,'Repescagem',true) : ''}
+  `;
+
+  // Destaca o próximo confronto e monta o badge "Próximo: <data>" — feito
+  // depois do innerHTML pra não precisar duplicar a lógica de data no template.
+  confrontos.forEach(x=>{
+    const cardEl = body.querySelector(`[data-confronto-id="${x.id}"]`);
+    if(!cardEl) return;
+    cardEl.classList.toggle('proximo', x.id===proximoId);
+    if(x.id===proximoId){
+      const metaEl = cardEl.querySelector('.copinha-confronto-meta');
+      if(metaEl) metaEl.insertAdjacentHTML('afterbegin', `<span>⏳ Próximo</span>`);
+    }
+  });
+
+  desenharLinhasCopinha();
+}
+
+function renderCopinhaBracketCols(confrontosLista, tituloSecao, ehRepescagem){
+  if(!confrontosLista.length) return '';
+  const fases = {};
+  confrontosLista.forEach(c=>{
+    const k=c.fase;
+    if(!fases[k]) fases[k]={nome:k,ordem:c.fase_ordem||0,confrontos:[]};
+    fases[k].confrontos.push(c);
+  });
+  const colunas = Object.values(fases).sort((a,b)=>a.ordem-b.ordem);
+  colunas.forEach(f=>f.confrontos.sort((a,b)=>(a.ordem||0)-(b.ordem||0)));
+
+  return `<div class="panel" style="margin-bottom:16px">
+    <div class="panel-head"><div class="panel-title">${ehRepescagem?'🔁':'🔀'} ${tituloSecao}</div></div>
+    <div class="panel-body copinha-bracket-wrap">
+      <svg class="copinha-bracket-lines" id="copinha-lines-${ehRepescagem?'rep':'principal'}"></svg>
+      <div class="copinha-bracket-cols">
+        ${colunas.map(f=>`
+          <div class="copinha-fase-col ${ehRepescagem?'repescagem':''}">
+            <div class="copinha-fase-label">${f.nome}</div>
+            ${f.confrontos.map(c=>renderCopinhaConfrontoCard(c)).join('')}
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCopinhaConfrontoCard(c){
+  const parts = copinhaParticipantesDoConfronto(c.id);
+  const temResultado = parts.some(p=>p.colocacao);
+  const slotsHtml = parts.length
+    ? parts.map(p=>{
+        const part = copinhaParticipante(p.participante_id);
+        if(!part) return '';
+        const venceu = p.colocacao===1;
+        return `<div class="copinha-slot ${venceu?'vencedor':''} ${temResultado&&!venceu?'eliminado':''}">
+          <img class="copinha-slot-foto" src="${copinhaFotoOuPlaceholder(part.foto_url)}" alt="">
+          <span>${part.nome}</span>
+          ${p.colocacao?`<span class="copinha-slot-coloc">${copinhaColocacaoLabel(p.colocacao)}</span>`:''}
+        </div>`;
+      }).join('')
+    : `<div class="copinha-slot vazio">A definir</div><div class="copinha-slot vazio">A definir</div>`;
+  return `<div class="copinha-confronto ${c.status==='finalizado'?'finalizado':''}" data-confronto-id="${c.id}">
+    <div class="copinha-confronto-meta"><span>${c.status==='finalizado'?'Finalizado':c.status==='em_andamento'?'Em andamento':'Agendado'}</span>${c.data_hora?`<span>${fmtDateHora(c.data_hora)}</span>`:''}</div>
+    ${slotsHtml}
+  </div>`;
+}
+
+// Linhas conectoras entre confrontos de fases adjacentes — desenhadas via SVG
+// posicionado pelas coordenadas reais dos cards na tela (getBoundingClientRect),
+// não por uma árvore binária assumida: como o chaveamento é montado à mão (sem
+// geração automática), uma fase pode ter um número de confrontos que não é
+// metade da fase anterior, então não dá pra calcular a posição só por índice.
+// Cada card da fase N conecta com o próximo card ainda sem linha de saída na
+// fase N+1 (aproximação simples: a maioria dos brackets é montada em ordem).
+function desenharLinhasCopinha(){
+  ['copinha-lines-principal','copinha-lines-rep'].forEach(svgId=>{
+    const svg = el(svgId);
+    if(!svg) return;
+    const wrap = svg.closest('.copinha-bracket-wrap');
+    const cols = [...wrap.querySelectorAll('.copinha-fase-col')];
+    const wrapRect = wrap.getBoundingClientRect();
+    // Sem viewBox, o tamanho RENDERIZADO do SVG é quem define o sistema de
+    // coordenadas — com position:absolute;top:0;left:0 (sem inset:0, que
+    // travaria no tamanho visível), setar width/height só no atributo não
+    // bastaria: o CSS box ainda ficaria do tamanho do conteúdo (0x0, já que
+    // não tem display:block/width setado). Por isso define via style também,
+    // batendo exatamente com scrollWidth/scrollHeight — o mesmo espaço que
+    // os cards ocupam, mesmo quando é maior que a área visível (com scroll).
+    svg.setAttribute('width', wrap.scrollWidth);
+    svg.setAttribute('height', wrap.scrollHeight);
+    svg.style.width = wrap.scrollWidth+'px';
+    svg.style.height = wrap.scrollHeight+'px';
+    let paths='';
+    for(let i=0;i<cols.length-1;i++){
+      const atuais=[...cols[i].querySelectorAll('.copinha-confronto')];
+      const proximos=[...cols[i+1].querySelectorAll('.copinha-confronto')];
+      if(!proximos.length) continue;
+      atuais.forEach((cardEl,idx)=>{
+        const alvo = proximos[Math.min(Math.floor(idx/2), proximos.length-1)];
+        const r1=cardEl.getBoundingClientRect(), r2=alvo.getBoundingClientRect();
+        const x1=r1.right-wrapRect.left+wrap.scrollLeft, y1=r1.top+r1.height/2-wrapRect.top+wrap.scrollTop;
+        const x2=r2.left-wrapRect.left+wrap.scrollLeft, y2=r2.top+r2.height/2-wrapRect.top+wrap.scrollTop;
+        const midX=(x1+x2)/2;
+        paths += `<path d="M${x1},${y1} C${midX},${y1} ${midX},${y2} ${x2},${y2}"/>`;
+      });
+    }
+    svg.innerHTML = paths;
+  });
+}
+
+// Realtime: ao vivo entre colaboradores com a mesma copinha aberta. Diferente
+// dos canais globais de chat/comunidade (assinados uma vez e nunca encerrados,
+// porque cobrem o app inteiro pela sessão toda), este canal é escopado à
+// copinha aberta no momento — precisa dar unsubscribe ao trocar de copinha ou
+// sair da tela, senão o colaborador acumula um canal por copinha visitada.
+function _assinarRealtimeCopinha(copinhaId){
+  _dessubscreverRealtimeCopinha();
+  _copinhaRealtimeChannel = sb.channel('portal-copinha-'+copinhaId)
+    .on('postgres_changes',{event:'*',schema:'public',table:'portal_copinha_confrontos',filter:`copinha_id=eq.${copinhaId}`}, payload=>{
+      _aplicarMudancaRealtimeCopinha('confronto',payload);
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'portal_copinha_confronto_participantes',filter:`copinha_id=eq.${copinhaId}`}, payload=>{
+      _aplicarMudancaRealtimeCopinha('confronto_participante',payload);
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'portal_copinha_participantes',filter:`copinha_id=eq.${copinhaId}`}, payload=>{
+      _aplicarMudancaRealtimeCopinha('participante',payload);
+    })
+    .subscribe();
+}
+function _dessubscreverRealtimeCopinha(){
+  if(_copinhaRealtimeChannel){ sb.removeChannel(_copinhaRealtimeChannel); _copinhaRealtimeChannel=null; }
+}
+function _aplicarMudancaRealtimeCopinha(tabela, payload){
+  const arr = tabela==='confronto' ? allCopinhaConfrontos : tabela==='confronto_participante' ? allCopinhaConfrontoParticipantes : allCopinhaParticipantes;
+  const row = payload.new?.id ? payload.new : payload.old;
+  const idx = arr.findIndex(x=>x.id===row.id);
+  if(payload.eventType==='DELETE'){ if(idx>-1) arr.splice(idx,1); }
+  else if(idx>-1){ arr[idx]=payload.new; }
+  else{ arr.push(payload.new); }
+  if(_copinhaAtualId){
+    renderCopinhaDetalhe();
+    const changedId = tabela==='confronto' ? row.id : row.confronto_id;
+    const cardEl = changedId && el('copinha-detalhe-body').querySelector(`[data-confronto-id="${changedId}"]`);
+    if(cardEl){ cardEl.classList.add('flash'); setTimeout(()=>cardEl.classList.remove('flash'),1000); }
+  }
 }
 
 /* ═══ CAMPANHAS ═══ */
@@ -6008,7 +6361,7 @@ async function openAdmModal(type, data=null){
     academy:'Conteúdo Academy', news:'Notícia', aviso:'Aviso',
     'copa-equipe':'Equipe Copa', 'copa-edicao':'Edição da Copa', beneficio:'Benefício',
     hallfama:'Hall da Fama', regra:'Regra', usuario:'Usuário', biblioteca:'Livro', nivel:'Nível',
-    pontos_regra:'Regra de Pontuação',
+    pontos_regra:'Regra de Pontuação', copinha:'Copinha',
   };
   el('adm-modal-title').textContent = (data ? 'Editar ' : 'Nova ') + (titles[type]||type);
   el('adm-modal-body').innerHTML = buildAdmForm(type, data)
@@ -6216,6 +6569,17 @@ function buildAdmForm(type, d={}){
         <textarea class="adm-textarea" id="af-fases_texto" rows="10" style="font-family:monospace;font-size:12px" placeholder="Quartas de Final&#10;Equipe Chis 2 x 1 Equipe Luiz&#10;Equipe A 0 x 0 Equipe B&#10;&#10;Semifinal&#10;Equipe Chis 3 x 2 Equipe A">${fasesParaTexto(d.fases)}</textarea>
         <div style="font-size:10px;color:var(--muted2);margin-top:4px">Uma linha sem placar = título da fase. Linha "Equipe X &lt;placar&gt; x &lt;placar&gt; Equipe Y" = um confronto dessa fase. Deixe sem placar (ex: "Equipe X 0 x 0 Equipe Y") pra jogo ainda não realizado.</div>
       </div>`;
+
+    case 'copinha': return `
+      ${inp('titulo','Título',d.titulo,'text','Ex: Fight do Milhão')}
+      ${inp('subtitulo','Subtítulo (opcional)',d.subtitulo,'text','Ex: GP Peso-Palha (até 52kg)')}
+      ${g2(sel('status','Status',[{v:'rascunho',l:'Rascunho (só admin vê)'},{v:'ativa',l:'Ativa'},{v:'encerrada',l:'Encerrada'}],d.status||'rascunho'),
+           sel('permite_repescagem','Repescagem',[{v:'false',l:'Sem repescagem'},{v:'true',l:'Com repescagem'}],String(d.permite_repescagem===true)))}
+      ${d.id ? sel('campeao_participante_id','Campeão (opcional)',[{v:'',l:'— ainda sem campeão —'},...allCopinhaParticipantes.filter(p=>p.copinha_id===d.id).map(p=>({v:p.id,l:p.nome}))],d.campeao_participante_id||'') : ''}
+      ${copinhaUploadField('capa','Capa (banner do card/cabeçalho)',d.capa_url)}
+      ${copinhaUploadField('logo','Logo',d.logo_url)}
+      ${copinhaUploadField('fundo','Fundo (atrás do bracket)',d.fundo_url)}
+      ${!d.id?'<div style="font-size:10px;color:var(--muted2);margin-top:-4px">Depois de criar, clique em "Gerenciar" na lista pra adicionar participantes, fases e confrontos.</div>':''}`;
 
     case 'beneficio': return `
       ${sel('user_id','Colaborador',[{v:'',l:'Todos / Geral'},..._scopedUsers().map(u=>({v:u.user_id,l:u.nome||u.user_id}))],d.user_id)}
@@ -6436,6 +6800,13 @@ async function saveAdmModal(){
       payload = { titulo:av('titulo')||null, tipo:asel('tipo')||'copa',
         ativo:asel('ativo')==='true', fases:parseFasesChaveamento(av('fases_texto')) };
       break;
+    case 'copinha':
+      payload = { titulo:av('titulo'), subtitulo:av('subtitulo')||null, status:asel('status')||'rascunho',
+        permite_repescagem:asel('permite_repescagem')==='true',
+        capa_url:av('capa_url')||null, logo_url:av('logo_url')||null, fundo_url:av('fundo_url')||null,
+        atualizado_em:new Date().toISOString() };
+      if(editId) payload.campeao_participante_id = asel('campeao_participante_id')||null;
+      break;
     case 'beneficio':
       payload = { user_id:asel('user_id')||null, titulo:av('titulo'), tipo:asel('tipo'),
         descricao:av('descricao'), validade:av('validade')||null, status:asel('status'),
@@ -6492,7 +6863,7 @@ async function saveAdmModal(){
     campanha:'portal_campanhas', meta:'portal_metas', destaque:'portal_destaques', carreira:'portal_carreira',
     academy:'portal_academy', news:'portal_news', aviso:'portal_avisos',
     'copa-equipe':'portal_copa_equipes', 'copa-edicao':'portal_copa_edicoes', beneficio:'portal_beneficios',
-    'copa-chaveamento':'portal_copa_chaveamento',
+    'copa-chaveamento':'portal_copa_chaveamento', copinha:'portal_copinhas',
     hallfama:'portal_hall_fama', regra:'portal_regras', biblioteca:'portal_biblioteca',
     nivel:'portal_niveis', pontos_regra:'portal_pontos_regras',
   };
@@ -6556,6 +6927,7 @@ async function reloadAdmData(type){
     'copa-edicao': async()=>{ const {data}=await sb.from('portal_copa_edicoes').select('*').order('ano',{ascending:false}); if(data)allCopaEdicoes=data; },
     beneficio:async()=>{ const {data}=await sb.from('portal_beneficios').select('*'); if(data)allBeneficios=data; },
     'copa-chaveamento':async()=>{ const {data}=await sb.from('portal_copa_chaveamento').select('*'); if(data)allCopaChaveamentos=data; },
+    copinha: async()=>{ const {data}=await sb.from('portal_copinhas').select('*').order('criado_em',{ascending:false}); if(data)allCopinhas=data; },
     hallfama: async()=>{ const {data}=await sb.from('portal_hall_fama').select('*').order('ano',{ascending:false}); if(data)allHallFama=data; },
     regra:    async()=>{ const {data}=await sb.from('portal_regras').select('*').order('ordem'); if(data)allRegras=data; },
     biblioteca: async()=>{ const {data}=await sb.from('portal_biblioteca').select('*').order('criado_em',{ascending:false}); if(data)allBiblioteca=data; },
@@ -6578,7 +6950,7 @@ async function deleteAdmItem(type, id){
     campanha:'portal_campanhas', meta:'portal_metas', destaque:'portal_destaques', carreira:'portal_carreira',
     academy:'portal_academy', news:'portal_news', aviso:'portal_avisos',
     'copa-equipe':'portal_copa_equipes', 'copa-edicao':'portal_copa_edicoes', beneficio:'portal_beneficios',
-    'copa-chaveamento':'portal_copa_chaveamento',
+    'copa-chaveamento':'portal_copa_chaveamento', copinha:'portal_copinhas',
     hallfama:'portal_hall_fama', regra:'portal_regras', biblioteca:'portal_biblioteca',
     pontos_regra:'portal_pontos_regras',
   };
@@ -6908,6 +7280,23 @@ function renderAdmCopa(){
     </div>`);
   renderAdmCopaEdicoes();
   renderAdmCopaChaveamento();
+  renderAdmCopinhas();
+}
+
+function renderAdmCopinhas(){
+  const list=el('adm-copinhas-list');
+  if(!list) return;
+  const ordenadas=[...allCopinhas].sort((a,b)=>(b.criado_em||'').localeCompare(a.criado_em||''));
+  list.innerHTML = admList(ordenadas,'copinha', c=>{
+    const nPart=allCopinhaParticipantes.filter(p=>p.copinha_id===c.id).length;
+    const nConf=allCopinhaConfrontos.filter(x=>x.copinha_id===c.id).length;
+    const corStatus=c.status==='ativa'?'var(--green2)':c.status==='encerrada'?'var(--muted2)':'var(--gold2)';
+    return `<div class="adm-row-main">
+      <div class="adm-row-title">${c.titulo} <span class="tag" style="background:rgba(255,255,255,0.06);color:${corStatus};margin-left:6px;text-transform:uppercase">${c.status}</span></div>
+      <div class="adm-row-sub">${[c.subtitulo,`${nPart} participante(s)`,`${nConf} confronto(s)`,c.permite_repescagem?'com repescagem':''].filter(Boolean).join(' · ')}</div>
+      <button class="btn-sm" style="margin-top:6px" onclick="abrirCopinhaBuilder('${c.id}')">⚙️ Gerenciar</button>
+    </div>`;
+  });
 }
 
 function renderAdmCopaChaveamento(){
@@ -6921,6 +7310,356 @@ function renderAdmCopaChaveamento(){
       <div class="adm-row-sub">${c.tipo==='copinha'?'Copinha':'Copa'} · ${(c.fases||[]).length} fase(s) · ${nConfrontos} confronto(s)</div>
     </div>`;
   });
+}
+
+/* ── Editor de copinha (admin): participantes + fases/confrontos ──
+   Tela dedicada (não modal — não cabe): roster de participantes à esquerda
+   (foto, nome editável a qualquer momento, arrastar pra reordenar) e o
+   bracket editável à direita, um confronto por card. Interação escolhida pra
+   ser "intuitiva" sem precisar de biblioteca de drag-and-drop: clica num
+   participante do roster pra selecioná-lo, depois clica numa vaga vazia do
+   confronto pra encaixar — grava direto no banco a cada clique (mesmo
+   espírito de ação rápida usado em outras telas do app, tipo quickDist no CRM). */
+let _builderCopinhaId = null;
+let _builderSelecionadoParticipanteId = null;
+let _builderExtraVagas = {}; // {confrontoId: nº de vagas vazias extras clicadas com "+ vaga"}
+let _builderResultadoAberto = {}; // {confrontoId: true} — mostra os campos de colocação
+let _builderAvancarPara = null; // confrontoId de origem cujo vencedor está sendo movido
+let _builderDragId = null;
+
+function abrirCopinhaBuilder(copinhaId){
+  _builderCopinhaId = copinhaId;
+  _builderSelecionadoParticipanteId = null;
+  _builderExtraVagas = {}; _builderResultadoAberto = {}; _builderAvancarPara = null;
+  el('adm-copinhas-lista-view').style.display='none';
+  el('adm-copinha-builder-view').style.display='block';
+  const c = allCopinhas.find(x=>x.id===copinhaId);
+  el('adm-copinha-builder-titulo').textContent = 'Gerenciar — '+(c?.titulo||'Copinha');
+  renderCopinhaBuilder();
+}
+function fecharCopinhaBuilder(){
+  _builderCopinhaId = null;
+  el('adm-copinha-builder-view').style.display='none';
+  el('adm-copinhas-lista-view').style.display='block';
+  renderAdmCopinhas();
+}
+
+function renderCopinhaBuilder(){
+  const wrap = el('adm-copinha-builder-body');
+  if(!wrap || !_builderCopinhaId) return;
+  const participantes = allCopinhaParticipantes.filter(p=>p.copinha_id===_builderCopinhaId).sort((a,b)=>(a.ordem||0)-(b.ordem||0));
+  const confrontos = allCopinhaConfrontos.filter(c=>c.copinha_id===_builderCopinhaId);
+
+  wrap.innerHTML = `
+    <div class="grid-2" style="align-items:start;gap:20px">
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Participantes (${participantes.length})</div></div>
+        <div class="panel-body">
+          <div style="font-size:11px;color:var(--muted2);margin-bottom:10px;line-height:1.5">Arraste pra reordenar. Clique num participante pra selecionar e depois clique numa vaga vazia do confronto ao lado pra encaixar.</div>
+          <div id="cop-roster-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+            ${participantes.map(p=>renderCopinhaRosterItem(p)).join('') || '<div class="empty" style="padding:16px"><div class="empty-text">Nenhum participante ainda</div></div>'}
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:12px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <div class="timeline-photo" id="cop-part-foto-preview" style="width:40px;height:40px"></div>
+              <div>
+                <input type="file" id="cop-part-foto-file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none" onchange="handleCopinhaParticipanteFotoUpload(event)">
+                <button type="button" class="btn-sm" onclick="document.getElementById('cop-part-foto-file').click()">📷 Foto</button>
+                <span id="cop-part-foto-status" style="font-size:10px;color:var(--muted2);margin-left:6px"></span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <input class="adm-input" id="cop-part-nome" placeholder="Nome do colaborador" style="flex:1">
+              <button class="btn-primary" style="font-size:12px" onclick="adicionarCopinhaParticipante()">+ Adicionar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">Fases e confrontos</div>
+          <button class="btn-sm" onclick="abrirNovoConfrontoForm()">+ Confronto</button>
+        </div>
+        <div class="panel-body">
+          <div id="cop-novo-confronto-form" style="display:none"></div>
+          ${renderCopinhaBuilderConfrontos(confrontos.filter(c=>c.bracket_tipo==='principal'),'Chaveamento principal')}
+          ${renderCopinhaBuilderConfrontos(confrontos.filter(c=>c.bracket_tipo==='repescagem'),'Repescagem')}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderCopinhaRosterItem(p){
+  const selecionado = _builderSelecionadoParticipanteId===p.id;
+  return `<div class="copinha-roster-item ${selecionado?'selecionado':''}" draggable="true" data-id="${p.id}"
+    ondragstart="_builderDragId='${p.id}';this.classList.add('dragging')" ondragend="this.classList.remove('dragging')"
+    ondragover="event.preventDefault()" ondrop="reordenarCopinhaParticipante('${p.id}')"
+    onclick="selecionarParticipanteRoster('${p.id}')">
+    <img class="copinha-roster-foto" src="${copinhaFotoOuPlaceholder(p.foto_url)}" alt="">
+    <span id="cop-part-nome-${p.id}" style="flex:1" ondblclick="event.stopPropagation();editarNomeParticipante('${p.id}')">${p.nome}${p.eliminado?' <span style="color:var(--muted2);font-size:10px">(eliminado)</span>':''}</span>
+    <button class="btn-sm" title="Renomear" onclick="event.stopPropagation();editarNomeParticipante('${p.id}')">✏️</button>
+    <button class="btn-sm" title="Excluir" style="color:var(--red)" onclick="event.stopPropagation();excluirCopinhaParticipante('${p.id}')">✕</button>
+  </div>`;
+}
+
+function selecionarParticipanteRoster(id){
+  _builderSelecionadoParticipanteId = (_builderSelecionadoParticipanteId===id) ? null : id;
+  renderCopinhaBuilder();
+}
+
+async function adicionarCopinhaParticipante(){
+  const nomeEl = el('cop-part-nome');
+  const nome = nomeEl?.value?.trim();
+  if(!nome){ toast('Digite o nome do participante','err'); return; }
+  const participantes = allCopinhaParticipantes.filter(p=>p.copinha_id===_builderCopinhaId);
+  const {data,error} = await sb.from('portal_copinha_participantes').insert({
+    copinha_id:_builderCopinhaId, nome, foto_url:_copinhaNovoParticipanteFoto||null, ordem:participantes.length
+  }).select().single();
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  allCopinhaParticipantes.push(data);
+  _copinhaNovoParticipanteFoto = '';
+  renderCopinhaBuilder();
+}
+
+function editarNomeParticipante(id){
+  const span = el('cop-part-nome-'+id);
+  if(!span) return;
+  const p = copinhaParticipante(id);
+  span.innerHTML = `<input class="adm-input" id="cop-part-nome-input-${id}" value="${p.nome}" style="font-size:12px;padding:3px 6px" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter')salvarNomeParticipante('${id}')">`;
+  el('cop-part-nome-input-'+id)?.focus();
+}
+async function salvarNomeParticipante(id){
+  const input = el('cop-part-nome-input-'+id);
+  const novoNome = input?.value?.trim();
+  if(!novoNome) return;
+  const {error} = await sb.from('portal_copinha_participantes').update({nome:novoNome}).eq('id',id);
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  const p = copinhaParticipante(id);
+  if(p) p.nome = novoNome;
+  renderCopinhaBuilder();
+}
+async function excluirCopinhaParticipante(id){
+  if(!confirm('Excluir esse participante? Ele sai de todos os confrontos onde estiver.')) return;
+  const {error} = await sb.from('portal_copinha_participantes').delete().eq('id',id);
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  allCopinhaParticipantes = allCopinhaParticipantes.filter(p=>p.id!==id);
+  allCopinhaConfrontoParticipantes = allCopinhaConfrontoParticipantes.filter(cp=>cp.participante_id!==id);
+  if(_builderSelecionadoParticipanteId===id) _builderSelecionadoParticipanteId=null;
+  renderCopinhaBuilder();
+}
+
+async function reordenarCopinhaParticipante(alvoId){
+  const origemId = _builderDragId;
+  _builderDragId = null;
+  if(!origemId || origemId===alvoId) return;
+  const lista = allCopinhaParticipantes.filter(p=>p.copinha_id===_builderCopinhaId).sort((a,b)=>(a.ordem||0)-(b.ordem||0));
+  const origemIdx = lista.findIndex(p=>p.id===origemId);
+  const alvoIdx = lista.findIndex(p=>p.id===alvoId);
+  if(origemIdx<0||alvoIdx<0) return;
+  const [item] = lista.splice(origemIdx,1);
+  lista.splice(alvoIdx,0,item);
+  // Grava a nova ordem de todo mundo — lista é pequena (dezenas), então
+  // atualizar em lote de uma vez só é simples e rápido o suficiente aqui.
+  await Promise.all(lista.map((p,i)=>{
+    p.ordem = i;
+    return sb.from('portal_copinha_participantes').update({ordem:i}).eq('id',p.id);
+  }));
+  renderCopinhaBuilder();
+}
+
+function renderCopinhaBuilderConfrontos(lista, titulo){
+  if(!lista.length) return `<div style="font-size:11px;color:var(--muted2);margin:10px 0">Nenhum confronto em "${titulo}" ainda.</div>`;
+  const fases={};
+  lista.forEach(c=>{ const k=c.fase; if(!fases[k])fases[k]={nome:k,ordem:c.fase_ordem||0,confrontos:[]}; fases[k].confrontos.push(c); });
+  const colunas=Object.values(fases).sort((a,b)=>a.ordem-b.ordem);
+  colunas.forEach(f=>f.confrontos.sort((a,b)=>(a.ordem||0)-(b.ordem||0)));
+  return `<div style="margin:14px 0 6px;font-family:var(--font-d);font-weight:700;font-size:12px;color:var(--gold2)">${titulo}</div>
+    <div style="display:flex;gap:16px;overflow-x:auto;padding-bottom:6px">
+      ${colunas.map(f=>`<div style="min-width:220px">
+        <div class="copinha-fase-label" style="text-align:left;margin-bottom:8px">${f.nome}</div>
+        <div style="display:flex;flex-direction:column;gap:10px">${f.confrontos.map(c=>renderCopinhaBuilderConfrontoCard(c)).join('')}</div>
+      </div>`).join('')}
+    </div>`;
+}
+
+function renderCopinhaBuilderConfrontoCard(c){
+  const parts = copinhaParticipantesDoConfronto(c.id);
+  const vagasVazias = Math.max(2-parts.length,0) + (_builderExtraVagas[c.id]||0);
+  const resultadoAberto = !!_builderResultadoAberto[c.id];
+  const vencedorUnico = parts.filter(p=>p.colocacao===1);
+
+  const slotsHtml = parts.map(p=>{
+    const part = copinhaParticipante(p.participante_id);
+    if(!part) return '';
+    return `<div class="copinha-slot" style="display:flex;align-items:center;gap:8px">
+      <img class="copinha-slot-foto" src="${copinhaFotoOuPlaceholder(part.foto_url)}" alt="">
+      <span style="flex:1">${part.nome}</span>
+      ${resultadoAberto
+        ? `<input type="number" min="1" value="${p.colocacao||''}" placeholder="col." style="width:44px;font-size:11px;padding:3px" id="cop-coloc-${c.id}-${p.participante_id}">`
+        : (p.colocacao?`<span class="copinha-slot-coloc">${copinhaColocacaoLabel(p.colocacao)}</span>`:'')}
+      <button class="btn-sm" title="Remover" onclick="removerCopinhaSlot('${c.id}','${p.participante_id}')">✕</button>
+    </div>`;
+  }).join('');
+  const vaziosHtml = Array.from({length:vagasVazias}).map(()=>`
+    <div class="copinha-slot copinha-slot-editavel vazio" onclick="atribuirCopinhaSlot('${c.id}')">Clique aqui pra encaixar o selecionado</div>`).join('');
+
+  return `<div class="copinha-confronto" data-confronto-id="${c.id}">
+    <div class="copinha-confronto-meta" style="flex-wrap:wrap;gap:4px">
+      <select class="adm-select" style="font-size:10px;padding:2px 4px" onchange="atualizarCopinhaConfrontoCampo('${c.id}','status',this.value)">
+        <option value="agendado" ${c.status==='agendado'?'selected':''}>Agendado</option>
+        <option value="em_andamento" ${c.status==='em_andamento'?'selected':''}>Em andamento</option>
+        <option value="finalizado" ${c.status==='finalizado'?'selected':''}>Finalizado</option>
+      </select>
+      <input type="datetime-local" style="font-size:10px;padding:2px 4px" value="${c.data_hora?c.data_hora.slice(0,16):''}" onchange="atualizarCopinhaConfrontoCampo('${c.id}','data_hora',this.value?new Date(this.value).toISOString():null)">
+      <button class="btn-sm" title="Excluir confronto" style="color:var(--red)" onclick="excluirCopinhaConfronto('${c.id}')">🗑</button>
+    </div>
+    ${slotsHtml}${vaziosHtml}
+    <div style="padding:8px 10px;display:flex;flex-wrap:wrap;gap:6px">
+      <button class="btn-sm" onclick="_builderExtraVagas['${c.id}']=(_builderExtraVagas['${c.id}']||0)+1;renderCopinhaBuilder()">+ vaga</button>
+      <button class="btn-sm" onclick="_builderResultadoAberto['${c.id}']=!_builderResultadoAberto['${c.id}'];renderCopinhaBuilder()">${resultadoAberto?'Cancelar':'🏆 Resultado'}</button>
+      ${resultadoAberto?`<button class="btn-primary" style="font-size:11px" onclick="salvarResultadoConfronto('${c.id}')">💾 Salvar</button>`:''}
+      ${(!resultadoAberto && vencedorUnico.length===1) ? `<button class="btn-sm" onclick="abrirAvancarVencedor('${c.id}')">→ Avançar vencedor</button>`:''}
+    </div>
+    ${_builderAvancarPara===c.id ? renderAvancarVencedorPicker(c.id) : ''}
+  </div>`;
+}
+
+// Clique num participante do roster (seleciona) + clique numa vaga vazia
+// (esta função) = grava direto, sem passo de confirmação — ação rápida
+// pensada pra montar o bracket olhando pro roster do lado.
+async function atribuirCopinhaSlot(confrontoId){
+  if(!_builderSelecionadoParticipanteId){ toast('Selecione um participante no roster primeiro','err'); return; }
+  const jaTem = allCopinhaConfrontoParticipantes.some(cp=>cp.confronto_id===confrontoId && cp.participante_id===_builderSelecionadoParticipanteId);
+  if(jaTem){ toast('Esse participante já está nesse confronto','err'); return; }
+  const slotAtual = copinhaParticipantesDoConfronto(confrontoId).length;
+  const {data,error} = await sb.from('portal_copinha_confronto_participantes').insert({
+    confronto_id:confrontoId, copinha_id:_builderCopinhaId, participante_id:_builderSelecionadoParticipanteId, slot:slotAtual
+  }).select().single();
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  allCopinhaConfrontoParticipantes.push(data);
+  _builderSelecionadoParticipanteId = null;
+  renderCopinhaBuilder();
+}
+async function removerCopinhaSlot(confrontoId, participanteId){
+  const row = allCopinhaConfrontoParticipantes.find(cp=>cp.confronto_id===confrontoId && cp.participante_id===participanteId);
+  if(!row) return;
+  const {error} = await sb.from('portal_copinha_confronto_participantes').delete().eq('id',row.id);
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  allCopinhaConfrontoParticipantes = allCopinhaConfrontoParticipantes.filter(cp=>cp.id!==row.id);
+  renderCopinhaBuilder();
+}
+
+async function atualizarCopinhaConfrontoCampo(confrontoId, campo, valor){
+  const {error} = await sb.from('portal_copinha_confrontos').update({[campo]:valor, atualizado_em:new Date().toISOString()}).eq('id',confrontoId);
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  const c = allCopinhaConfrontos.find(x=>x.id===confrontoId);
+  if(c) c[campo]=valor;
+}
+
+async function salvarResultadoConfronto(confrontoId){
+  const parts = copinhaParticipantesDoConfronto(confrontoId);
+  const atualizacoes = parts.map(p=>{
+    const input = el(`cop-coloc-${confrontoId}-${p.participante_id}`);
+    const val = input?.value ? parseInt(input.value) : null;
+    return {row:p, colocacao:val};
+  });
+  await Promise.all(atualizacoes.map(({row,colocacao})=>
+    sb.from('portal_copinha_confronto_participantes').update({colocacao}).eq('id',row.id)
+  ));
+  atualizacoes.forEach(({row,colocacao})=>{ row.colocacao=colocacao; });
+  // Quem não ficou em 1º nesse confronto sai da disputa (eliminado=true) —
+  // vale tanto pra fase principal quanto pra repescagem, já que o único que
+  // "sobrevive" da repescagem é o próprio vencedor dela.
+  const perdedores = atualizacoes.filter(({colocacao})=>colocacao && colocacao!==1).map(({row})=>row.participante_id);
+  if(perdedores.length){
+    await sb.from('portal_copinha_participantes').update({eliminado:true}).in('id',perdedores);
+    perdedores.forEach(pid=>{ const p=copinhaParticipante(pid); if(p) p.eliminado=true; });
+  }
+  await sb.from('portal_copinha_confrontos').update({status:'finalizado',atualizado_em:new Date().toISOString()}).eq('id',confrontoId);
+  const c = allCopinhaConfrontos.find(x=>x.id===confrontoId);
+  if(c) c.status='finalizado';
+  _builderResultadoAberto[confrontoId]=false;
+  toast('Resultado salvo','ok');
+  renderCopinhaBuilder();
+}
+
+// "Avançar vencedor" é só uma conveniência de clique — o admin ainda escolhe
+// pra qual confronto o vencedor vai (nada de gerar/promover sozinho, o
+// chaveamento continua 100% montado à mão).
+function abrirAvancarVencedor(confrontoId){
+  _builderAvancarPara = _builderAvancarPara===confrontoId ? null : confrontoId;
+  renderCopinhaBuilder();
+}
+function renderAvancarVencedorPicker(confrontoId){
+  const origem = allCopinhaConfrontos.find(x=>x.id===confrontoId);
+  const candidatos = allCopinhaConfrontos.filter(x=>x.copinha_id===_builderCopinhaId && x.bracket_tipo===origem.bracket_tipo && x.id!==confrontoId && copinhaParticipantesDoConfronto(x.id).length<8);
+  if(!candidatos.length) return `<div style="padding:8px 10px;font-size:11px;color:var(--muted2)">Nenhum outro confronto disponível pra receber o vencedor.</div>`;
+  return `<div style="padding:8px 10px;display:flex;gap:6px;align-items:center;border-top:1px solid var(--border)">
+    <select class="adm-select" id="cop-avancar-alvo-${confrontoId}" style="font-size:11px;flex:1">
+      ${candidatos.map(c=>`<option value="${c.id}">${c.fase}</option>`).join('')}
+    </select>
+    <button class="btn-primary" style="font-size:11px" onclick="confirmarAvancarVencedor('${confrontoId}')">Mover</button>
+  </div>`;
+}
+async function confirmarAvancarVencedor(confrontoId){
+  const vencedor = copinhaParticipantesDoConfronto(confrontoId).find(p=>p.colocacao===1);
+  const alvoId = el(`cop-avancar-alvo-${confrontoId}`)?.value;
+  if(!vencedor||!alvoId) return;
+  const jaTem = allCopinhaConfrontoParticipantes.some(cp=>cp.confronto_id===alvoId && cp.participante_id===vencedor.participante_id);
+  if(jaTem){ toast('Esse participante já está no confronto de destino','err'); _builderAvancarPara=null; renderCopinhaBuilder(); return; }
+  const slotAtual = copinhaParticipantesDoConfronto(alvoId).length;
+  const {data,error} = await sb.from('portal_copinha_confronto_participantes').insert({
+    confronto_id:alvoId, copinha_id:_builderCopinhaId, participante_id:vencedor.participante_id, slot:slotAtual
+  }).select().single();
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  allCopinhaConfrontoParticipantes.push(data);
+  _builderAvancarPara = null;
+  toast('Vencedor movido','ok');
+  renderCopinhaBuilder();
+}
+
+function abrirNovoConfrontoForm(){
+  const formEl = el('cop-novo-confronto-form');
+  if(!formEl) return;
+  const aberto = formEl.style.display!=='none';
+  if(aberto){ formEl.style.display='none'; formEl.innerHTML=''; return; }
+  const fasesExistentes = [...new Set(allCopinhaConfrontos.filter(c=>c.copinha_id===_builderCopinhaId).map(c=>c.fase))];
+  formEl.style.display='block';
+  formEl.innerHTML = `<div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px">
+    <input class="adm-input" id="cop-nova-fase-nome" placeholder="Nome da fase (ex: Quartas de Final 1)" list="cop-fases-existentes">
+    <datalist id="cop-fases-existentes">${fasesExistentes.map(f=>`<option value="${f}">`).join('')}</datalist>
+    <select class="adm-select" id="cop-nova-fase-tipo">
+      <option value="principal">Chaveamento principal</option>
+      <option value="repescagem">Repescagem</option>
+    </select>
+    <button class="btn-primary" style="font-size:12px" onclick="criarCopinhaConfronto()">Criar confronto</button>
+  </div>`;
+}
+async function criarCopinhaConfronto(){
+  const fase = el('cop-nova-fase-nome')?.value?.trim();
+  const bracketTipo = el('cop-nova-fase-tipo')?.value||'principal';
+  if(!fase){ toast('Digite o nome da fase','err'); return; }
+  const confrontosCopinha = allCopinhaConfrontos.filter(c=>c.copinha_id===_builderCopinhaId);
+  const mesmaFase = confrontosCopinha.filter(c=>c.fase===fase);
+  const faseOrdem = mesmaFase.length ? mesmaFase[0].fase_ordem : (Math.max(0,...confrontosCopinha.map(c=>c.fase_ordem||0))+1);
+  const ordem = mesmaFase.length;
+  const {data,error} = await sb.from('portal_copinha_confrontos').insert({
+    copinha_id:_builderCopinhaId, bracket_tipo:bracketTipo, fase, fase_ordem:faseOrdem, ordem
+  }).select().single();
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  allCopinhaConfrontos.push(data);
+  el('cop-novo-confronto-form').style.display='none';
+  el('cop-novo-confronto-form').innerHTML='';
+  renderCopinhaBuilder();
+}
+async function excluirCopinhaConfronto(confrontoId){
+  if(!confirm('Excluir esse confronto?')) return;
+  const {error} = await sb.from('portal_copinha_confrontos').delete().eq('id',confrontoId);
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  allCopinhaConfrontos = allCopinhaConfrontos.filter(c=>c.id!==confrontoId);
+  allCopinhaConfrontoParticipantes = allCopinhaConfrontoParticipantes.filter(cp=>cp.confronto_id!==confrontoId);
+  renderCopinhaBuilder();
 }
 
 // "Nome A 2 x 1 Nome B" vira um confronto; qualquer outra linha vira o
@@ -8006,6 +8745,84 @@ async function handleBeneficioImagemUpload(e){
   }
   const {data:data2} = sb.storage.from('portal-uploads').getPublicUrl(path2);
   urlInput.value = data2.publicUrl;
+  statusEl.textContent = 'Enviada ✓';
+  statusEl.style.color = 'var(--green2)';
+}
+
+// Copa GR / Copinhas — capa, logo e fundo do torneio, mesmo padrão de upload
+// acima (handleBeneficioImagemUpload), parametrizado por campo pra não
+// repetir a função 3x (capa/logo/fundo).
+function copinhaUploadField(campo, label, url){
+  return `<div class="adm-field">
+    <label class="adm-label">${label}</label>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      <div class="timeline-photo" id="cop-${campo}-preview" style="width:52px;height:52px">${url?`<img src="${url}" alt="">`:''}</div>
+      <div style="flex:1">
+        <input type="file" id="cop-${campo}-file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none" onchange="handleCopinhaImgUpload('${campo}',event)">
+        <button type="button" class="btn-outline" style="font-size:11px" onclick="document.getElementById('cop-${campo}-file').click()">📷 Enviar imagem</button>
+        <span id="cop-${campo}-status" style="font-size:10px;color:var(--muted2);margin-left:8px"></span>
+      </div>
+    </div>
+    <input class="adm-input" id="af-${campo}_url" value="${url||''}" placeholder="ou cole uma URL de imagem..." style="font-size:11px">
+  </div>`;
+}
+async function handleCopinhaImgUpload(campo, e){
+  const file = e.target.files?.[0];
+  if(!file) return;
+  const statusEl = document.getElementById(`cop-${campo}-status`);
+  const preview = document.getElementById(`cop-${campo}-preview`);
+  const urlInput = document.getElementById(`af-${campo}_url`);
+  if(file.size > 5*1024*1024){
+    toast('Imagem muito grande (máx. 5MB)','err');
+    e.target.value='';
+    return;
+  }
+  preview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="">`;
+  statusEl.textContent = 'Enviando...';
+  statusEl.style.color = 'var(--muted2)';
+  const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+  const path = `copinha/${campo}/${Date.now()}.${ext}`;
+  const {error:err} = await sb.storage.from('portal-uploads').upload(path, file, {upsert:true});
+  if(err){
+    statusEl.textContent = 'Falha no envio';
+    statusEl.style.color = 'var(--red)';
+    toast('Erro ao enviar imagem: '+err.message,'err');
+    return;
+  }
+  const {data} = sb.storage.from('portal-uploads').getPublicUrl(path);
+  urlInput.value = data.publicUrl;
+  statusEl.textContent = 'Enviada ✓';
+  statusEl.style.color = 'var(--green2)';
+}
+// Foto de um participante da copinha, dentro do editor de chaveamento — como o
+// formulário de "novo participante" ali é montado na hora (sem passar pelo
+// modal genérico openAdmModal), guarda a URL enviada numa variável de módulo
+// em vez de um campo af-* — ver _copinhaNovoParticipanteFoto e adicionarCopinhaParticipante().
+let _copinhaNovoParticipanteFoto = '';
+async function handleCopinhaParticipanteFotoUpload(e){
+  const file = e.target.files?.[0];
+  if(!file) return;
+  const statusEl = document.getElementById('cop-part-foto-status');
+  const preview = document.getElementById('cop-part-foto-preview');
+  if(file.size > 5*1024*1024){
+    toast('Imagem muito grande (máx. 5MB)','err');
+    e.target.value='';
+    return;
+  }
+  preview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="">`;
+  statusEl.textContent = 'Enviando...';
+  statusEl.style.color = 'var(--muted2)';
+  const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+  const path = `copinha/participantes/${Date.now()}.${ext}`;
+  const {error:err} = await sb.storage.from('portal-uploads').upload(path, file, {upsert:true});
+  if(err){
+    statusEl.textContent = 'Falha no envio';
+    statusEl.style.color = 'var(--red)';
+    toast('Erro ao enviar imagem: '+err.message,'err');
+    return;
+  }
+  const {data} = sb.storage.from('portal-uploads').getPublicUrl(path);
+  _copinhaNovoParticipanteFoto = data.publicUrl;
   statusEl.textContent = 'Enviada ✓';
   statusEl.style.color = 'var(--green2)';
 }
