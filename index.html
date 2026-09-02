@@ -358,10 +358,7 @@ html.sidebar-mini .nav-badge{display:none}
 /* Editor de copinha (admin) — roster com drag-and-drop nativo */
 .copinha-roster-item{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:8px;cursor:grab;font-size:12.5px}
 .copinha-roster-item.dragging{opacity:.4}
-.copinha-roster-item.selecionado{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
 .copinha-roster-foto{width:28px;height:28px;border-radius:50%;object-fit:cover;background:var(--s3);flex-shrink:0}
-.copinha-slot-editavel{cursor:pointer;transition:background .12s}
-.copinha-slot-editavel.vazio:hover{background:rgba(201,168,76,.1)}
 
 /* Campanhas */
 .camp-card{background:var(--s2);border:1px solid var(--border);padding:22px;position:relative}
@@ -7315,13 +7312,14 @@ function renderAdmCopaChaveamento(){
 /* ── Editor de copinha (admin): participantes + fases/confrontos ──
    Tela dedicada (não modal — não cabe): roster de participantes à esquerda
    (foto, nome editável a qualquer momento, arrastar pra reordenar) e o
-   bracket editável à direita, um confronto por card. Interação escolhida pra
-   ser "intuitiva" sem precisar de biblioteca de drag-and-drop: clica num
-   participante do roster pra selecioná-lo, depois clica numa vaga vazia do
-   confronto pra encaixar — grava direto no banco a cada clique (mesmo
-   espírito de ação rápida usado em outras telas do app, tipo quickDist no CRM). */
+   bracket editável à direita, um confronto por card. Cada vaga vazia de um
+   confronto tem seu próprio seletor de participante — grava direto no banco
+   ao clicar "Encaixar" (mesmo espírito de ação rápida usado em outras telas
+   do app, tipo quickDist no CRM). Versão anterior exigia selecionar no
+   roster primeiro e depois clicar na vaga; quebrava em telas estreitas onde
+   o roster fica fora da área visível — trocado por seletor autocontido em
+   cada vaga (ver renderCopinhaBuilderConfrontoCard / atribuirCopinhaSlotDireto). */
 let _builderCopinhaId = null;
-let _builderSelecionadoParticipanteId = null;
 let _builderExtraVagas = {}; // {confrontoId: nº de vagas vazias extras clicadas com "+ vaga"}
 let _builderResultadoAberto = {}; // {confrontoId: true} — mostra os campos de colocação
 let _builderAvancarPara = null; // confrontoId de origem cujo vencedor está sendo movido
@@ -7329,7 +7327,6 @@ let _builderDragId = null;
 
 function abrirCopinhaBuilder(copinhaId){
   _builderCopinhaId = copinhaId;
-  _builderSelecionadoParticipanteId = null;
   _builderExtraVagas = {}; _builderResultadoAberto = {}; _builderAvancarPara = null;
   el('adm-copinhas-lista-view').style.display='none';
   el('adm-copinha-builder-view').style.display='block';
@@ -7355,7 +7352,7 @@ function renderCopinhaBuilder(){
       <div class="panel">
         <div class="panel-head"><div class="panel-title">Participantes (${participantes.length})</div></div>
         <div class="panel-body">
-          <div style="font-size:11px;color:var(--muted2);margin-bottom:10px;line-height:1.5">Arraste pra reordenar. Clique num participante pra selecionar e depois clique numa vaga vazia do confronto ao lado pra encaixar.</div>
+          <div style="font-size:11px;color:var(--muted2);margin-bottom:10px;line-height:1.5">Arraste pra reordenar. Pra encaixar alguém num confronto, use o seletor na vaga vazia dele (ao lado) e clique "Encaixar".</div>
           <div id="cop-roster-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
             ${participantes.map(p=>renderCopinhaRosterItem(p)).join('') || '<div class="empty" style="padding:16px"><div class="empty-text">Nenhum participante ainda</div></div>'}
           </div>
@@ -7391,21 +7388,14 @@ function renderCopinhaBuilder(){
 }
 
 function renderCopinhaRosterItem(p){
-  const selecionado = _builderSelecionadoParticipanteId===p.id;
-  return `<div class="copinha-roster-item ${selecionado?'selecionado':''}" draggable="true" data-id="${p.id}"
+  return `<div class="copinha-roster-item" draggable="true" data-id="${p.id}"
     ondragstart="_builderDragId='${p.id}';this.classList.add('dragging')" ondragend="this.classList.remove('dragging')"
-    ondragover="event.preventDefault()" ondrop="reordenarCopinhaParticipante('${p.id}')"
-    onclick="selecionarParticipanteRoster('${p.id}')">
+    ondragover="event.preventDefault()" ondrop="reordenarCopinhaParticipante('${p.id}')">
     <img class="copinha-roster-foto" src="${copinhaFotoOuPlaceholder(p.foto_url)}" alt="">
-    <span id="cop-part-nome-${p.id}" style="flex:1" ondblclick="event.stopPropagation();editarNomeParticipante('${p.id}')">${p.nome}${p.eliminado?' <span style="color:var(--muted2);font-size:10px">(eliminado)</span>':''}</span>
-    <button class="btn-sm" title="Renomear" onclick="event.stopPropagation();editarNomeParticipante('${p.id}')">✏️</button>
+    <span id="cop-part-nome-${p.id}" style="flex:1" ondblclick="editarNomeParticipante('${p.id}')">${p.nome}${p.eliminado?' <span style="color:var(--muted2);font-size:10px">(eliminado)</span>':''}</span>
+    <button class="btn-sm" title="Renomear" onclick="editarNomeParticipante('${p.id}')">✏️</button>
     <button class="btn-sm" title="Excluir" style="color:var(--red)" onclick="event.stopPropagation();excluirCopinhaParticipante('${p.id}')">✕</button>
   </div>`;
-}
-
-function selecionarParticipanteRoster(id){
-  _builderSelecionadoParticipanteId = (_builderSelecionadoParticipanteId===id) ? null : id;
-  renderCopinhaBuilder();
 }
 
 async function adicionarCopinhaParticipante(){
@@ -7445,7 +7435,6 @@ async function excluirCopinhaParticipante(id){
   if(error){ toast('Erro: '+error.message,'err'); return; }
   allCopinhaParticipantes = allCopinhaParticipantes.filter(p=>p.id!==id);
   allCopinhaConfrontoParticipantes = allCopinhaConfrontoParticipantes.filter(cp=>cp.participante_id!==id);
-  if(_builderSelecionadoParticipanteId===id) _builderSelecionadoParticipanteId=null;
   renderCopinhaBuilder();
 }
 
@@ -7501,8 +7490,21 @@ function renderCopinhaBuilderConfrontoCard(c){
       <button class="btn-sm" title="Remover" onclick="removerCopinhaSlot('${c.id}','${p.participante_id}')">✕</button>
     </div>`;
   }).join('');
-  const vaziosHtml = Array.from({length:vagasVazias}).map(()=>`
-    <div class="copinha-slot copinha-slot-editavel vazio" onclick="atribuirCopinhaSlot('${c.id}')">Clique aqui pra encaixar o selecionado</div>`).join('');
+  // Cada vaga vazia já vem com seu próprio seletor — não depende de nenhuma
+  // seleção prévia no roster (isso quebrava em telas estreitas/mobile, onde o
+  // roster fica fora da área visível e o clique na vaga não tinha efeito).
+  const jaNoConfronto = new Set(parts.map(p=>p.participante_id));
+  const disponiveis = allCopinhaParticipantes.filter(p=>p.copinha_id===_builderCopinhaId && !jaNoConfronto.has(p.id));
+  const vaziosHtml = Array.from({length:vagasVazias}).map((_,idx)=>{
+    const selId = `cop-slot-sel-${c.id}-${idx}`;
+    return `<div class="copinha-slot" style="display:flex;gap:6px;align-items:center">
+      <select class="adm-select" id="${selId}" style="flex:1;font-size:11px">
+        <option value="">— selecionar participante —</option>
+        ${disponiveis.map(p=>`<option value="${p.id}">${p.nome}</option>`).join('')}
+      </select>
+      <button class="btn-sm" onclick="atribuirCopinhaSlotDireto('${c.id}','${selId}')">Encaixar</button>
+    </div>`;
+  }).join('');
 
   return `<div class="copinha-confronto" data-confronto-id="${c.id}">
     <div class="copinha-confronto-meta" style="flex-wrap:wrap;gap:4px">
@@ -7525,20 +7527,22 @@ function renderCopinhaBuilderConfrontoCard(c){
   </div>`;
 }
 
-// Clique num participante do roster (seleciona) + clique numa vaga vazia
-// (esta função) = grava direto, sem passo de confirmação — ação rápida
-// pensada pra montar o bracket olhando pro roster do lado.
-async function atribuirCopinhaSlot(confrontoId){
-  if(!_builderSelecionadoParticipanteId){ toast('Selecione um participante no roster primeiro','err'); return; }
-  const jaTem = allCopinhaConfrontoParticipantes.some(cp=>cp.confronto_id===confrontoId && cp.participante_id===_builderSelecionadoParticipanteId);
+// Cada vaga vazia tem seu próprio seletor (ver renderCopinhaBuilderConfrontoCard)
+// — grava direto ao clicar "Encaixar", sem depender de nenhuma seleção feita
+// em outro lugar da tela (o fluxo antigo de "seleciona no roster, depois
+// clica na vaga" quebrava em telas estreitas, onde o roster fica fora da
+// área visível e some do campo de visão antes do clique na vaga).
+async function atribuirCopinhaSlotDireto(confrontoId, selectId){
+  const participanteId = el(selectId)?.value;
+  if(!participanteId){ toast('Selecione um participante','err'); return; }
+  const jaTem = allCopinhaConfrontoParticipantes.some(cp=>cp.confronto_id===confrontoId && cp.participante_id===participanteId);
   if(jaTem){ toast('Esse participante já está nesse confronto','err'); return; }
   const slotAtual = copinhaParticipantesDoConfronto(confrontoId).length;
   const {data,error} = await sb.from('portal_copinha_confronto_participantes').insert({
-    confronto_id:confrontoId, copinha_id:_builderCopinhaId, participante_id:_builderSelecionadoParticipanteId, slot:slotAtual
+    confronto_id:confrontoId, copinha_id:_builderCopinhaId, participante_id:participanteId, slot:slotAtual
   }).select().single();
   if(error){ toast('Erro: '+error.message,'err'); return; }
   allCopinhaConfrontoParticipantes.push(data);
-  _builderSelecionadoParticipanteId = null;
   renderCopinhaBuilder();
 }
 async function removerCopinhaSlot(confrontoId, participanteId){
