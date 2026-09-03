@@ -5794,7 +5794,7 @@ function _comAtualizarContador(){
 
 const COM_MIDIA_MAX=4; // limite de itens no carrossel de um post, estilo Instagram
 // Carrossel: aceita várias imagens e/ou vídeo no mesmo post (bucket dedicado
-// portal-comunidade-midia, 100MB/arquivo — portal-uploads é 15MB e usado por
+// portal-comunidade-midia, 20GB/arquivo — portal-uploads é 15MB e usado por
 // avatar/PDF/etc, não dava pra reusar pra vídeo). Envia um por vez (upload
 // paralelo de vários vídeos grandes travaria a conexão) e vai preenchendo a
 // prévia conforme cada um termina.
@@ -5809,7 +5809,7 @@ async function handleComPostMidiaUpload(e){
   for(let i=0;i<aEnviar.length;i++){
     const file=aEnviar[i];
     const isVideo=file.type.startsWith('video/');
-    if(file.size>500*1024*1024){ toast(`"${file.name}" muito grande (máx. 500MB)`,'err'); continue; }
+    if(file.size>20*1024*1024*1024){ toast(`"${file.name}" muito grande (máx. 20GB)`,'err'); continue; }
     statusEl.textContent=`Enviando ${i+1}/${aEnviar.length}...`; statusEl.style.color='var(--muted2)';
     const ext=(file.name.split('.').pop()||(isVideo?'mp4':'jpg')).toLowerCase();
     const path=`comunidade/${Date.now()}-${i}.${ext}`;
