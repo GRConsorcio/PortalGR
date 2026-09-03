@@ -349,6 +349,13 @@ html.sidebar-mini .nav-badge{display:none}
 .copinha-slot.eliminado{opacity:.55;text-decoration:line-through}
 .copinha-slot-foto{width:24px;height:24px;border-radius:50%;object-fit:cover;background:var(--s3);flex-shrink:0}
 .copinha-slot-coloc{margin-left:auto;font-size:10px;color:var(--muted2);font-weight:700}
+.copinha-slot-pontos{display:inline-flex;align-items:center;justify-content:center;min-width:24px;padding:2px 9px;border-radius:999px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#20160a;font-weight:800;font-size:12px;box-shadow:0 1px 5px rgba(201,168,76,.35);transition:transform .15s ease}
+.copinha-slot-pontos.pulse{animation:copinhaPontoPulse .5s ease}
+@keyframes copinhaPontoPulse{0%{transform:scale(1)}30%{transform:scale(1.4)}60%{transform:scale(.92)}100%{transform:scale(1)}}
+.copinha-pontos-ctrl{display:flex;align-items:center;gap:5px;margin-left:auto}
+.copinha-pontos-ctrl button{width:20px;height:20px;flex-shrink:0;border-radius:6px;border:1px solid var(--border);background:var(--s3);color:var(--text);font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .15s,transform .1s}
+.copinha-pontos-ctrl button:hover{border-color:var(--gold)}
+.copinha-pontos-ctrl button:active{transform:scale(.9)}
 .copinha-bracket-lines{position:absolute;top:0;left:0;pointer-events:none;z-index:0}
 .copinha-bracket-lines path{stroke:var(--border2);stroke-width:1.5;fill:none}
 
@@ -3957,6 +3964,7 @@ function renderCopinhaConfrontoCard(c){
         return `<div class="copinha-slot ${venceu?'vencedor':''} ${temResultado&&!venceu?'eliminado':''}">
           <img class="copinha-slot-foto" src="${copinhaFotoOuPlaceholder(part.foto_url)}" alt="">
           <span>${part.nome}</span>
+          <span class="copinha-slot-pontos" data-pontos-id="${p.id}">${p.pontos||0}</span>
           ${p.colocacao?`<span class="copinha-slot-coloc">${copinhaColocacaoLabel(p.colocacao)}</span>`:''}
         </div>`;
       }).join('')
@@ -4036,6 +4044,10 @@ function _aplicarMudancaRealtimeCopinha(tabela, payload){
   const arr = tabela==='confronto' ? allCopinhaConfrontos : tabela==='confronto_participante' ? allCopinhaConfrontoParticipantes : allCopinhaParticipantes;
   const row = payload.new?.id ? payload.new : payload.old;
   const idx = arr.findIndex(x=>x.id===row.id);
+  // Compara ANTES de sobrescrever — é o único jeito de saber se foi o placar
+  // que mudou (pra disparar o pulse só na bolinha de pontos, não recriar o
+  // efeito toda vez que qualquer outro campo do participante muda).
+  const pontosMudou = tabela==='confronto_participante' && idx>-1 && payload.new && arr[idx].pontos!==payload.new.pontos;
   if(payload.eventType==='DELETE'){ if(idx>-1) arr.splice(idx,1); }
   else if(idx>-1){ arr[idx]=payload.new; }
   else{ arr.push(payload.new); }
@@ -4044,6 +4056,10 @@ function _aplicarMudancaRealtimeCopinha(tabela, payload){
     const changedId = tabela==='confronto' ? row.id : row.confronto_id;
     const cardEl = changedId && el('copinha-detalhe-body').querySelector(`[data-confronto-id="${changedId}"]`);
     if(cardEl){ cardEl.classList.add('flash'); setTimeout(()=>cardEl.classList.remove('flash'),1000); }
+    if(pontosMudou){
+      const badge = el('copinha-detalhe-body')?.querySelector(`[data-pontos-id="${row.id}"]`);
+      if(badge){ badge.classList.add('pulse'); setTimeout(()=>badge.classList.remove('pulse'),500); }
+    }
   }
 }
 
@@ -7484,6 +7500,11 @@ function renderCopinhaBuilderConfrontoCard(c){
     return `<div class="copinha-slot" style="display:flex;align-items:center;gap:8px">
       <img class="copinha-slot-foto" src="${copinhaFotoOuPlaceholder(part.foto_url)}" alt="">
       <span style="flex:1">${part.nome}</span>
+      <div class="copinha-pontos-ctrl">
+        <button type="button" title="-1 ponto" onclick="ajustarCopinhaPontos('${p.id}',-1)">−</button>
+        <span class="copinha-slot-pontos" id="cop-pontos-${p.id}">${p.pontos||0}</span>
+        <button type="button" title="+1 ponto" onclick="ajustarCopinhaPontos('${p.id}',1)">+</button>
+      </div>
       ${resultadoAberto
         ? `<input type="number" min="1" value="${p.colocacao||''}" placeholder="col." style="width:44px;font-size:11px;padding:3px" id="cop-coloc-${c.id}-${p.participante_id}">`
         : (p.colocacao?`<span class="copinha-slot-coloc">${copinhaColocacaoLabel(p.colocacao)}</span>`:'')}
@@ -7525,6 +7546,22 @@ function renderCopinhaBuilderConfrontoCard(c){
     </div>
     ${_builderAvancarPara===c.id ? renderAvancarVencedorPicker(c.id) : ''}
   </div>`;
+}
+
+// Placar ao vivo do confronto — atualização otimista (o próprio clique já
+// atualiza a bolinha na hora, sem esperar o round-trip) + grava no banco, que
+// propaga pro Realtime e pulsa a bolinha em qualquer outra tela aberta na
+// mesma copinha (ver _aplicarMudancaRealtimeCopinha).
+async function ajustarCopinhaPontos(rowId, delta){
+  const row = allCopinhaConfrontoParticipantes.find(cp=>cp.id===rowId);
+  if(!row) return;
+  const novo = Math.max(0,(row.pontos||0)+delta);
+  if(novo===row.pontos) return;
+  row.pontos = novo;
+  const badge = el(`cop-pontos-${rowId}`);
+  if(badge){ badge.textContent=novo; badge.classList.add('pulse'); setTimeout(()=>badge.classList.remove('pulse'),500); }
+  const {error} = await sb.from('portal_copinha_confronto_participantes').update({pontos:novo}).eq('id',rowId);
+  if(error) toast('Erro ao salvar pontos: '+error.message,'err');
 }
 
 // Cada vaga vazia tem seu próprio seletor (ver renderCopinhaBuilderConfrontoCard)
