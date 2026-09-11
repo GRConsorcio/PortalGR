@@ -2789,7 +2789,12 @@ async function initApp(user){
    CRM que devolve só contagens/somas por vendedor (nunca nome, telefone,
    CPF ou qualquer coisa do cliente) e casa pelo e-mail. */
 const CRM_SUPA_URL='https://prquggwhjcvenzuziaox.supabase.co';
-const CRM_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBycXVnZ3doamN2ZW56dXppYW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMTUzMDUsImV4cCI6MjA5Mzc5MTMwNX0.vjbVhGIUowS6AGE1Uf5uDutCMI193mhgra3GSwlqMec';
+// BUGFIX: chave anon legada do CRM foi revogada quando o CRM migrou pra
+// publishable key (mesma troca do commit "URGENTE" no repo do CRM) — só que
+// essa cópia mora aqui no Portal e ninguém atualizou junto, então toda
+// requisição direta pro CRM (resumo de vendas, ranking, qualidade, nome do
+// vendedor) vinha voltando 401 e caindo pro fallback zerado/"sem equipe".
+const CRM_ANON_KEY='sb_publishable_YcjSMFQoaBa5mHUtqrPCPQ_2SZmJ5aF';
 const CRM_RESUMO_SECRET='pgr_resumo_a71f9c3e5b8d2467a0f1c9e3b6d8f452a17c9e04';
 const CRM_NOME_SECRET='pgr_nome_3b8f1a9c7e2d5601a4c8f2e9b7d3a650f1c8e9a2';
 async function fetchCrmResumo(email){
