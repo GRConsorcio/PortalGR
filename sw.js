@@ -1,4 +1,4 @@
-const CACHE = 'portal-gr-v7';
+const CACHE = 'portal-gr-v8';
 const SHELL = ['./', './index.html', './manifest.json', './logo.svg', './icon.svg?v=3'];
 
 self.addEventListener('install', (e) => {
@@ -36,6 +36,26 @@ self.addEventListener('fetch', (e) => {
       return res;
     }).catch(() => caches.match(e.request))
   );
+});
+
+// Web Push: chega mesmo com o Portal FECHADO (enviado pela Edge Function enviar-push quando o banco cria uma
+// notificação pra essa pessoa). Se o Portal já está aberto e em foco, ele mesmo avisa em tempo real (balão no app) —
+// mostrar também um aviso do sistema só duplicaria; a "tag" igual à que o Portal usa faz um substituir o outro.
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (_) { d = { titulo: 'GR Portal', corpo: e.data ? e.data.text() : '' }; }
+  e.waitUntil((async () => {
+    const janelas = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    if (janelas.some((c) => c.focused && c.visibilityState === 'visible')) return;
+    await self.registration.showNotification(d.titulo || 'GR Portal', {
+      body: d.corpo || '',
+      icon: './icon.svg?v=3',
+      badge: './icon.svg?v=3',
+      tag: d.tag || undefined,
+      renotify: !!d.tag,
+      data: { notifId: d.notifId, tipo: d.tipo, ref_id: d.ref_id, ref_extra: d.ref_extra },
+    });
+  })());
 });
 
 // Clique numa notificação do sistema (mensagem, menção, comentário...): se o Portal já está aberto, traz a janela

@@ -2925,6 +2925,7 @@ async function doAuth(){
   }
 }
 async function doLogout(){
+  await _removerPushDoAparelho(); // antes do signOut: o RPC precisa da sessão pra saber de quem é a inscrição
   try{
     await sb.auth.signOut({scope:'local'});
   } catch(e){ console.warn('Logout error:',e); }
@@ -6745,6 +6746,7 @@ async function iniciarConversaComPerfil(uid){
 let _notifs=[];                  // últimas 50, mais nova primeiro
 let _notifNaoLidas=0;
 let _notifChannel=null, _notifTimer=null, _notifPrimeiraCarga=true;
+let _pushAtivo=false;            // este aparelho está inscrito no Web Push (ver _registrarPush)
 const _notifVistas=new Set();    // ids já vistos — evita avisar duas vezes (realtime + recarga periódica)
 const _tituloBase=document.title;
 const NOTIF_ICONE={mensagem:'💬',mencao:'＠',comentario:'🗨️',resposta:'↩️',repost:'🔁',post:'📣'};
@@ -6770,6 +6772,7 @@ async function _inicializarNotificacoes(){
   _carregarPrefNotif();
   _atualizarBlocoPermissaoNotif();
   _abrirNotifDoHash();
+  _registrarPush(); // quem já liberou os avisos: garante que ESTE aparelho está inscrito pra essa conta (só age se permission==='granted')
 }
 
 async function carregarNotificacoes(){
@@ -6805,7 +6808,8 @@ function _aoReceberNotificacao(n){
 
 function _avisarNotificacao(n){
   // Aba em segundo plano / janela sem foco -> aviso do sistema (se a pessoa liberou); aba visível -> balãozinho no app.
-  if(!document.hasFocus() && 'Notification' in window && Notification.permission==='granted') _mostrarNotificacaoSistema(n);
+  // Aparelho já inscrito no push: o aviso do sistema vem do push (service worker) — mostrar o do app também daria alerta em dobro.
+  if(!document.hasFocus() && !_pushAtivo && 'Notification' in window && Notification.permission==='granted') _mostrarNotificacaoSistema(n);
   // Com o painel do sino aberto a lista já se atualiza sozinha — o balão só ia cobrir o cabeçalho dele.
   if(!document.hidden && el('notif-panel').style.display==='none') _toastNotificacao(n);
 }
@@ -6996,8 +7000,43 @@ function _atualizarBlocoPermissaoNotif(){
   }else if(Notification.permission==='denied'){
     w.innerHTML='<div class="notif-aviso">Os avisos estão bloqueados neste navegador. Libere em Configurações do site → Notificações.</div>';
   }else{
-    w.innerHTML='<div class="notif-aviso"><span>Receba avisos mesmo com o Portal em segundo plano.</span><button class="btn-primary" onclick="ativarAvisosDispositivo()">Ativar</button></div>';
+    w.innerHTML='<div class="notif-aviso"><span>Receba avisos no celular ou computador, mesmo com o Portal fechado.</span><button class="btn-primary" onclick="ativarAvisosDispositivo()">Ativar</button></div>';
   }
+}
+
+/* ── Web Push: avisos com o Portal FECHADO ──
+   O navegador se inscreve no serviço de push dele (Google/Apple/Mozilla) usando a chave pública VAPID que a Edge
+   Function enviar-push guarda; a inscrição (endpoint + chaves) fica em portal_push_subs, uma por aparelho. Quando o
+   banco cria uma notificação pra essa pessoa, um gatilho chama a função, que empurra o aviso até o aparelho. */
+function _b64urlParaUint8(s){
+  const b=(s+'='.repeat((4-s.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/');
+  return Uint8Array.from(atob(b),c=>c.charCodeAt(0));
+}
+async function _registrarPush(){
+  if(!CU?.id || !('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window) || Notification.permission!=='granted') return;
+  try{
+    const reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub){
+      const r=await fetch(SUPA_URL+'/functions/v1/enviar-push');
+      const {publicKey}=await r.json();
+      if(!publicKey) throw new Error('chave pública indisponível');
+      sub=await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:_b64urlParaUint8(publicKey)});
+    }
+    const j=sub.toJSON();
+    // o registro é por RPC: se OUTRA pessoa logar neste mesmo aparelho, a inscrição passa a ser dela (não fica avisando o dono antigo)
+    const {error}=await sb.rpc('portal_push_registrar',{p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth,p_ua:navigator.userAgent});
+    if(error) throw new Error(error.message);
+    _pushAtivo=true;
+  }catch(e){ _pushAtivo=false; console.warn('[push] não consegui registrar este aparelho:',e.message); }
+}
+// No logout, este aparelho deixa de receber os avisos da conta que saiu (melhor esforço, não trava o logout).
+async function _removerPushDoAparelho(){
+  try{
+    const reg=await navigator.serviceWorker?.getRegistration();
+    const sub=await reg?.pushManager?.getSubscription();
+    if(sub) await Promise.race([sb.rpc('portal_push_remover',{p_endpoint:sub.endpoint}), new Promise(r=>setTimeout(r,1500))]);
+  }catch(e){}
 }
 async function ativarAvisosDispositivo(){
   try{
