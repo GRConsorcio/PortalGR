@@ -1263,6 +1263,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .camp-active-dot{animation:livePulse 2s ease-in-out infinite}
 @keyframes notifPulse{0%,100%{box-shadow:0 0 0 0 var(--gold-glow)}50%{box-shadow:0 0 0 5px rgba(0,0,0,0)}}
 .notif-dot{animation:notifPulse 2.2s ease-in-out infinite}
+
+/* ══ AVISO DE CURSO OBRIGATÓRIO COM PRAZO (bloqueio programado) ══ */
+.obrig-aviso{display:flex;align-items:center;gap:14px;padding:12px 16px;margin-bottom:12px;border:1px solid var(--gold);border-radius:var(--radius-card);background:color-mix(in srgb,var(--gold) 9%,var(--s1))}
+.obrig-aviso-ico{font-size:20px;flex-shrink:0}
+.obrig-aviso-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;font-size:12px;line-height:1.45;color:var(--muted2)}
+.obrig-aviso-txt b{color:var(--text);font-size:13px}
+.obrig-aviso .btn-primary{flex-shrink:0;font-size:11px;padding:8px 14px}
+@media(max-width:560px){.obrig-aviso{flex-wrap:wrap}.obrig-aviso .btn-primary{width:100%}}
+/* @@CSS-EXTRA@@ */
 </style>
 </head>
 <body>
@@ -1631,6 +1640,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
     <!-- DASHBOARD -->
     <div class="page on" id="page-dashboard">
+      <div class="obrig-aviso-slot"></div>
       <div class="kpi-grid" id="dash-kpis">
         <div class="kpi-card"><div class="kpi-label" id="kpi-cotas-label">Cotas este mês</div><div class="kpi-val" id="kpi-cotas">–</div><div class="kpi-sub" id="kpi-cotas-sub">Meta: <span id="kpi-meta">–</span></div><div class="kpi-delta up" id="kpi-delta">–</div></div>
         <div class="kpi-card"><div class="kpi-label" id="kpi-volume-label">Volume vendido</div><div class="kpi-val gold" id="kpi-volume" style="color:var(--gold2)">–</div><div class="kpi-sub" id="kpi-volume-sub">Mês atual</div></div>
@@ -1886,6 +1896,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
     <!-- ACADEMY -->
     <div class="page" id="page-academy">
+      <div class="obrig-aviso-slot"></div>
       <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap" id="acad-tabs"></div>
       <div class="acad-grid" id="acad-grid"></div>
     </div>
@@ -2220,7 +2231,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         <div class="adm-page-title">Cursos Obrigatórios</div>
         <button class="btn-primary" onclick="openObrigModal()">+ Nova Regra</button>
       </div>
-      <div style="font-size:11.5px;color:var(--muted2);margin-bottom:14px;line-height:1.5">Cada curso pode ter regras de acesso por papel: <b>Obrigatório</b> (bloqueia CRM/Portal/Demandas até concluir com 70%+), <b>Opcional</b> (aparece na Academy pra quem quiser fazer, sem cobrança) ou <b>Oculto</b> (nem aparece na listagem). Sem nenhuma regra, o curso é opcional/visível pra todo mundo por padrão. Dá pra isentar colaboradores específicos de qualquer regra.</div>
+      <div style="font-size:11.5px;color:var(--muted2);margin-bottom:14px;line-height:1.5">Cada curso pode ter regras de acesso por papel: <b>Obrigatório</b> (bloqueia CRM/Portal/Demandas até concluir com 70%+), <b>Opcional</b> (aparece na Academy pra quem quiser fazer, sem cobrança) ou <b>Oculto</b> (nem aparece na listagem). Sem nenhuma regra, o curso é opcional/visível pra todo mundo por padrão. Dá pra isentar colaboradores específicos de qualquer regra. O bloqueio pode começar <b>na hora</b> ou ser <b>programado</b> pra uma data e hora — até lá o colaborador só vê um aviso com o prazo.</div>
       <div class="adm-table-wrap" id="adm-obrig-list"></div>
     </div>
 
@@ -2243,12 +2254,27 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
           </select>
         </div>
         <div class="adm-field" id="obrig-app-field">
-          <label class="adm-label">Sistema que fica bloqueado</label>
-          <select class="adm-input" id="obrig-app">
+          <label class="adm-label">Sistemas que ficam bloqueados</label>
+          <!-- Regra nova: marca quantos sistemas quiser (cria uma regra por sistema, mesmo
+               curso/papéis/data). Editando uma regra existente ela é de UM sistema só,
+               então aí vira o select simples. -->
+          <div id="obrig-app-multi" style="display:flex;gap:14px;flex-wrap:wrap;font-size:12px">
+            <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="obrig-app-chk" value="crm" checked> CRM</label>
+            <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="obrig-app-chk" value="portal"> Portal GR</label>
+            <label style="display:flex;align-items:center;gap:5px"><input type="checkbox" class="obrig-app-chk" value="demandas"> Demandas</label>
+          </div>
+          <select class="adm-input" id="obrig-app" style="display:none">
             <option value="crm">CRM</option>
             <option value="portal">Portal GR</option>
             <option value="demandas">Demandas</option>
           </select>
+        </div>
+        <div class="adm-field" id="obrig-quando-field">
+          <label class="adm-label">Quando o bloqueio começa</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;margin-bottom:4px"><input type="radio" name="obrig-quando" value="agora" checked onchange="_toggleObrigQuando()"> Imediatamente, assim que a regra estiver ativa</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12.5px"><input type="radio" name="obrig-quando" value="programado" onchange="_toggleObrigQuando()"> Programar para uma data e hora</label>
+          <input type="datetime-local" class="adm-input" id="obrig-inicio" style="display:none;margin-top:8px">
+          <div id="obrig-quando-hint" style="display:none;font-size:11px;color:var(--muted2);margin-top:6px;line-height:1.5">Até lá, quem ainda não concluiu vê um aviso com o prazo aqui no Portal, mas segue usando o sistema normalmente. Na data marcada o bloqueio começa sozinho — nada mais a fazer.</div>
         </div>
         <div class="adm-field">
           <label class="adm-label">Papéis alcançados pela regra (deixe todos desmarcados = vale pra todo mundo)</label>
@@ -7065,6 +7091,7 @@ async function renderAdmCarreira(){
    portal_cursos_pendentes via REST (mesmo padrão de segredo compartilhado
    já usado noutras integrações Portal↔CRM). ═══ */
 let _pendingObrigatorios=[];
+let _obrigAgendados=[], _obrigTimer=null; // regras obrigatórias com bloqueio_inicio no futuro (aviso com prazo, ainda sem bloquear)
 // Regras de acesso à Academy têm 3 níveis (portal_academy_obrigatorio.nivel):
 // 'obrigatorio' (bloqueia o app até concluir, escopado por app crm/portal/
 // demandas), 'opcional' (aparece na Academy, ninguém é forçado — é o padrão
@@ -7093,11 +7120,23 @@ async function checkCursosObrigatorios(tentativa){
     const isentoIds=new Set((isentos||[]).map(i=>i.obrigatorio_id));
     const aprovadasIds=new Set((aprovadas||[]).map(a=>a.academy_id));
     const alcancaMim=r=>!isentoIds.has(r.id) && (!(r.roles_aplicaveis||[]).length || r.roles_aplicaveis.map(x=>(x||'').toLowerCase()).includes(meuCargo));
-    _pendingObrigatorios=(regras||[])
-      .filter(r=>r.nivel==='obrigatorio' && r.app==='portal' && alcancaMim(r) && !aprovadasIds.has(r.academy_id))
-      .map(r=>({academy_id:r.academy_id, titulo: allAcademy.find(a=>a.id===r.academy_id)?.titulo || 'Curso'}));
+    // Bloqueio programado (bloqueio_inicio): regra com data futura AINDA NÃO bloqueia —
+    // só vira aviso com prazo. Vale pra qualquer sistema (CRM/Demandas também): o CRM
+    // não tem como mostrar esse aviso antes da hora, então quem avisa é o Portal.
+    const agora=Date.now();
+    const jaVale=r=>!r.bloqueio_inicio || new Date(r.bloqueio_inicio).getTime()<=agora;
+    const tituloCurso=r=>allAcademy.find(a=>a.id===r.academy_id)?.titulo || 'Curso';
+    const alvo=(regras||[]).filter(r=>r.nivel==='obrigatorio' && alcancaMim(r) && !aprovadasIds.has(r.academy_id));
+    _pendingObrigatorios=alvo
+      .filter(r=>r.app==='portal' && jaVale(r))
+      .map(r=>({academy_id:r.academy_id, titulo:tituloCurso(r)}));
+    _obrigAgendados=alvo
+      .filter(r=>!jaVale(r))
+      .map(r=>({academy_id:r.academy_id, titulo:tituloCurso(r), app:r.app, bloqueio_inicio:r.bloqueio_inicio}));
     _academyOcultos=new Set((regras||[]).filter(r=>r.nivel==='oculto' && alcancaMim(r)).map(r=>r.academy_id));
     _renderTelaObrigatoria();
+    _renderAvisoObrigAgendados();
+    _agendarRecheckObrigatorios();
     // Se a checagem terminou depois da Academy já ter renderizado (é async,
     // roda em paralelo com o resto do load), atualiza pra não deixar curso
     // oculto piscando na tela até a próxima navegação.
@@ -7120,6 +7159,52 @@ function _irParaCursoObrigatorio(academyId){
   setTimeout(()=>openCurso(academyId),50);
 }
 function _recheckObrigatorios(){ toast('Verificando...','ok'); checkCursosObrigatorios(); }
+
+// ['CRM'] -> "CRM" · ['CRM','Demandas'] -> "CRM e Demandas" · 3+ -> "A, B e C"
+function _listaE(itens){
+  return itens.length<2 ? (itens[0]||'') : itens.slice(0,-1).join(', ')+' e '+itens[itens.length-1];
+}
+function _prazoRelativo(iso){
+  const min=Math.round((new Date(iso).getTime()-Date.now())/60000);
+  if(min<=0) return 'agora';
+  if(min<60) return `em ${min} min`;
+  const h=Math.round(min/60);
+  if(h<24) return `em ${h} h`;
+  const d=Math.round(h/24);
+  return `em ${d} dia${d>1?'s':''}`;
+}
+// Aviso com prazo (topo do Dashboard e da Academy) pra cada curso obrigatório programado que a
+// pessoa ainda não concluiu. Junta num aviso só os sistemas que compartilham curso+data.
+function _renderAvisoObrigAgendados(){
+  const slots=document.querySelectorAll('.obrig-aviso-slot');
+  if(!slots.length) return;
+  const grupos={};
+  _obrigAgendados.forEach(a=>{
+    const g=grupos[a.academy_id+'|'+a.bloqueio_inicio]=grupos[a.academy_id+'|'+a.bloqueio_inicio]||{...a,apps:[]};
+    g.apps.push(APP_LABELS[a.app]||a.app);
+  });
+  const html=Object.values(grupos)
+    .sort((a,b)=>new Date(a.bloqueio_inicio)-new Date(b.bloqueio_inicio))
+    .map(g=>`<div class="obrig-aviso">
+      <div class="obrig-aviso-ico">⏰</div>
+      <div class="obrig-aviso-txt">
+        <b>Curso obrigatório: ${_escHtml(g.titulo)}</b>
+        <span>Conclua até ${fmtDateHora(g.bloqueio_inicio)} (${_prazoRelativo(g.bloqueio_inicio)}). Depois disso o acesso a ${_listaE([...new Set(g.apps)])} fica bloqueado até você concluir.</span>
+      </div>
+      <button class="btn-primary" onclick="_irParaCursoObrigatorio('${g.academy_id}')">Fazer agora</button>
+    </div>`).join('');
+  slots.forEach(s=>{ s.innerHTML=html; });
+}
+// Reavalia sozinho quando o próximo bloqueio programado chegar, sem precisar recarregar a página.
+// Fatias de no máximo 1h: setTimeout estoura acima de ~24 dias, e de quebra o texto "em X h" do
+// aviso se mantém atualizado.
+function _agendarRecheckObrigatorios(){
+  clearTimeout(_obrigTimer);
+  if(!_obrigAgendados.length) return;
+  const proximo=Math.min(..._obrigAgendados.map(a=>new Date(a.bloqueio_inicio).getTime()));
+  const ms=Math.min(Math.max(proximo-Date.now()+1500,1000),3600*1000);
+  _obrigTimer=setTimeout(()=>checkCursosObrigatorios(),ms);
+}
 
 const _navBeforeObrig=window.nav;
 const OBRIG_PAGINAS_LIVRES=new Set(['academy','niveis','certificados']);
@@ -7154,12 +7239,19 @@ async function renderAdmObrigatorios(){
       const curso=allAcademy.find(a=>a.id===o.academy_id);
       const papeis=(o.roles_aplicaveis||[]).length?o.roles_aplicaveis.map(r=>ROLE_LABELS[r]||r).join(', '):'Todos os papéis';
       const nIsentos=allObrigatoriosIsentos.filter(i=>i.obrigatorio_id===o.id).length;
-      const nivelInfo={obrigatorio:{l:'Obrigatório',c:'var(--red)'},opcional:{l:'Opcional',c:'var(--muted2)'},oculto:{l:'Oculto',c:'var(--gold2)'}}[o.nivel]||{l:o.nivel,c:'var(--muted2)'};
+      // Regra obrigatória com data de início no futuro ainda NÃO bloqueia ninguém — vira
+      // "Programado" (dourado) até a hora chegar; com data já passada, mostra desde quando bloqueia.
+      const inicio=o.nivel==='obrigatorio' && o.bloqueio_inicio ? new Date(o.bloqueio_inicio) : null;
+      const programado=!!inicio && inicio>new Date();
+      const nivelInfo=programado
+        ? {l:'Programado',c:'var(--gold2)'}
+        : {obrigatorio:{l:'Obrigatório',c:'var(--red)'},opcional:{l:'Opcional',c:'var(--muted2)'},oculto:{l:'Oculto',c:'var(--gold2)'}}[o.nivel]||{l:o.nivel,c:'var(--muted2)'};
+      const quando=!inicio?'':programado?` · ⏰ bloqueia em ${fmtDateHora(o.bloqueio_inicio)}`:` · bloqueando desde ${fmtDateHora(o.bloqueio_inicio)}`;
       return `<div class="adm-row">
         <div class="status-dot" style="background:${o.ativo?'var(--green2)':'var(--muted2)'}"></div>
         <div class="adm-row-main">
           <div class="adm-row-title">${curso?.titulo||'(curso removido)'} <span style="font-weight:400;color:${nivelInfo.c}">· ${nivelInfo.l}</span></div>
-          <div class="adm-row-sub">${o.nivel==='obrigatorio'?(APP_LABELS[o.app]||o.app)+' · ':''}${papeis} · ${nIsentos} isento${nIsentos!==1?'s':''}${o.ativo?'':' · inativa'}</div>
+          <div class="adm-row-sub">${o.nivel==='obrigatorio'?(APP_LABELS[o.app]||o.app)+' · ':''}${papeis} · ${nIsentos} isento${nIsentos!==1?'s':''}${quando}${o.ativo?'':' · inativa'}</div>
         </div>
         <div class="adm-actions">
           <button class="btn-edit" onclick="openObrigIsentosModal('${o.id}')">Isentos</button>
@@ -7170,9 +7262,28 @@ async function renderAdmObrigatorios(){
     }).join('');
 }
 
+// Só regra "obrigatório" tem sistema bloqueado e data de início — opcional/oculto
+// não bloqueiam nada. Regra nova mostra as caixinhas (vários sistemas de uma vez);
+// regra existente é de um sistema só, então mostra o select simples.
 function _toggleObrigAppField(){
-  const field=el('obrig-app-field');
-  if(field) field.style.display=el('obrig-nivel').value==='obrigatorio'?'':'none';
+  const obrig=el('obrig-nivel').value==='obrigatorio';
+  const editando=!!el('obrig-id').value;
+  el('obrig-app-field').style.display=obrig?'':'none';
+  el('obrig-quando-field').style.display=obrig?'':'none';
+  el('obrig-app-multi').style.display=editando?'none':'flex';
+  el('obrig-app').style.display=editando?'':'none';
+}
+function _toggleObrigQuando(){
+  const programado=document.querySelector('input[name="obrig-quando"]:checked')?.value==='programado';
+  el('obrig-inicio').style.display=programado?'':'none';
+  el('obrig-quando-hint').style.display=programado?'':'none';
+}
+// <input type="datetime-local"> trabalha em horário LOCAL sem fuso ("2026-09-25T18:00"),
+// já o banco guarda timestamptz — converter pelos dois lados evita o bloqueio cair 3h
+// antes/depois do horário que o admin digitou.
+function _isoParaInputLocal(iso){
+  const d=new Date(iso), p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 function openObrigModal(id){
   const o=id?allObrigatorios.find(x=>x.id===id):null;
@@ -7181,9 +7292,14 @@ function openObrigModal(id){
   if(o) el('obrig-academy').value=o.academy_id;
   el('obrig-nivel').value=o?.nivel||'obrigatorio';
   el('obrig-app').value=o?.app||'crm';
+  document.querySelectorAll('.obrig-app-chk').forEach(chk=>{ chk.checked=chk.value==='crm'; });
   document.querySelectorAll('.obrig-role').forEach(chk=>{ chk.checked=(o?.roles_aplicaveis||[]).includes(chk.value); });
   el('obrig-ativo').checked=o?o.ativo:true;
+  const programado=!!o?.bloqueio_inicio;
+  document.querySelector(`input[name="obrig-quando"][value="${programado?'programado':'agora'}"]`).checked=true;
+  el('obrig-inicio').value=programado?_isoParaInputLocal(o.bloqueio_inicio):'';
   _toggleObrigAppField();
+  _toggleObrigQuando();
   el('modal-obrig').classList.add('on');
 }
 function closeObrigModal(){ el('modal-obrig').classList.remove('on'); }
@@ -7192,20 +7308,34 @@ async function saveObrigModal(){
   const id=el('obrig-id').value;
   const nivel=el('obrig-nivel').value;
   const roles=[...document.querySelectorAll('.obrig-role:checked')].map(c=>c.value);
-  const payload={
+  let bloqueioInicio=null;
+  if(nivel==='obrigatorio' && document.querySelector('input[name="obrig-quando"]:checked')?.value==='programado'){
+    const v=el('obrig-inicio').value;
+    const d=v?new Date(v):null;
+    if(!d || isNaN(d)){ toast('Escolha a data e a hora em que o bloqueio começa','err'); return; }
+    if(d<=new Date() && !confirm('Essa data e hora já passaram — o bloqueio começa assim que você salvar. Continuar?')) return;
+    bloqueioInicio=d.toISOString();
+  }
+  const base={
     academy_id: el('obrig-academy').value,
     nivel,
-    app: nivel==='obrigatorio'?el('obrig-app').value:null,
     roles_aplicaveis: roles.length?roles:null,
     ativo: el('obrig-ativo').checked,
+    bloqueio_inicio: bloqueioInicio,
   };
-  const {error} = id
-    ? await sb.from('portal_academy_obrigatorio').update(payload).eq('id',id)
-    : await sb.from('portal_academy_obrigatorio').insert(payload);
+  let error;
+  if(id){
+    ({error} = await sb.from('portal_academy_obrigatorio').update({...base, app: nivel==='obrigatorio'?el('obrig-app').value:null}).eq('id',id));
+  }else{
+    const apps=nivel==='obrigatorio'?[...document.querySelectorAll('.obrig-app-chk:checked')].map(c=>c.value):[null];
+    if(!apps.length){ toast('Marque pelo menos um sistema pra bloquear','err'); return; }
+    ({error} = await sb.from('portal_academy_obrigatorio').insert(apps.map(app=>({...base,app}))));
+  }
   if(error){ toast('Erro ao salvar: '+error.message,'err'); return; }
   toast('Regra salva','ok');
   closeObrigModal();
   renderAdmObrigatorios();
+  checkCursosObrigatorios(); // o próprio admin também pode ser alcançado pela regra
 }
 
 async function deleteObrigatorio(id){
