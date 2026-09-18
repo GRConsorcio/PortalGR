@@ -1,4 +1,4 @@
-const CACHE = 'portal-gr-v6';
+const CACHE = 'portal-gr-v7';
 const SHELL = ['./', './index.html', './manifest.json', './logo.svg', './icon.svg?v=3'];
 
 self.addEventListener('install', (e) => {
@@ -36,4 +36,22 @@ self.addEventListener('fetch', (e) => {
       return res;
     }).catch(() => caches.match(e.request))
   );
+});
+
+// Clique numa notificação do sistema (mensagem, menção, comentário...): se o Portal já está aberto, traz a janela
+// pra frente e manda o id da notificação pra ele navegar até a conversa/publicação; se estiver fechado, abre já
+// com #notif=<id> e o próprio Portal resolve o destino depois de logar (ver _abrirNotifDoHash no index.html).
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const data = e.notification.data || {};
+  e.waitUntil((async () => {
+    const janelas = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const aberta = janelas.find((c) => c.url.startsWith(self.location.origin));
+    if (aberta) {
+      await aberta.focus();
+      if (data.notifId) aberta.postMessage({ type: 'notif-click', notifId: data.notifId });
+      return;
+    }
+    await self.clients.openWindow('./index.html' + (data.notifId ? '#notif=' + encodeURIComponent(data.notifId) : ''));
+  })());
 });

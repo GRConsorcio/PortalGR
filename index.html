@@ -1271,7 +1271,92 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .obrig-aviso-txt b{color:var(--text);font-size:13px}
 .obrig-aviso .btn-primary{flex-shrink:0;font-size:11px;padding:8px 14px}
 @media(max-width:560px){.obrig-aviso{flex-wrap:wrap}.obrig-aviso .btn-primary{width:100%}}
-/* @@CSS-EXTRA@@ */
+/* ══ MEU PERFIL ══ */
+.pf-hero{display:flex;align-items:center;gap:22px;padding:22px 24px;margin-bottom:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--gold) 10%,var(--s2)),var(--s2));border:1px solid var(--border);border-radius:var(--radius-card);box-shadow:var(--shadow-card)}
+.pf-av{position:relative;width:92px;height:92px;flex-shrink:0;border-radius:50%;background:var(--gold);color:#08080D;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:36px;box-shadow:0 0 0 3px var(--s2),0 0 0 5px var(--gold-dim)}
+.pf-av>img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.pf-av-edit{position:absolute;bottom:-2px;right:-2px;width:28px;height:28px;border-radius:50%;background:var(--s1);color:var(--gold2);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.pf-info{flex:1;min-width:0}
+.pf-nome{font-family:var(--font-d);font-size:28px;font-weight:800;letter-spacing:.5px;line-height:1.1;overflow-wrap:anywhere}
+.pf-sub{font-size:12.5px;color:var(--muted2);margin-top:4px}
+.pf-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.pf-pill{font-size:11px;padding:4px 11px;border-radius:999px;background:var(--s3);border:1px solid var(--border2);color:var(--text)}
+.pf-pill.dest{border-color:var(--gold);color:var(--gold2)}
+.pf-hero-acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.pf-body{padding:16px 20px}
+.pf-hint{font-size:10.5px;color:var(--muted2);margin-top:5px;line-height:1.45}
+.pf-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;position:sticky;bottom:0;z-index:5;padding:12px 0;background:linear-gradient(to top,var(--bg) 65%,transparent)}
+.tag-input{display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:var(--s3);border:1px solid var(--border2);padding:7px 9px;border-radius:var(--radius-sm);cursor:text}
+.tag-input:focus-within{border-color:var(--gold-dim)}
+.tag-input>input{flex:1;min-width:130px;background:none;border:none;outline:none;color:var(--text);font-size:13px;font-family:var(--font-b);padding:3px 2px}
+.tag-chips{display:contents}
+.tag-chip{display:inline-flex;align-items:center;gap:5px;background:color-mix(in srgb,var(--gold) 14%,var(--s3));border:1px solid var(--gold-line);color:var(--gold2);font-size:12px;padding:3px 5px 3px 10px;border-radius:999px;max-width:100%}
+.tag-chip button{background:none;border:none;color:inherit;cursor:pointer;font-size:11px;padding:0 4px;opacity:.65;line-height:1}
+.tag-chip button:hover{opacity:1}
+.tag-sug{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.tag-sug button{background:none;border:1px dashed var(--border2);color:var(--muted2);font-size:11px;padding:2px 10px;border-radius:999px;cursor:pointer;font-family:var(--font-b)}
+.tag-sug button:hover{color:var(--gold2);border-color:var(--gold-dim)}
+.pf-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.pf-toolbar>input{flex:1;min-width:220px}
+.pf-toolbar>select{width:210px}
+.pf-count{font-size:11px;color:var(--muted2);margin-bottom:12px;letter-spacing:.5px}
+.pf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(224px,1fr));gap:12px}
+.pf-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;padding:18px 14px;background:var(--s2);border:1px solid var(--border);border-radius:var(--radius-card);cursor:pointer;transition:border-color .15s,transform .15s}
+.pf-card:hover{border-color:var(--gold-dim);transform:translateY(-2px)}
+.pf-card-av{width:64px;height:64px;border-radius:50%;overflow:hidden;background:var(--gold);color:#08080D;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:24px;margin-bottom:4px}
+.pf-card-av img{width:100%;height:100%;object-fit:cover}
+.pf-card-nome{font-weight:700;font-size:13.5px;overflow-wrap:anywhere}
+.pf-card-sub{font-size:11px;color:var(--muted2)}
+.pf-card-tags{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:6px}
+.pf-card-tags span{font-size:10px;padding:2px 8px;border-radius:999px;background:var(--s3);border:1px solid var(--border2);color:var(--muted2)}
+.pf-voltar{background:none;border:none;color:var(--muted2);font-size:12px;cursor:pointer;margin-bottom:12px;padding:0;font-family:var(--font-b)}
+.pf-voltar:hover{color:var(--gold2)}
+.pf-secao{margin-bottom:18px}
+.pf-secao h4{font-family:var(--font-d);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.pf-secao p{font-size:13px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.pf-chips{display:flex;flex-wrap:wrap;gap:6px}
+.pf-chips span{font-size:12px;padding:3px 11px;border-radius:999px;background:color-mix(in srgb,var(--gold) 12%,var(--s3));border:1px solid var(--gold-line);color:var(--gold2)}
+.pf-secao a{color:var(--gold2)}
+@media(max-width:640px){.pf-hero{flex-direction:column;text-align:center}.pf-meta,.pf-hero-acoes{justify-content:center}.pf-toolbar>select{width:100%}}
+
+/* ══ NOTIFICAÇÕES ══ */
+.notif-badge{position:absolute;top:-6px;right:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:var(--red);color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--font-b);border:2px solid var(--bg);line-height:1}
+.notif-panel{position:fixed;top:calc(var(--topbar-h) + 6px);right:14px;width:min(400px,calc(100vw - 28px));max-height:min(640px,calc(100vh - var(--topbar-h) - 24px));flex-direction:column;background:var(--s1);border:1px solid var(--border2);border-radius:var(--radius-card);box-shadow:0 14px 40px rgba(0,0,0,.5);z-index:9000;overflow:hidden}
+.notif-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.notif-title{font-family:var(--font-d);font-size:17px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.notif-link{background:none;border:none;color:var(--gold2);font-size:11px;cursor:pointer;font-family:var(--font-b);padding:0}
+.notif-link:hover{text-decoration:underline}
+.notif-aviso{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;font-size:11.5px;color:var(--muted2);background:var(--s2);border-bottom:1px solid var(--border);line-height:1.4}
+.notif-aviso.ok{color:var(--green2)}
+.notif-aviso .btn-primary{padding:6px 12px;font-size:10px;flex-shrink:0}
+.notif-list{overflow-y:auto;flex:1;min-height:90px}
+.notif-item{display:flex;gap:12px;padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s}
+.notif-item:hover{background:var(--s2)}
+.notif-item.nao-lida{background:color-mix(in srgb,var(--gold) 7%,var(--s1))}
+.notif-av{position:relative;width:38px;height:38px;flex-shrink:0}
+.notif-av-img{width:38px;height:38px;border-radius:50%;overflow:hidden;background:var(--s3);color:var(--gold2);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:15px}
+.notif-av-img img{width:100%;height:100%;object-fit:cover}
+.notif-av .ico{position:absolute;bottom:-4px;right:-4px;font-size:10px;background:var(--s1);border-radius:50%;width:19px;height:19px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border2)}
+.notif-conteudo{flex:1;min-width:0}
+.notif-txt{font-size:12.5px;line-height:1.35;font-weight:600;overflow-wrap:anywhere}
+.notif-sub{font-size:11.5px;color:var(--muted2);margin-top:2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.notif-time{font-size:10px;color:var(--muted2);margin-top:4px}
+.notif-ponto{width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;align-self:center}
+.notif-vazio{padding:38px 20px;text-align:center;font-size:13px;color:var(--muted2);line-height:1.6}
+.notif-vazio span{font-size:11.5px}
+.notif-foot{padding:11px 16px;border-top:1px solid var(--border);background:var(--s2);font-size:11px;color:var(--muted2)}
+.notif-foot label{display:flex;gap:9px;align-items:flex-start;cursor:pointer;line-height:1.45}
+.notif-foot input{margin-top:2px;flex-shrink:0}
+.notif-toast-wrap{position:fixed;top:calc(var(--topbar-h) + 10px);right:16px;z-index:9500;display:flex;flex-direction:column;gap:8px;width:min(340px,calc(100vw - 32px))}
+.notif-toast{display:flex;gap:10px;align-items:flex-start;padding:11px 14px;background:var(--s1);border:1px solid var(--gold-dim);border-left:3px solid var(--gold);border-radius:var(--radius-sm);box-shadow:0 8px 26px rgba(0,0,0,.45);cursor:pointer;animation:toastIn .2s ease}
+.notif-toast-ico{font-size:17px;line-height:1.2;flex-shrink:0}
+.notif-toast-txt{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:12px;line-height:1.35}
+.notif-toast-txt b{overflow-wrap:anywhere}
+.notif-toast-txt span{color:var(--muted2);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.com-destaque{animation:comDestaque 2.4s ease}
+@keyframes comDestaque{0%,65%{box-shadow:0 0 0 2px var(--gold),0 0 22px var(--gold-glow)}100%{box-shadow:0 0 0 0 transparent}}
+.com-autor-link{cursor:pointer}
+.com-autor-link:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -1490,6 +1575,10 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       Comunidade
       <span class="nav-badge" id="nav-chat-badge" style="display:none">0</span>
     </div>
+    <div class="nav-item" data-page="perfil" onclick="abrirMeuPerfil()">
+      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="6" r="3.2"/><path d="M2.5 16c.4-3.3 3-5.2 6.5-5.2s6.1 1.9 6.5 5.2"/></svg>
+      Meu Perfil
+    </div>
     <div class="nav-item" data-page="news" onclick="nav('news')">
       <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="16" height="13" rx="1"/><line x1="1" y1="7" x2="17" y2="7"/><line x1="5" y1="11" x2="13" y2="11"/></svg>
       GR News
@@ -1596,7 +1685,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
       <div class="su-av" id="su-av">?</div>
       <div class="su-av-badge"><svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 5h2l1-2h6l1 2h2v8H2z"/><circle cx="8" cy="9" r="2.2"/></svg></div>
     </div>
-    <div>
+    <div style="cursor:pointer;min-width:0" onclick="abrirMeuPerfil()" title="Ver meu perfil">
       <div class="su-name" id="su-name">–</div>
       <div class="su-role" id="su-role">Vendedor</div>
     </div>
@@ -1629,9 +1718,9 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         <svg id="theme-icon-moon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 10.5A6.5 6.5 0 017.5 3 6.5 6.5 0 1015 10.5z"/></svg>
         <svg id="theme-icon-sun" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" style="display:none"><circle cx="9" cy="9" r="3.5"/><line x1="9" y1="1" x2="9" y2="3"/><line x1="9" y1="15" x2="9" y2="17"/><line x1="1" y1="9" x2="3" y2="9"/><line x1="15" y1="9" x2="17" y2="9"/><line x1="3.5" y1="3.5" x2="5" y2="5"/><line x1="13" y1="13" x2="14.5" y2="14.5"/><line x1="14.5" y1="3.5" x2="13" y2="5"/><line x1="5" y1="13" x2="3.5" y2="14.5"/></svg>
       </button>
-      <button class="notif-btn" id="notif-btn">
+      <button class="notif-btn" id="notif-btn" onclick="toggleNotifPanel(event)" title="Notificações" aria-label="Notificações">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1a5 5 0 015 5v3l1.5 2H1.5L3 9V6a5 5 0 015-5z"/><path d="M6 13a2 2 0 004 0"/></svg>
-        <div class="notif-dot" id="notif-dot" style="display:none"></div>
+        <span class="notif-badge" id="notif-badge" style="display:none">0</span>
       </button>
     </div>
   </div>
@@ -1942,6 +2031,98 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     <!-- MEUS CERTIFICADOS -->
     <div class="page" id="page-certificados">
       <div class="cert-grid" id="cert-grid"></div>
+    </div>
+
+    <!-- MEU PERFIL (editar o meu + ver o perfil dos colegas) -->
+    <div class="page" id="page-perfil">
+      <div style="display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:18px;flex-wrap:wrap">
+        <div class="adm-tab on" id="perfil-tab-meu" onclick="perfilSwitchTab('meu')">Meu perfil</div>
+        <div class="adm-tab" id="perfil-tab-equipe" onclick="perfilSwitchTab('equipe')">Colaboradores</div>
+      </div>
+
+      <div id="perfil-view-meu">
+        <div class="pf-hero" id="pf-hero"></div>
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Informações básicas</div></div>
+            <div class="pf-body">
+              <div class="adm-field"><label class="adm-label" for="pf-nome">Nome</label>
+                <input class="adm-input" id="pf-nome" maxlength="80" autocomplete="name">
+                <div class="pf-hint">Aparece no Portal, na Comunidade e nos seus certificados.</div></div>
+              <div class="adm-field"><label class="adm-label" for="pf-admissao">Data em que entrei na GR</label>
+                <input class="adm-input" type="date" id="pf-admissao">
+                <div class="pf-hint">Usada pra calcular o seu tempo de casa (Carreira).</div></div>
+              <div class="grid-2" style="gap:12px">
+                <div class="adm-field"><label class="adm-label">Cargo</label><input class="adm-input" id="pf-cargo" disabled></div>
+                <div class="adm-field"><label class="adm-label">Equipe</label><input class="adm-input" id="pf-equipe" disabled></div>
+              </div>
+              <div class="pf-hint" style="margin-top:-4px">Cargo e equipe são definidos pela administração.</div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Sobre mim</div></div>
+            <div class="pf-body">
+              <div class="adm-field"><label class="adm-label" for="pf-bio">Conte um pouco sobre você</label>
+                <textarea class="adm-input" id="pf-bio" rows="4" maxlength="600" style="resize:vertical;min-height:88px" oninput="_pfContar('pf-bio','pf-bio-cont',600)"></textarea>
+                <div class="pf-hint" id="pf-bio-cont">0/600</div></div>
+              <div class="grid-2" style="gap:12px">
+                <div class="adm-field"><label class="adm-label" for="pf-cidade">Cidade</label><input class="adm-input" id="pf-cidade" maxlength="80"></div>
+                <div class="adm-field"><label class="adm-label" for="pf-nasc">Aniversário</label><input class="adm-input" type="date" id="pf-nasc"></div>
+              </div>
+              <div class="pf-hint" style="margin-top:-6px;margin-bottom:12px">Os colegas veem só o dia e o mês — o ano fica só pra você.</div>
+              <div class="adm-field"><label class="adm-label">Interesses e hobbies</label>
+                <div class="tag-input" id="ti-interesses" onclick="this.querySelector('input').focus()"><span class="tag-chips" id="ti-interesses-chips"></span><input type="text" id="ti-interesses-in" maxlength="40" placeholder="Digite e aperte Enter" onkeydown="_tagKey(event,'interesses')" onblur="_tagCommit('interesses')"></div>
+                <div class="tag-sug" id="ti-interesses-sug"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Profissional</div></div>
+            <div class="pf-body">
+              <div class="adm-field"><label class="adm-label">Habilidades</label>
+                <div class="tag-input" id="ti-habilidades" onclick="this.querySelector('input').focus()"><span class="tag-chips" id="ti-habilidades-chips"></span><input type="text" id="ti-habilidades-in" maxlength="40" placeholder="Ex.: Negociação — digite e aperte Enter" onkeydown="_tagKey(event,'habilidades')" onblur="_tagCommit('habilidades')"></div>
+                <div class="tag-sug" id="ti-habilidades-sug"></div></div>
+              <div class="adm-field"><label class="adm-label">Conhecimentos</label>
+                <div class="tag-input" id="ti-conhecimentos" onclick="this.querySelector('input').focus()"><span class="tag-chips" id="ti-conhecimentos-chips"></span><input type="text" id="ti-conhecimentos-in" maxlength="40" placeholder="Ex.: Consórcio, Excel — digite e aperte Enter" onkeydown="_tagKey(event,'conhecimentos')" onblur="_tagCommit('conhecimentos')"></div>
+                <div class="tag-sug" id="ti-conhecimentos-sug"></div></div>
+              <div class="adm-field"><label class="adm-label">Idiomas</label>
+                <div class="tag-input" id="ti-idiomas" onclick="this.querySelector('input').focus()"><span class="tag-chips" id="ti-idiomas-chips"></span><input type="text" id="ti-idiomas-in" maxlength="40" placeholder="Ex.: Inglês" onkeydown="_tagKey(event,'idiomas')" onblur="_tagCommit('idiomas')"></div>
+                <div class="tag-sug" id="ti-idiomas-sug"></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Formação, experiência e contato</div></div>
+            <div class="pf-body">
+              <div class="adm-field"><label class="adm-label" for="pf-formacao">Formação</label>
+                <input class="adm-input" id="pf-formacao" maxlength="200" placeholder="Ex.: Administração — UFC"></div>
+              <div class="adm-field"><label class="adm-label" for="pf-experiencia">Experiências anteriores</label>
+                <textarea class="adm-input" id="pf-experiencia" rows="3" maxlength="800" style="resize:vertical;min-height:72px" placeholder="Onde você já trabalhou e o que fazia"></textarea></div>
+              <div class="grid-2" style="gap:12px">
+                <div class="adm-field"><label class="adm-label" for="pf-telefone">WhatsApp / telefone</label><input class="adm-input" id="pf-telefone" maxlength="30" placeholder="(85) 99999-9999" autocomplete="tel"></div>
+                <div class="adm-field"><label class="adm-label" for="pf-linkedin">LinkedIn</label><input class="adm-input" id="pf-linkedin" maxlength="200" placeholder="https://linkedin.com/in/..."></div>
+              </div>
+              <div class="pf-hint" style="margin-top:-4px">Contato é opcional e fica visível pra todos os colaboradores.</div>
+            </div>
+          </div>
+        </div>
+        <div class="pf-actions">
+          <button class="btn-primary" id="pf-salvar" onclick="salvarMeuPerfil()">Salvar perfil</button>
+          <button class="btn-outline" onclick="renderPerfilMeu()">Descartar alterações</button>
+          <span class="pf-hint">Seu perfil fica visível para todos os colaboradores.</span>
+        </div>
+      </div>
+
+      <div id="perfil-view-equipe" style="display:none">
+        <div class="pf-toolbar">
+          <input class="adm-input" id="pf-busca" placeholder="Buscar por nome, cargo, equipe ou habilidade..." oninput="renderPerfilEquipe()">
+          <select class="adm-input" id="pf-filtro-equipe" onchange="renderPerfilEquipe()"><option value="">Todas as equipes</option></select>
+        </div>
+        <div class="pf-count" id="pf-count"></div>
+        <div class="pf-grid" id="pf-grid"></div>
+      </div>
+
+      <div id="perfil-view-outro" style="display:none"></div>
     </div>
 
     <!-- COMUNIDADE (feed social + chat) -->
@@ -2474,6 +2655,20 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
 <div class="toast-wrap" id="toast-wrap"></div>
 
+<!-- Painel de notificações (sino do topo). Fica aqui fora do .main pra não ser cortado por overflow
+     de nenhuma página; abre/fecha por toggleNotifPanel(). -->
+<div class="notif-panel" id="notif-panel" style="display:none" role="dialog" aria-label="Notificações">
+  <div class="notif-head">
+    <div class="notif-title">Notificações</div>
+    <button class="notif-link" onclick="marcarTodasNotifLidas()">Marcar todas como lidas</button>
+  </div>
+  <div id="notif-permissao"></div>
+  <div class="notif-list" id="notif-list"></div>
+  <div class="notif-foot">
+    <label><input type="checkbox" id="notif-pref-posts" onchange="salvarPrefNotifPosts(this.checked)"> <span>Avisar também de <b>toda publicação nova</b> na Comunidade (por padrão você só é avisado do que é direcionado a você)</span></label>
+  </div>
+</div>
+
 <!-- Tela obrigatória: bloqueia navegação até concluir curso(s) obrigatório(s)
      marcado(s) pro Portal em "Cursos Obrigatórios" (admin). Fica escondida
      por padrão; checkCursosObrigatorios() decide se mostra. -->
@@ -2806,6 +3001,7 @@ async function initApp(user){
   // Carrega conversas/badge de não lidas em segundo plano (sem travar o boot)
   // pra o indicador do menu já aparecer mesmo sem o usuário abrir a Comunidade.
   _inicializarChatBadge().catch(e=>console.warn('[chat] falha ao inicializar:',e.message));
+  _inicializarNotificacoes().catch(e=>console.warn('[notificacoes] falha ao inicializar:',e.message));
 }
 
 /* ═══ RESUMO DE VENDAS (CRM) ═══
@@ -3077,7 +3273,7 @@ async function loadAll(){
 }
 
 /* ═══ NAV ═══ */
-const PAGE_TITLES={dashboard:'Dashboard',niveis:'GR Níveis',performance:'Performance',destaques:'Destaques do Mês',copa:'Copa GR',campanhas:'Campanhas',beneficios:'Benefícios',academy:'GR Academy',news:'GR News',sugestoes:'Caixinha de Sugestões',hallfama:'Hall da Fama',regras:'Regras GR',carreira:'Carreira',biblioteca:'Biblioteca',certificados:'Meus Certificados',comunidade:'Comunidade'};
+const PAGE_TITLES={dashboard:'Dashboard',niveis:'GR Níveis',performance:'Performance',destaques:'Destaques do Mês',copa:'Copa GR',campanhas:'Campanhas',beneficios:'Benefícios',academy:'GR Academy',news:'GR News',sugestoes:'Caixinha de Sugestões',hallfama:'Hall da Fama',regras:'Regras GR',carreira:'Carreira',biblioteca:'Biblioteca',certificados:'Meus Certificados',comunidade:'Comunidade',perfil:'Meu Perfil'};
 function nav(page){
   // BUGFIX: sair da Academy (por qualquer item do menu, não só o botão
   // "Voltar") só escondia a página do curso via CSS — o <iframe>/<video> da
@@ -3091,7 +3287,7 @@ function nav(page){
   document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('on');
   el('topbar-title').textContent=PAGE_TITLES[page]||page;
   _currentPage=page;
-  const renderers={dashboard:renderDashboard,niveis:renderNiveis,performance:renderPerformance,destaques:renderDestaques,copa:renderCopa,campanhas:()=>renderCampanhas('ativa'),beneficios:renderBeneficios,academy:()=>{_acadCategoriaAtiva='todos';renderAcademyTabs();renderAcademy('todos');},news:renderNews,sugestoes:renderSugestoes,hallfama:renderHallFama,regras:renderRegras,carreira:renderCarreira,biblioteca:()=>{_biblioTipoAtual='livro';_biblioCatAtual='todos';el('bib-tab-livro')?.classList.add('on');el('bib-tab-audiobook')?.classList.remove('on');document.querySelectorAll('#biblio-cat-filters button').forEach((b,i)=>b.className=i===0?'btn-primary':'btn-outline');renderBiblioteca('todos');},certificados:renderCertificados,comunidade:renderComunidade};
+  const renderers={dashboard:renderDashboard,niveis:renderNiveis,performance:renderPerformance,destaques:renderDestaques,copa:renderCopa,campanhas:()=>renderCampanhas('ativa'),beneficios:renderBeneficios,academy:()=>{_acadCategoriaAtiva='todos';renderAcademyTabs();renderAcademy('todos');},news:renderNews,sugestoes:renderSugestoes,hallfama:renderHallFama,regras:renderRegras,carreira:renderCarreira,biblioteca:()=>{_biblioTipoAtual='livro';_biblioCatAtual='todos';el('bib-tab-livro')?.classList.add('on');el('bib-tab-audiobook')?.classList.remove('on');document.querySelectorAll('#biblio-cat-filters button').forEach((b,i)=>b.className=i===0?'btn-primary':'btn-outline');renderBiblioteca('todos');},certificados:renderCertificados,comunidade:renderComunidade,perfil:renderPerfil};
   renderers[page]?.();
   toggleMobileNav(false); // fecha a gaveta ao trocar de página no celular
   // Academy pede mais espaço horizontal pra ler o conteúdo do curso — recolhe
@@ -5621,11 +5817,19 @@ function comLimparFiltro(){
 // Escapa o texto e só depois transforma #hashtag/@menção em spans clicáveis —
 // nessa ordem os caracteres do próprio token (#,@,letras) nunca colidem com
 // o que _escHtml() escapa (<,>,&,",').
+// BUGFIX (segurança): o termo da #hashtag/@menção entrava direto num onclick="...('${termo}')" e só
+// escapava a aspa simples — uma aspa DUPLA no meio (ex.: #x"onmouseover="alert(1);//) fechava o
+// atributo e virava um handler de verdade, executando script pra todo mundo que visse o post.
+// Agora o termo vai num data-attribute escapado (aspas incluídas) e o handler só lê dataset.
+// @menção que bate com UMA pessoa só abre o perfil dela; o resto segue como filtro da busca do feed.
 function _comFormatarTexto(texto){
   const esc=_escHtml(texto);
   return esc.replace(/(^|[\s])([#@][^\s<]+)/g,(m,pre,tag)=>{
-    const termo=tag.slice(1).replace(/'/g,"\\'");
-    return `${pre}<span class="com-tag" onclick="comFiltrarHashtag('${termo}')">${tag}</span>`;
+    const termo=_desescHtml(tag.slice(1));
+    const uid=tag[0]==='@' ? _perfilPorMencao(termo) : null;
+    return uid
+      ? `${pre}<span class="com-tag" data-uid="${uid}" onclick="abrirPerfil(this.dataset.uid)" title="Ver perfil">${tag}</span>`
+      : `${pre}<span class="com-tag" data-t="${_escAttr(termo)}" onclick="comFiltrarHashtag(this.dataset.t)">${tag}</span>`;
   });
 }
 
@@ -5660,7 +5864,7 @@ function renderComPostWrapper(p){
     const podeExcluirRepost=p.user_id===CU.id||isAdmin();
     return `<div class="com-post" data-post="${p.id}">
       <div class="com-repost-tag">
-        <span>🔁</span> ${autorRepost} compartilhou
+        <span>🔁</span> <span class="com-autor-link" onclick="abrirPerfil('${p.user_id}')">${autorRepost}</span> compartilhou
         <span class="com-post-meta">${fmtDateHora(p.criado_em)}</span>
         ${podeExcluirRepost?`<button onclick="excluirComPost('${p.id}')" title="Remover compartilhamento" style="margin-left:auto;background:none;border:none;color:var(--muted2);cursor:pointer;font-size:12px">✕</button>`:''}
       </div>
@@ -5718,9 +5922,9 @@ function _comPostCardInner(p){
   const souDono=p.user_id===CU.id;
   const comentariosAbertos=_comOpenComments.has(p.id);
   return `<div class="com-post-head">
-    <div class="com-post-avatar">${foto?`<img src="${foto}" alt="">`:autor.charAt(0).toUpperCase()}</div>
+    <div class="com-post-avatar com-autor-link" onclick="abrirPerfil('${p.user_id}')" title="Ver perfil">${foto?`<img src="${foto}" alt="">`:autor.charAt(0).toUpperCase()}</div>
     <div>
-      <div class="com-post-author">${autor}</div>
+      <div class="com-post-author com-autor-link" onclick="abrirPerfil('${p.user_id}')" title="Ver perfil">${autor}</div>
       <div class="com-post-meta">${fmtDateHora(p.criado_em)}</div>
     </div>
     <div class="com-post-tipo t-${p.tipo||'geral'}">${COM_TIPO_LABEL[p.tipo]||p.tipo}</div>
@@ -5761,10 +5965,10 @@ function renderComentariosArvore(postId){
     const euCurtiC=curtidasC.some(k=>k.user_id===CU.id);
     const souDonoC=c.user_id===CU.id;
     const respostaAberta=_comOpenReplies.has(c.id);
-    return `<div class="com-comment-bubble" style="${éResposta?'margin-left:30px':''}">
-      <div class="com-comment-avatar">${foto?`<img src="${foto}" alt="">`:autor.charAt(0).toUpperCase()}</div>
+    return `<div class="com-comment-bubble" data-comment="${c.id}" style="${éResposta?'margin-left:30px':''}">
+      <div class="com-comment-avatar com-autor-link" onclick="abrirPerfil('${c.user_id}')">${foto?`<img src="${foto}" alt="">`:autor.charAt(0).toUpperCase()}</div>
       <div class="com-comment-col">
-        <div class="com-comment-balloon"><b>${autor}</b>${_escHtml(c.conteudo)}</div>
+        <div class="com-comment-balloon"><b class="com-autor-link" onclick="abrirPerfil('${c.user_id}')">${autor}</b>${_escHtml(c.conteudo)}</div>
         <div class="com-comment-actions">
           <span class="${euCurtiC?'liked':''}" onclick="toggleCurtidaComentario('${c.id}')">${euCurtiC?'❤️':'🤍'}${curtidasC.length?' '+curtidasC.length:''}</span>
           ${!éResposta?`<span onclick="mostrarRespostaInput('${c.id}')">Responder</span>`:''}
@@ -6161,7 +6365,7 @@ async function abrirConversa(conversaId){
   el('com-chat-empty').style.display='none';
   el('com-chat-thread').style.display='flex';
   const conv=_comConversas.find(c=>c.id===conversaId);
-  el('com-chat-thread-head').textContent = conv ? _diretorioNome(conv.outroUserId) : '';
+  el('com-chat-thread-head').innerHTML = conv ? `<span class="com-autor-link" onclick="abrirPerfil('${conv.outroUserId}')" title="Ver perfil">${_escHtml(_diretorioNome(conv.outroUserId))}</span>` : '';
   await carregarMensagens(conversaId);
   await marcarConversaLida(conversaId);
 }
@@ -6209,6 +6413,7 @@ async function marcarConversaLida(conversaId){
   const conv=_comConversas.find(c=>c.id===conversaId);
   if(conv) conv.naoLida=false;
   atualizarBadgeChat();
+  _marcarNotifsPorRef('mensagem',conversaId); // abrir a conversa também limpa os avisos dela no sino
 }
 
 async function enviarChatMsg(){
@@ -6259,6 +6464,548 @@ function _assinarRealtimeChatGlobal(){
       }
     })
     .subscribe();
+}
+
+/* ═══════════════════════════════════════════════
+   MEU PERFIL — editar o meu (nome, foto, data de entrada, habilidades...)
+   e ver o perfil dos colegas. Tudo passa por portal_perfis() (leitura) e
+   portal_salvar_meu_perfil() (escrita com validação no servidor); a tabela
+   portal_perfil em si não é acessível direto pelo cliente.
+═══════════════════════════════════════════════ */
+const MESES_PT=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+// _escHtml() NÃO escapa aspas — em atributo (src="...", data-x="...") precisa deste.
+function _escAttr(s){ return _escHtml(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function _desescHtml(s){ const t=document.createElement('textarea'); t.innerHTML=s; return t.value; }
+function _normBusca(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
+function _normNome(s){ return _normBusca(s).replace(/[^a-z0-9]/g,''); }
+
+// Mesma regra do gatilho no banco (portal_resolver_mencoes): @DeividDias / @DeividSilva (primeiro+último)
+// casam o nome inteiro; @Deivid só vale como primeiro nome se nenhum nome inteiro bateu. Aqui só devolve
+// quando dá UMA pessoa — com duas "Maria" o @Maria não abre perfil (o aviso, no banco, vai pras duas).
+function _perfilPorMencao(token){
+  const tk=_normNome((token||'').replace(/[.,;:!?)\]]+$/,''));
+  if(!tk) return null;
+  const partes=u=>{ const p=(u.nome||'').trim().split(/\s+/); return {completo:_normNome(u.nome), primeiro:_normNome(p[0]), priUlt:_normNome(p[0]+(p.length>1?p[p.length-1]:''))}; };
+  const pessoas=_diretorio.filter(u=>(u.nome||'').trim());
+  const exatos=pessoas.filter(u=>{ const n=partes(u); return n.completo===tk||n.priUlt===tk; });
+  if(exatos.length) return exatos.length===1?exatos[0].user_id:null;
+  const porPrimeiro=pessoas.filter(u=>partes(u).primeiro===tk);
+  return porPrimeiro.length===1?porPrimeiro[0].user_id:null;
+}
+
+let _perfis=[];                 // portal_perfis(): todos os colaboradores, já com nome/cargo/foto
+let _perfilTab='meu';           // 'meu' | 'equipe' | 'outro'
+let _perfilOutroId=null;
+let _perfilOrigem=null;         // página de onde abriu o perfil de alguém (pro botão Voltar)
+let _perfilTags={habilidades:[],conhecimentos:[],interesses:[],idiomas:[]};
+// Formulário com edição ainda não salva: trocar de aba (Meu perfil <-> Colaboradores) NÃO pode reiniciar o
+// formulário e jogar fora o que a pessoa acabou de digitar. Só "Descartar" ou salvar zeram.
+let _pfSujo=false;
+document.addEventListener('input',e=>{ if(e.target.closest && e.target.closest('#perfil-view-meu')) _pfSujo=true; });
+const PERFIL_TAG_MAX=20;
+const PERFIL_SUGESTOES={
+  habilidades:['Comunicação','Negociação','Atendimento ao cliente','Liderança','Organização','Trabalho em equipe','Proatividade','Resolução de problemas'],
+  conhecimentos:['Consórcio','Vendas','CRM','Excel','Financeiro','Marketing digital','Atendimento','Gestão de equipes'],
+  interesses:['Futebol','Música','Viagens','Leitura','Cinema','Culinária','Games','Academia'],
+  idiomas:['Inglês','Espanhol','Francês','Libras'],
+};
+
+async function _garantirPerfis(forcar){
+  if(_perfis.length && !forcar) return;
+  const {data,error}=await sb.rpc('portal_perfis');
+  if(error){ console.warn('[perfil] falha ao carregar perfis:',error.message); return; }
+  _perfis=data||[];
+}
+function _perfilMeuDados(){
+  return _perfis.find(x=>x.user_id===CU.id) || {user_id:CU.id, nome:CUP?.nome||CU.user_metadata?.full_name||'', cargo:CUP?.cargo, equipe:CUP?.equipe, foto_url:CUP?.foto_url, data_admissao:CUP?.data_admissao, habilidades:[], conhecimentos:[], interesses:[], idiomas:[]};
+}
+function abrirMeuPerfil(){ _perfilTab='meu'; nav('perfil'); }
+function abrirPerfil(uid){
+  if(!uid) return;
+  if(uid===CU.id){ abrirMeuPerfil(); return; }
+  _perfilOrigem=_currentPage!=='perfil'?_currentPage:'equipe';
+  _perfilOutroId=uid; _perfilTab='outro';
+  nav('perfil');
+}
+async function renderPerfil(){
+  await _garantirPerfis(true);
+  perfilSwitchTab(_perfilTab);
+}
+function perfilSwitchTab(tab){
+  _perfilTab=tab;
+  el('perfil-tab-meu').classList.toggle('on',tab==='meu');
+  el('perfil-tab-equipe').classList.toggle('on',tab!=='meu');
+  el('perfil-view-meu').style.display=tab==='meu'?'':'none';
+  el('perfil-view-equipe').style.display=tab==='equipe'?'':'none';
+  el('perfil-view-outro').style.display=tab==='outro'?'':'none';
+  if(tab==='meu'){ if(!_pfSujo) renderPerfilMeu(); } else if(tab==='equipe') renderPerfilEquipe(); else _renderPerfilOutro();
+}
+function _perfilVoltar(){
+  if(_perfilOrigem && _perfilOrigem!=='perfil' && _perfilOrigem!=='equipe') nav(_perfilOrigem);
+  else perfilSwitchTab('equipe');
+}
+
+// "3 anos e 2 meses" a partir de uma data 'YYYY-MM-DD' (sem passar por new Date(string): interpretaria como UTC e
+// mostraria o dia anterior no fuso do Brasil)
+function _tempoDeCasa(s){
+  if(!s) return null;
+  const [y,m,d]=s.split('-').map(Number);
+  const hoje=new Date();
+  let meses=(hoje.getFullYear()-y)*12+(hoje.getMonth()+1-m);
+  if(hoje.getDate()<d) meses--;
+  if(meses<0) return null;
+  if(meses<1) return 'menos de 1 mês';
+  const a=Math.floor(meses/12), mm=meses%12, partes=[];
+  if(a) partes.push(a+(a>1?' anos':' ano'));
+  if(mm) partes.push(mm+(mm>1?' meses':' mês'));
+  return partes.join(' e ');
+}
+function _mesAnoExtenso(s){ const [y,m]=s.split('-').map(Number); return `${MESES_PT[m-1]} de ${y}`; }
+
+function _perfilHeroHtml(p,souEu){
+  const nome=p.nome||'Colaborador';
+  const hoje=new Date();
+  const anivHoje=p.aniv_dia===hoje.getDate() && p.aniv_mes===hoje.getMonth()+1;
+  const pills=[];
+  if(p.data_admissao){ const t=_tempoDeCasa(p.data_admissao); pills.push(`<span class="pf-pill">🏢 Na GR desde ${_mesAnoExtenso(p.data_admissao)}${t?' · '+t:''}</span>`); }
+  if(p.aniv_dia && p.aniv_mes) pills.push(`<span class="pf-pill ${anivHoje?'dest':''}">🎂 ${anivHoje?'Aniversário hoje!':p.aniv_dia+' de '+MESES_PT[p.aniv_mes-1]}</span>`);
+  if(p.cidade) pills.push(`<span class="pf-pill">📍 ${_escHtml(p.cidade)}</span>`);
+  return `<div class="pf-av">${p.foto_url?`<img src="${_escAttr(p.foto_url)}" alt="">`:_escHtml(nome.charAt(0).toUpperCase())}
+      ${souEu?`<button type="button" class="pf-av-edit" onclick="openPerfilFotoModal()" title="Trocar minha foto" aria-label="Trocar minha foto"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 5h2l1-2h6l1 2h2v8H2z"/><circle cx="8" cy="9" r="2.2"/></svg></button>`:''}
+    </div>
+    <div class="pf-info">
+      <div class="pf-nome">${_escHtml(nome)}</div>
+      <div class="pf-sub">${_escHtml([p.cargo,p.equipe].filter(Boolean).join(' · ')||'—')}</div>
+      ${pills.length?`<div class="pf-meta">${pills.join('')}</div>`:''}
+      ${souEu?'':`<div class="pf-hero-acoes"><button class="btn-primary" onclick="iniciarConversaComPerfil('${p.user_id}')">💬 Enviar mensagem</button></div>`}
+    </div>`;
+}
+function _perfilRenderHero(p,souEu){ const h=el('pf-hero'); if(h) h.innerHTML=_perfilHeroHtml(p,souEu); }
+
+/* ── meu perfil (formulário) ── */
+function renderPerfilMeu(){
+  const p=_perfilMeuDados();
+  _perfilTags={habilidades:[...(p.habilidades||[])], conhecimentos:[...(p.conhecimentos||[])], interesses:[...(p.interesses||[])], idiomas:[...(p.idiomas||[])]};
+  el('pf-nome').value=p.nome||'';
+  el('pf-admissao').value=p.data_admissao||'';
+  el('pf-cargo').value=p.cargo||'—';
+  el('pf-equipe').value=p.equipe||'—';
+  el('pf-bio').value=p.bio||'';
+  el('pf-cidade').value=p.cidade||'';
+  el('pf-nasc').value=p.data_nascimento||'';
+  el('pf-formacao').value=p.formacao||'';
+  el('pf-experiencia').value=p.experiencia||'';
+  el('pf-telefone').value=p.telefone||'';
+  el('pf-linkedin').value=p.linkedin||'';
+  _pfContar('pf-bio','pf-bio-cont',600);
+  ['habilidades','conhecimentos','interesses','idiomas'].forEach(_tagRender);
+  _perfilRenderHero(p,true);
+  _pfSujo=false;
+}
+function _pfContar(idCampo,idContador,max){ const c=el(idContador); if(c) c.textContent=`${el(idCampo).value.length}/${max}`; }
+
+function _tagRender(f){
+  const chips=el('ti-'+f+'-chips'); if(!chips) return;
+  chips.innerHTML=_perfilTags[f].map((t,i)=>`<span class="tag-chip">${_escHtml(t)}<button type="button" onclick="_tagRemove('${f}',${i})" aria-label="Remover ${_escAttr(t)}">✕</button></span>`).join('');
+  const sug=el('ti-'+f+'-sug');
+  if(sug){
+    const tem=new Set(_perfilTags[f].map(t=>t.toLowerCase()));
+    sug.innerHTML=(PERFIL_SUGESTOES[f]||[]).filter(s=>!tem.has(s.toLowerCase())).slice(0,6)
+      .map(s=>`<button type="button" data-v="${_escAttr(s)}" onclick="_tagAdd('${f}',this.dataset.v)">+ ${_escHtml(s)}</button>`).join('');
+  }
+}
+function _tagAdd(f,val){
+  const t=(val||'').trim().replace(/\s+/g,' ').slice(0,40);
+  if(!t) return;
+  const lista=_perfilTags[f];
+  if(lista.some(x=>x.toLowerCase()===t.toLowerCase())) return;
+  if(lista.length>=PERFIL_TAG_MAX){ toast('Máximo de '+PERFIL_TAG_MAX+' itens','err'); return; }
+  lista.push(t); _pfSujo=true; _tagRender(f);
+}
+function _tagKey(e,f){
+  const inp=e.target;
+  if(e.key==='Enter'||e.key===','){ e.preventDefault(); _tagAdd(f,inp.value); inp.value=''; }
+  else if(e.key==='Backspace' && !inp.value && _perfilTags[f].length){ _perfilTags[f].pop(); _pfSujo=true; _tagRender(f); }
+}
+// Ao sair do campo (ou ao salvar) o que ficou digitado e sem Enter também vira item — senão a pessoa
+// escreve "Excel", clica em Salvar e o Excel some.
+function _tagCommit(f){ const inp=el('ti-'+f+'-in'); if(inp && inp.value.trim()){ _tagAdd(f,inp.value); inp.value=''; } }
+function _tagRemove(f,i){ _perfilTags[f].splice(i,1); _pfSujo=true; _tagRender(f); }
+
+async function salvarMeuPerfil(){
+  ['habilidades','conhecimentos','interesses','idiomas'].forEach(_tagCommit);
+  // apóstrofo comum é recusado pelo servidor (dá pra montar JS injetado em onclick); o tipográfico ’ é inofensivo
+  const nome=el('pf-nome').value.trim().replace(/'/g,'’');
+  if(nome.length<2){ toast('Escreva o seu nome','err'); el('pf-nome').focus(); return; }
+  const g=id=>el(id).value.trim();
+  let linkedin=g('pf-linkedin');
+  if(linkedin && !/^https?:\/\//i.test(linkedin) && /^[\w.-]+\.\w{2,}/.test(linkedin)) linkedin='https://'+linkedin;
+  const args={
+    p_nome:nome, p_data_admissao:g('pf-admissao')||null, p_bio:g('pf-bio')||null,
+    p_data_nascimento:g('pf-nasc')||null, p_cidade:g('pf-cidade')||null, p_telefone:g('pf-telefone')||null,
+    p_linkedin:linkedin||null, p_formacao:g('pf-formacao')||null, p_experiencia:g('pf-experiencia')||null,
+    p_habilidades:_perfilTags.habilidades, p_conhecimentos:_perfilTags.conhecimentos,
+    p_interesses:_perfilTags.interesses, p_idiomas:_perfilTags.idiomas,
+  };
+  const btn=el('pf-salvar'); btn.disabled=true; btn.textContent='Salvando...';
+  const {error}=await sb.rpc('portal_salvar_meu_perfil',args);
+  btn.disabled=false; btn.textContent='Salvar perfil';
+  if(error){ toast(error.message,'err'); return; }
+  // O resto do Portal lê o nome de CU.user_metadata.full_name (sidebar) e de CUP.nome (certificado) — mantém os dois em dia.
+  try{ const {data}=await sb.auth.updateUser({data:{full_name:nome}}); if(data?.user) CU=data.user; }
+  catch(e){ console.warn('[perfil] não atualizou o nome no login:',e.message); }
+  if(CUP){ CUP.nome=nome; CUP.data_admissao=args.p_data_admissao; }
+  el('su-name').textContent=nome;
+  _renderAvatarSidebar();
+  const d=_diretorio.find(u=>u.user_id===CU.id); if(d) d.nome=nome;
+  await _garantirPerfis(true);
+  renderPerfilMeu();
+  toast('Perfil salvo!','ok');
+}
+// Foto trocada pelo modal antigo: atualiza diretório (Comunidade), perfis e o cabeçalho do Meu Perfil, sem tocar no
+// formulário (senão jogaria fora o que a pessoa já digitou e ainda não salvou).
+function _aoMudarMinhaFoto(url){
+  const d=_diretorio.find(u=>u.user_id===CU.id); if(d) d.foto_url=url;
+  const p=_perfis.find(u=>u.user_id===CU.id); if(p) p.foto_url=url;
+  if(_currentPage==='perfil' && _perfilTab==='meu') _perfilRenderHero(_perfilMeuDados(),true);
+  if(typeof _comPreencherAvatarComposer==='function') _comPreencherAvatarComposer();
+}
+
+/* ── colaboradores ── */
+function _perfilCardHtml(p){
+  const nome=p.nome||'Colaborador';
+  const tags=(p.habilidades||[]).slice(0,3), mais=(p.habilidades||[]).length-tags.length;
+  return `<div class="pf-card" onclick="abrirPerfil('${p.user_id}')">
+    <div class="pf-card-av">${p.foto_url?`<img src="${_escAttr(p.foto_url)}" alt="">`:_escHtml(nome.charAt(0).toUpperCase())}</div>
+    <div class="pf-card-nome">${_escHtml(nome)}${p.user_id===CU.id?' <span style="color:var(--gold2);font-weight:400">(você)</span>':''}</div>
+    <div class="pf-card-sub">${_escHtml([p.cargo,p.equipe].filter(Boolean).join(' · ')||'—')}</div>
+    ${tags.length?`<div class="pf-card-tags">${tags.map(t=>`<span>${_escHtml(t)}</span>`).join('')}${mais>0?`<span>+${mais}</span>`:''}</div>`:''}
+  </div>`;
+}
+function renderPerfilEquipe(){
+  const sel=el('pf-filtro-equipe');
+  const equipes=[...new Set(_perfis.map(p=>p.equipe).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  const atual=sel.value;
+  sel.innerHTML='<option value="">Todas as equipes</option>'+equipes.map(e=>`<option value="${_escAttr(e)}">${_escHtml(e)}</option>`).join('');
+  sel.value=equipes.includes(atual)?atual:'';
+  const q=_normBusca(el('pf-busca').value.trim());
+  const lista=_perfis.filter(p=>{
+    if(sel.value && p.equipe!==sel.value) return false;
+    if(!q) return true;
+    return _normBusca([p.nome,p.cargo,p.equipe,p.cidade,...(p.habilidades||[]),...(p.conhecimentos||[]),...(p.interesses||[])].join(' ')).includes(q);
+  });
+  el('pf-count').textContent=`${lista.length} colaborador${lista.length!==1?'es':''}`;
+  el('pf-grid').innerHTML=lista.length?lista.map(_perfilCardHtml).join(''):'<div class="empty" style="grid-column:1/-1"><div class="empty-text">Ninguém encontrado</div></div>';
+}
+
+/* ── perfil de outra pessoa (somente leitura) ── */
+function _renderPerfilOutro(){
+  const wrap=el('perfil-view-outro');
+  const p=_perfis.find(x=>x.user_id===_perfilOutroId);
+  const voltar='<button class="pf-voltar" onclick="_perfilVoltar()">← Voltar</button>';
+  if(!p){ wrap.innerHTML=voltar+'<div class="empty"><div class="empty-text">Colaborador não encontrado</div></div>'; return; }
+  const chips=arr=>`<div class="pf-chips">${arr.map(t=>`<span>${_escHtml(t)}</span>`).join('')}</div>`;
+  const texto=s=>`<p>${_escHtml(s)}</p>`;
+  const secoes=[];
+  if(p.bio) secoes.push(['Sobre mim',texto(p.bio)]);
+  if((p.habilidades||[]).length) secoes.push(['Habilidades',chips(p.habilidades)]);
+  if((p.conhecimentos||[]).length) secoes.push(['Conhecimentos',chips(p.conhecimentos)]);
+  if(p.formacao) secoes.push(['Formação',texto(p.formacao)]);
+  if(p.experiencia) secoes.push(['Experiências anteriores',texto(p.experiencia)]);
+  if((p.idiomas||[]).length) secoes.push(['Idiomas',chips(p.idiomas)]);
+  if((p.interesses||[]).length) secoes.push(['Interesses e hobbies',chips(p.interesses)]);
+  const contato=[];
+  if(p.telefone){
+    const dig=p.telefone.replace(/\D/g,'');
+    contato.push(dig.length>=10
+      ? `<a href="https://wa.me/${dig.length<=11?'55'+dig:dig}" target="_blank" rel="noopener noreferrer">${_escHtml(p.telefone)} (WhatsApp)</a>`
+      : _escHtml(p.telefone));
+  }
+  // só vira link se for http(s) — o servidor também valida, mas nunca confiar num href vindo de dado
+  if(p.linkedin && /^https?:\/\//i.test(p.linkedin)) contato.push(`<a href="${_escAttr(p.linkedin)}" target="_blank" rel="noopener noreferrer">LinkedIn</a>`);
+  if(contato.length) secoes.push(['Contato',`<p>${contato.join(' · ')}</p>`]);
+  wrap.innerHTML=voltar+`<div class="pf-hero">${_perfilHeroHtml(p,false)}</div>
+    <div class="panel"><div class="pf-body">${secoes.length
+      ? secoes.map(([t,h])=>`<div class="pf-secao"><h4>${t}</h4>${h}</div>`).join('')
+      : '<div class="empty" style="padding:24px"><div class="empty-text">Esse colaborador ainda não preencheu o perfil</div></div>'}</div></div>`;
+}
+async function iniciarConversaComPerfil(uid){
+  nav('comunidade');
+  await _garantirDiretorio();
+  if(!_comConversas.length) await carregarConversas().catch(()=>{});
+  comSwitchTab('chat');
+  await iniciarConversa(uid);
+}
+
+/* ═══════════════════════════════════════════════
+   NOTIFICAÇÕES — sino do topo. Os avisos são criados no BANCO por gatilhos
+   (mensagem no chat, @menção, comentário/resposta, repost) e chegam aqui em
+   tempo real; ninguém insere notificação pelo cliente.
+═══════════════════════════════════════════════ */
+let _notifs=[];                  // últimas 50, mais nova primeiro
+let _notifNaoLidas=0;
+let _notifChannel=null, _notifTimer=null, _notifPrimeiraCarga=true;
+const _notifVistas=new Set();    // ids já vistos — evita avisar duas vezes (realtime + recarga periódica)
+const _tituloBase=document.title;
+const NOTIF_ICONE={mensagem:'💬',mencao:'＠',comentario:'🗨️',resposta:'↩️',repost:'🔁',post:'📣'};
+
+async function _inicializarNotificacoes(){
+  if(!CU?.id || _notifChannel) return;
+  await _garantirDiretorio();
+  await carregarNotificacoes();
+  _notifChannel=sb.channel('portal-notificacoes')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'portal_notificacoes',filter:'user_id=eq.'+CU.id},p=>_aoReceberNotificacao(p.new))
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'portal_notificacoes',filter:'user_id=eq.'+CU.id},p=>{
+      const n=_notifs.find(x=>x.id===p.new.id);
+      if(n && n.lida!==p.new.lida){ n.lida=p.new.lida; _notifNaoLidas=Math.max(0,_notifNaoLidas+(p.new.lida?-1:1)); _renderNotifs(); _atualizarBadgeNotif(); }
+    })
+    .subscribe();
+  // Rede de segurança: o websocket pode morrer em silêncio numa aba aberta por horas (já mordeu o Operacional).
+  // Recarrega a cada 90s e ao voltar pra aba — barato (2 queries pequenas) e pega o que o realtime perdeu.
+  _notifTimer=setInterval(()=>carregarNotificacoes(),90000);
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) carregarNotificacoes(); });
+  if('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message',e=>{
+    if(e.data?.type==='notif-click' && e.data.notifId) abrirNotificacao(e.data.notifId);
+  });
+  _carregarPrefNotif();
+  _atualizarBlocoPermissaoNotif();
+  _abrirNotifDoHash();
+}
+
+async function carregarNotificacoes(){
+  if(!CU?.id) return;
+  const [{data,error},{count}]=await Promise.all([
+    sb.from('portal_notificacoes').select('*').order('criado_em',{ascending:false}).limit(50),
+    sb.from('portal_notificacoes').select('id',{count:'exact',head:true}).eq('lida',false),
+  ]);
+  if(error){ console.warn('[notificacoes] falha ao carregar:',error.message); return; }
+  const novas=[];
+  (data||[]).forEach(n=>{ if(!_notifVistas.has(n.id)){ _notifVistas.add(n.id); if(!_notifPrimeiraCarga && !n.lida) novas.push(n); } });
+  _notifs=data||[];
+  _notifNaoLidas=typeof count==='number'?count:_notifs.filter(n=>!n.lida).length;
+  _notifPrimeiraCarga=false;
+  _renderNotifs(); _atualizarBadgeNotif();
+  novas.reverse().forEach(n=>{ if(_conversaAbertaAgora(n)) _marcarNotifs([n.id]); else _avisarNotificacao(n); });
+}
+
+function _conversaAbertaAgora(n){
+  return n.tipo==='mensagem' && _currentPage==='comunidade' && _comConversaAtual===n.ref_id && !document.hidden
+    && el('com-chat-view')?.style.display!=='none';
+}
+function _aoReceberNotificacao(n){
+  if(!n || _notifVistas.has(n.id)) return;
+  _notifVistas.add(n.id);
+  _notifs.unshift(n); if(_notifs.length>50) _notifs.length=50;
+  if(!n.lida) _notifNaoLidas++; // entra na contagem antes: _marcarNotifs() abaixo desconta o que era não lida
+  // Já está com essa conversa aberta na tela? Então nem incomoda: só marca como lida.
+  if(_conversaAbertaAgora(n)){ _marcarNotifs([n.id],true); return; }
+  _renderNotifs(); _atualizarBadgeNotif();
+  _avisarNotificacao(n);
+}
+
+function _avisarNotificacao(n){
+  // Aba em segundo plano / janela sem foco -> aviso do sistema (se a pessoa liberou); aba visível -> balãozinho no app.
+  if(!document.hasFocus() && 'Notification' in window && Notification.permission==='granted') _mostrarNotificacaoSistema(n);
+  // Com o painel do sino aberto a lista já se atualiza sozinha — o balão só ia cobrir o cabeçalho dele.
+  if(!document.hidden && el('notif-panel').style.display==='none') _toastNotificacao(n);
+}
+async function _mostrarNotificacaoSistema(n){
+  const opts={ body:n.corpo||'', icon:'icon.svg?v=3', badge:'icon.svg?v=3', tag:'gr-'+n.tipo+'-'+(n.ref_id||n.id), renotify:true,
+               data:{notifId:n.id,tipo:n.tipo,ref_id:n.ref_id,ref_extra:n.ref_extra} };
+  try{
+    const reg=await navigator.serviceWorker?.getRegistration();
+    if(reg){ await reg.showNotification(n.titulo,opts); return; }
+    const nt=new Notification(n.titulo,opts);
+    nt.onclick=()=>{ window.focus(); abrirNotificacao(n.id); nt.close(); };
+  }catch(e){ console.warn('[notificacoes] não consegui mostrar no sistema:',e.message); }
+}
+// Balão clicável no canto. Anexa no elemento em tela cheia quando houver (Fullscreen API só renderiza o
+// elemento fullscreen e seus descendentes — um filho solto do <body> some, igual já mordeu o toast do leitor).
+function _toastNotificacao(n){
+  const host=document.fullscreenElement||document.body;
+  let wrap=el('notif-toast-wrap');
+  if(!wrap){ wrap=document.createElement('div'); wrap.id='notif-toast-wrap'; wrap.className='notif-toast-wrap'; }
+  if(wrap.parentNode!==host) host.appendChild(wrap);
+  const d=document.createElement('div');
+  d.className='notif-toast';
+  d.innerHTML=`<div class="notif-toast-ico">${NOTIF_ICONE[n.tipo]||'🔔'}</div><div class="notif-toast-txt"><b>${_escHtml(n.titulo)}</b>${n.corpo?`<span>${_escHtml(n.corpo)}</span>`:''}</div>`;
+  d.onclick=()=>{ d.remove(); abrirNotificacao(n.id); };
+  wrap.appendChild(d);
+  while(wrap.children.length>3) wrap.firstChild.remove();
+  setTimeout(()=>d.remove(),6500);
+}
+
+function _atualizarBadgeNotif(){
+  const n=_notifNaoLidas, txt=n>99?'99+':String(n);
+  const b=el('notif-badge');
+  if(b){ b.textContent=txt; b.style.display=n>0?'':'none'; }
+  document.title=(n>0?`(${txt}) `:'')+_tituloBase;
+  try{ if(n>0) navigator.setAppBadge?.(n); else navigator.clearAppBadge?.(); }catch(e){}
+}
+
+function _tempoRelativo(iso){
+  const s=Math.max(0,Math.round((Date.now()-new Date(iso).getTime())/1000));
+  if(s<45) return 'agora';
+  const m=Math.round(s/60); if(m<60) return `há ${m} min`;
+  const h=Math.round(m/60); if(h<24) return `há ${h} h`;
+  const d=Math.round(h/24); if(d<7) return `há ${d} dia${d>1?'s':''}`;
+  return new Date(iso).toLocaleDateString('pt-BR');
+}
+function _renderNotifs(){
+  const lista=el('notif-list'); if(!lista) return;
+  if(!_notifs.length){
+    lista.innerHTML='<div class="notif-vazio">Nada por aqui ainda.<br><span>Você será avisado de mensagens, menções, comentários e respostas.</span></div>';
+    return;
+  }
+  // Várias mensagens NÃO lidas da mesma conversa viram uma linha só ("Fulana enviou 3 mensagens").
+  const grupos=[], idx={};
+  _notifs.forEach(n=>{
+    if(n.tipo==='mensagem' && !n.lida){
+      const k='m:'+n.ref_id;
+      if(idx[k]!==undefined){ grupos[idx[k]].qtd++; return; }
+      idx[k]=grupos.length;
+    }
+    grupos.push({n,qtd:1});
+  });
+  lista.innerHTML=grupos.map(({n,qtd})=>{
+    const nome=_diretorioNome(n.ator_id), foto=_diretorioFoto(n.ator_id);
+    const titulo=qtd>1?`${nome} enviou ${qtd} mensagens`:n.titulo;
+    return `<div class="notif-item ${n.lida?'':'nao-lida'}" onclick="abrirNotificacao('${n.id}')">
+      <div class="notif-av"><div class="notif-av-img">${foto?`<img src="${_escAttr(foto)}" alt="">`:_escHtml((nome||'?').charAt(0).toUpperCase())}</div><span class="ico">${NOTIF_ICONE[n.tipo]||'🔔'}</span></div>
+      <div class="notif-conteudo">
+        <div class="notif-txt">${_escHtml(titulo)}</div>
+        ${n.corpo?`<div class="notif-sub">${_escHtml(n.corpo)}</div>`:''}
+        <div class="notif-time">${_tempoRelativo(n.criado_em)}</div>
+      </div>
+      ${n.lida?'':'<span class="notif-ponto"></span>'}
+    </div>`;
+  }).join('');
+}
+
+function toggleNotifPanel(e){
+  e?.stopPropagation();
+  const p=el('notif-panel');
+  const abrir=p.style.display==='none';
+  p.style.display=abrir?'flex':'none';
+  if(abrir){ _renderNotifs(); _atualizarBlocoPermissaoNotif(); carregarNotificacoes(); }
+}
+document.addEventListener('click',e=>{
+  const p=el('notif-panel');
+  if(p && p.style.display!=='none' && !e.target.closest('#notif-panel') && !e.target.closest('#notif-btn')) p.style.display='none';
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const p=el('notif-panel'); if(p) p.style.display='none'; } });
+
+async function _marcarNotifs(ids,silencioso){
+  ids=(ids||[]).filter(Boolean);
+  if(!ids.length) return;
+  const eramNaoLidas=_notifs.filter(n=>ids.includes(n.id) && !n.lida).length;
+  _notifs.forEach(n=>{ if(ids.includes(n.id)) n.lida=true; });
+  _notifNaoLidas=Math.max(0,_notifNaoLidas-eramNaoLidas);
+  _renderNotifs(); _atualizarBadgeNotif();
+  const {error}=await sb.from('portal_notificacoes').update({lida:true}).in('id',ids);
+  if(error && !silencioso) console.warn('[notificacoes] falha ao marcar como lida:',error.message);
+}
+function _marcarNotifsPorRef(tipo,ref){
+  if(!CU?.id || !ref) return;
+  const locais=_notifs.filter(n=>!n.lida && n.tipo===tipo && n.ref_id===ref);
+  locais.forEach(n=>{ n.lida=true; });
+  _notifNaoLidas=Math.max(0,_notifNaoLidas-locais.length);
+  _renderNotifs(); _atualizarBadgeNotif();
+  // no banco vale pra todas daquela conversa, inclusive as mais antigas que nem estão na lista de 50
+  sb.from('portal_notificacoes').update({lida:true}).eq('user_id',CU.id).eq('tipo',tipo).eq('ref_id',ref).eq('lida',false).then(()=>{},()=>{});
+}
+async function marcarTodasNotifLidas(){
+  if(!_notifNaoLidas) return;
+  _notifs.forEach(n=>{ n.lida=true; });
+  _notifNaoLidas=0;
+  _renderNotifs(); _atualizarBadgeNotif();
+  const {error}=await sb.from('portal_notificacoes').update({lida:true}).eq('user_id',CU.id).eq('lida',false);
+  if(error){ toast('Erro: '+error.message,'err'); carregarNotificacoes(); }
+}
+
+async function abrirNotificacao(id){
+  let n=_notifs.find(x=>x.id===id);
+  if(!n){ const {data}=await sb.from('portal_notificacoes').select('*').eq('id',id).maybeSingle(); n=data; }
+  if(!n) return;
+  _marcarNotifs(n.tipo==='mensagem' ? _notifs.filter(x=>!x.lida && x.tipo==='mensagem' && x.ref_id===n.ref_id).map(x=>x.id).concat(n.id) : [n.id]);
+  el('notif-panel').style.display='none';
+  await _irParaNotificacao(n);
+}
+async function _irParaNotificacao(n){
+  if(n.tipo==='mensagem'){
+    nav('comunidade');
+    comSwitchTab('chat');
+    await _garantirDiretorio();
+    if(!_comConversas.some(c=>c.id===n.ref_id)) await carregarConversas();
+    abrirConversa(n.ref_id);
+    return;
+  }
+  await abrirPostNaComunidade(n.ref_id,n.ref_extra);
+}
+// Leva até a publicação (e ao comentário, se for o caso) e dá um destaque rápido. O feed só carrega os 60 posts
+// mais recentes — se o post do aviso for mais antigo, busca ele avulso pra não cair num "não encontrado".
+async function abrirPostNaComunidade(postId,comentarioId){
+  nav('comunidade');
+  comSwitchTab('feed');
+  await renderComunidade();
+  if(!allComPosts.some(p=>p.id===postId)){
+    const [{data:p},{data:cs},{data:cu}]=await Promise.all([
+      sb.from('portal_comunidade_posts').select('*').eq('id',postId).maybeSingle(),
+      sb.from('portal_comunidade_comentarios').select('*').eq('post_id',postId),
+      sb.from('portal_comunidade_curtidas').select('*').eq('post_id',postId),
+    ]);
+    if(!p){ toast('Essa publicação não está mais disponível','err'); return; }
+    allComPosts.push(p);
+    (cs||[]).forEach(c=>{ if(!allComComentarios.some(x=>x.id===c.id)) allComComentarios.push(c); });
+    (cu||[]).forEach(c=>{ if(!allComCurtidas.some(x=>x.id===c.id)) allComCurtidas.push(c); });
+  }
+  if(comentarioId) _comOpenComments.add(postId);
+  if(_comBusca) comLimparFiltro(); else renderFeed(); // uma busca ativa esconderia o post
+  setTimeout(()=>{
+    const alvo=(comentarioId && document.querySelector(`[data-comment="${comentarioId}"]`)) || document.querySelector(`[data-post="${postId}"]`);
+    if(!alvo) return;
+    alvo.scrollIntoView({behavior:'smooth',block:'center'});
+    alvo.classList.add('com-destaque');
+    setTimeout(()=>alvo.classList.remove('com-destaque'),2600);
+  },120);
+}
+// Clicou no aviso do sistema com o Portal FECHADO: o service worker abre ./index.html#notif=<id>
+function _abrirNotifDoHash(){
+  const m=location.hash.match(/^#notif=([0-9a-f-]{36})/i);
+  if(!m) return;
+  history.replaceState(null,'',location.pathname+location.search);
+  abrirNotificacao(m[1]);
+}
+
+/* ── preferências e permissão do navegador ── */
+async function _carregarPrefNotif(){
+  const {data}=await sb.from('portal_notif_prefs').select('novos_posts').eq('user_id',CU.id).maybeSingle();
+  const c=el('notif-pref-posts'); if(c) c.checked=!!data?.novos_posts;
+}
+async function salvarPrefNotifPosts(ligado){
+  const {error}=await sb.from('portal_notif_prefs').upsert({user_id:CU.id,novos_posts:ligado,atualizado_em:new Date().toISOString()});
+  if(error){ toast('Erro: '+error.message,'err'); el('notif-pref-posts').checked=!ligado; return; }
+  toast(ligado?'Você será avisado de toda publicação nova':'Avisos só do que é direcionado a você','ok');
+}
+function _atualizarBlocoPermissaoNotif(){
+  const w=el('notif-permissao'); if(!w) return;
+  if(!('Notification' in window)){
+    w.innerHTML='<div class="notif-aviso">Este navegador não mostra avisos do sistema. No iPhone, instale o app: Compartilhar → Adicionar à Tela de Início.</div>';
+  }else if(Notification.permission==='granted'){
+    w.innerHTML='<div class="notif-aviso ok">🔔 Avisos do dispositivo ativados</div>';
+  }else if(Notification.permission==='denied'){
+    w.innerHTML='<div class="notif-aviso">Os avisos estão bloqueados neste navegador. Libere em Configurações do site → Notificações.</div>';
+  }else{
+    w.innerHTML='<div class="notif-aviso"><span>Receba avisos mesmo com o Portal em segundo plano.</span><button class="btn-primary" onclick="ativarAvisosDispositivo()">Ativar</button></div>';
+  }
+}
+async function ativarAvisosDispositivo(){
+  try{
+    const r=await Notification.requestPermission();
+    if(r==='granted'){ toast('Avisos ativados!','ok'); if(typeof _registrarPush==='function') _registrarPush(); }
+    else toast('Você não permitiu os avisos','err');
+  }catch(e){ toast('Não foi possível ativar: '+e.message,'err'); }
+  _atualizarBlocoPermissaoNotif();
 }
 </script>
 </body>
@@ -8309,6 +9056,7 @@ async function handlePerfilFotoUpload(e){
   if(CUP) CUP.foto_url=data.publicUrl;
   statusEl.textContent='Foto atualizada ✓'; statusEl.style.color='var(--green2)';
   _renderAvatarSidebar();
+  _aoMudarMinhaFoto(data.publicUrl); // Meu Perfil, Comunidade e diretório mostram a foto nova sem recarregar
 }
 
 /* ── Definir senha direto (sem e-mail) ──
