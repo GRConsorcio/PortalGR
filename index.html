@@ -1357,6 +1357,45 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 @keyframes comDestaque{0%,65%{box-shadow:0 0 0 2px var(--gold),0 0 22px var(--gold-glow)}100%{box-shadow:0 0 0 0 transparent}}
 .com-autor-link{cursor:pointer}
 .com-autor-link:hover{text-decoration:underline}
+
+/* ══ COMUNIDADE: PDF + MARCAR PESSOAS ══ */
+.com-quick-ico.ico-pdf{color:#e5484d}
+.com-quick-ico.ico-tag{color:var(--violet2)}
+.com-pdf-preview{display:inline-flex;align-items:center;gap:9px;position:relative;margin:8px 10px 0 0;max-width:100%;padding:8px 12px 8px 10px;background:var(--s3);border:1px solid var(--border2);border-radius:var(--radius-sm)}
+.com-pdf-preview .ico{font-size:10px;font-weight:800;letter-spacing:1px;color:#fff;background:#e5484d;border-radius:5px;padding:5px 6px;flex-shrink:0}
+.com-pdf-preview .nome{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:230px}
+.com-pdf-preview .tam{font-size:10.5px;color:var(--muted2);flex-shrink:0}
+.com-pdf-preview button{position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:var(--s1);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center}
+.com-marcados-box{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;font-size:12px;color:var(--muted2)}
+.com-marcado-chip{display:inline-flex;align-items:center;gap:5px;background:color-mix(in srgb,var(--violet) 18%,var(--s3));color:var(--violet2);border:1px solid color-mix(in srgb,var(--violet) 35%,transparent);font-size:12px;font-weight:600;padding:3px 5px 3px 10px;border-radius:999px}
+.com-marcado-chip button{background:none;border:none;color:inherit;cursor:pointer;font-size:11px;padding:0 4px;opacity:.7;line-height:1}
+.com-marcado-chip button:hover{opacity:1}
+.com-marcado-add{background:none;border:1px dashed var(--border2);color:var(--muted2);font-size:11px;padding:2px 10px;border-radius:999px;cursor:pointer;font-family:var(--font-b)}
+.com-marcado-add:hover{color:var(--gold2);border-color:var(--gold-dim)}
+.com-marcar-item{display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:8px;cursor:pointer}
+.com-marcar-item:hover{background:var(--s2)}
+.com-marcar-item.on{background:color-mix(in srgb,var(--gold) 9%,var(--s1))}
+.com-marcar-item input{flex-shrink:0}
+.com-post-marcados{font-size:11.5px;color:var(--muted2);margin-top:2px;line-height:1.4}
+.com-post-marcados .com-marcado{color:var(--text);font-weight:600}
+.com-anexos{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.com-anexo{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--s3);border:1px solid var(--border2);border-radius:var(--radius-sm)}
+.com-anexo-ico{width:42px;height:48px;flex-shrink:0;background:#e5484d;color:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;letter-spacing:1px}
+.com-anexo-info{flex:1;min-width:0}
+.com-anexo-nome{font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.com-anexo-meta{font-size:11px;color:var(--muted2);margin-top:2px}
+.com-anexo-acoes{display:flex;gap:6px;flex-shrink:0}
+.com-anexo-acoes .btn-primary,.com-anexo-acoes .btn-outline{padding:7px 14px;font-size:10.5px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+@media(max-width:520px){.com-anexo{flex-wrap:wrap}.com-anexo-info{flex-basis:calc(100% - 60px)}.com-anexo-acoes{width:100%}.com-anexo-acoes>*{flex:1}}
+.com-pdf-modal{width:900px;max-width:96vw;height:90vh;padding:16px;display:flex;flex-direction:column}
+.com-pdf-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-shrink:0}
+.com-pdf-titulo{font-family:var(--font-d);font-weight:700;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.com-pdf-head-acoes{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.com-pdf-head-acoes .btn-outline{padding:6px 12px;font-size:10px;text-decoration:none}
+.com-pdf-paginas{font-size:11px;color:var(--muted2)}
+.com-pdf-corpo{flex:1;overflow-y:auto;background:var(--s2);border-radius:6px;padding:8px;display:flex;flex-direction:column}
+.com-pdf-msg{margin:auto;text-align:center;color:var(--muted2);font-size:12.5px;line-height:1.6;padding:24px}
+@media(max-width:640px){.com-pdf-head-acoes .btn-outline{display:none}}
 </style>
 </head>
 <body>
@@ -2145,6 +2184,8 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
             <button type="button" class="com-quick-ico ico-video" title="Vídeo" onclick="abrirComposerModal('midia')">🎥<span>Vídeo</span></button>
             <button type="button" class="com-quick-ico ico-foto" title="Foto" onclick="abrirComposerModal('midia')">🖼️<span>Foto</span></button>
             <button type="button" class="com-quick-ico ico-cert" title="Certificado" onclick="abrirComposerModal('cert')">🎓<span>Certificado</span></button>
+            <button type="button" class="com-quick-ico ico-pdf" title="PDF" onclick="abrirComposerModal('pdf')">📄<span>PDF</span></button>
+            <button type="button" class="com-quick-ico ico-tag" title="Marcar pessoas" onclick="abrirComposerModal('marcar')">👥<span>Marcar</span></button>
           </div>
         </div>
 
@@ -2180,6 +2221,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
           </div>
           <textarea id="com-post-texto" class="com-composer-textarea" rows="3" placeholder="No que você está pensando, GR Consórcio?... use #hashtags e @menções" oninput="_comAutoGrow(this);_comAtualizarContador()"></textarea>
           <div class="com-char-count" id="com-char-count"></div>
+          <div id="com-post-marcados"></div>
           <div id="com-post-cert-chip"></div>
           <div id="com-post-img-preview"></div>
           <div id="com-post-cert-wrap" style="display:none;margin-top:4px">
@@ -2190,9 +2232,12 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
             <div class="com-composer-addbar-icons">
               <button type="button" class="com-quick-ico ico-foto" title="Foto/Vídeo" onclick="document.getElementById('com-post-img-file').click()">🖼️</button>
               <button type="button" class="com-quick-ico ico-cert" title="Certificado" onclick="toggleCertPicker()">🎓</button>
+              <button type="button" class="com-quick-ico ico-pdf" title="Anexar PDF" onclick="document.getElementById('com-post-pdf-file').click()">📄</button>
+              <button type="button" class="com-quick-ico ico-tag" title="Marcar pessoas" onclick="abrirSeletorMarcados()">👥</button>
             </div>
           </div>
           <input type="file" id="com-post-img-file" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm,video/quicktime" multiple style="display:none" onchange="handleComPostMidiaUpload(event)">
+          <input type="file" id="com-post-pdf-file" accept="application/pdf,.pdf" multiple style="display:none" onchange="handleComPostMidiaUpload(event)">
           <div id="com-post-img-status" style="font-size:10px;color:var(--muted2);margin-top:4px"></div>
           <button class="btn-primary" style="width:100%;margin-top:12px" onclick="criarComPost()">Publicar</button>
         </div>
@@ -5755,6 +5800,8 @@ function abrirComposerModal(foco){
   _comPreencherAvatarComposer();
   setTimeout(()=>{
     if(foco==='midia') document.getElementById('com-post-img-file').click();
+    else if(foco==='pdf') document.getElementById('com-post-pdf-file').click();
+    else if(foco==='marcar') abrirSeletorMarcados();
     else if(foco==='cert') toggleCertPicker();
     else el('com-post-texto')?.focus();
   },50);
@@ -5842,6 +5889,9 @@ function renderFeed(){
       (p.conteudo||'').toLowerCase().includes(termo)
       || (p.titulo||'').toLowerCase().includes(termo)
       || _diretorioNome(p.user_id).toLowerCase().includes(termo)
+      // também acha pelo nome de quem foi marcado e pelo nome do arquivo PDF anexado
+      || (p.marcados||[]).some(uid=>_diretorioNome(uid).toLowerCase().includes(termo))
+      || (p.midias||[]).some(m=>m && m.tipo==='pdf' && (m.nome||'').toLowerCase().includes(termo))
     );
   }
   if(_comFeedSort==='alta'){
@@ -5886,14 +5936,25 @@ function _comReactSummary(curtidasPost){
 // Carrossel de mídia do post — várias imagens e/ou vídeo, estilo Instagram
 // (scroll-snap horizontal + setas + bolinhas). imagem_url é o fallback pra
 // posts publicados antes do carrossel existir (continuam mostrando 1 imagem).
+// SEGURANÇA: m.url vinha direto do banco pra dentro de src/href/onclick — e qualquer logado consegue inserir
+// um post com "url" arbitrária pela API (aspa + handler = XSS armazenado). Só renderiza URL do storage público
+// deste projeto e sem caracteres que quebrem atributo/JS (o banco também valida na entrada, ver
+// trg_valida_post_comunidade); o que não passar simplesmente não aparece.
+function _comUrlSegura(u){
+  return typeof u==='string' && u.startsWith(SUPA_URL+'/storage/v1/object/public/') && !/[\s"'<>\\`]/.test(u);
+}
+function _comMidiasDe(p){
+  const base=(p.midias&&p.midias.length)?p.midias:(p.imagem_url?[{tipo:'imagem',url:p.imagem_url}]:[]);
+  return base.filter(m=>m && _comUrlSegura(m.url));
+}
 function _comRenderCarrossel(p){
-  const midias=(p.midias&&p.midias.length)?p.midias:(p.imagem_url?[{tipo:'imagem',url:p.imagem_url}]:[]);
+  const midias=_comMidiasDe(p).filter(m=>m.tipo!=='pdf'); // PDF é anexo (ver _comRenderAnexos), não slide
   if(!midias.length) return '';
   const cid='com-carrossel-'+p.id;
   const slides=midias.map(m=>`<div class="com-carrossel-slide">${
     m.tipo==='video'
-      ? `<video src="${m.url}" controls></video>`
-      : `<img src="${m.url}" alt="" onclick="abrirLightbox('${m.url}')">`
+      ? `<video src="${_escAttr(m.url)}" controls></video>`
+      : `<img src="${_escAttr(m.url)}" alt="" data-url="${_escAttr(m.url)}" onclick="abrirLightbox(this.dataset.url)">`
   }</div>`).join('');
   const nav=midias.length>1?`
     <button class="com-carrossel-seta esq" type="button" onclick="event.stopPropagation();_comCarrosselNav('${cid}',-1)">‹</button>
@@ -5927,6 +5988,7 @@ function _comPostCardInner(p){
     <div>
       <div class="com-post-author com-autor-link" onclick="abrirPerfil('${p.user_id}')" title="Ver perfil">${autor}</div>
       <div class="com-post-meta">${fmtDateHora(p.criado_em)}</div>
+      ${_comMarcadosHtml(p)}
     </div>
     <div class="com-post-tipo t-${p.tipo||'geral'}">${COM_TIPO_LABEL[p.tipo]||p.tipo}</div>
     ${(souDono||isAdmin())?`<button onclick="excluirComPost('${p.id}')" title="Excluir" style="background:none;border:none;color:var(--muted2);cursor:pointer;margin-left:6px;font-size:13px">✕</button>`:''}
@@ -5934,6 +5996,7 @@ function _comPostCardInner(p){
   ${p.titulo?`<div style="font-weight:700;font-size:14px;margin-bottom:4px">${_escHtml(p.titulo)}</div>`:''}
   ${p.conteudo?`<div class="com-post-body">${_comFormatarTexto(p.conteudo)}</div>`:''}
   ${_comRenderCarrossel(p)}
+  ${_comRenderAnexos(p)}
   <div class="com-post-actions">
     <div class="com-react-wrap">
       <button class="com-react-btn ${minhaReacao?'liked':''}" onclick="onReactBtnClick('${p.id}')" onmouseenter="if(matchMedia('(hover:hover)').matches) abrirReactPicker('${p.id}')" onmouseleave="fecharReactPickerAdiado()">${_comReactSummary(curtidasPost)}</button>
@@ -6028,7 +6091,9 @@ function _comAtualizarContador(){
   c.className='com-char-count'+(len>1000?' limit':len>900?' warn':'');
 }
 
-const COM_MIDIA_MAX=4; // limite de itens no carrossel de um post, estilo Instagram
+const COM_MIDIA_MAX=4; // limite de anexos (fotos/vídeos/PDFs somados) num post — o banco também recusa mais que isso
+const COM_PDF_MAX_MB=50; // PDF é lido/baixado por todo mundo no feed; acima disso, melhor compartilhar um link
+const COM_MARCADOS_MAX=20; // o banco também limita — cada pessoa marcada recebe uma notificação
 // Carrossel: aceita várias imagens e/ou vídeo no mesmo post (bucket dedicado
 // portal-comunidade-midia, 20GB/arquivo — portal-uploads é 15MB e usado por
 // avatar/PDF/etc, não dava pra reusar pra vídeo). Envia um por vez (upload
@@ -6044,30 +6109,46 @@ async function handleComPostMidiaUpload(e){
   if(files.length>vagas) toast(`Só cabem mais ${vagas} — o restante foi ignorado`,'err');
   for(let i=0;i<aEnviar.length;i++){
     const file=aEnviar[i];
+    // PDF vira anexo (cartão com nome/tamanho), não entra no carrossel de imagem/vídeo. Alguns navegadores mandam
+    // file.type vazio pra PDF — por isso também olha a extensão.
+    const isPdf=file.type==='application/pdf' || (!file.type && /\.pdf$/i.test(file.name));
     const isVideo=file.type.startsWith('video/');
+    if(!isPdf && !isVideo && !file.type.startsWith('image/')){ toast(`"${file.name}": formato não suportado (use imagem, vídeo ou PDF)`,'err'); continue; }
+    if(isPdf && file.size>COM_PDF_MAX_MB*1024*1024){ toast(`"${file.name}" tem mais de ${COM_PDF_MAX_MB}MB — reduza o PDF antes de anexar`,'err'); continue; }
     if(file.size>20*1024*1024*1024){ toast(`"${file.name}" muito grande (máx. 20GB)`,'err'); continue; }
     statusEl.textContent=`Enviando ${i+1}/${aEnviar.length}...`; statusEl.style.color='var(--muted2)';
-    const ext=(file.name.split('.').pop()||(isVideo?'mp4':'jpg')).toLowerCase();
+    const ext=isPdf?'pdf':(file.name.split('.').pop()||(isVideo?'mp4':'jpg')).toLowerCase();
     const path=`comunidade/${Date.now()}-${i}.${ext}`;
-    const {error}=await sb.storage.from('portal-comunidade-midia').upload(path,file,{upsert:true});
+    const {error}=await sb.storage.from('portal-comunidade-midia').upload(path,file,{upsert:true,...(isPdf?{contentType:'application/pdf'}:{})});
     if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast(`Erro ao enviar "${file.name}": `+error.message,'err'); continue; }
     const {data}=sb.storage.from('portal-comunidade-midia').getPublicUrl(path);
-    _comPostMidias.push({tipo:isVideo?'video':'imagem', url:data.publicUrl});
+    _comPostMidias.push(isPdf
+      ? {tipo:'pdf', url:data.publicUrl, nome:(file.name||'documento.pdf').slice(0,120), tamanho:file.size}
+      : {tipo:isVideo?'video':'imagem', url:data.publicUrl});
   }
   statusEl.textContent='';
   e.target.value='';
   _renderComPostMidiaPreview();
 }
 function _renderComPostMidiaPreview(){
-  el('com-post-img-preview').innerHTML=_comPostMidias.map((m,i)=>`<div class="com-img-preview">
-    ${m.tipo==='video'?`<video src="${m.url}" muted></video>`:`<img src="${m.url}" alt="">`}
-    <button type="button" title="Remover" onclick="removerComPostImg(${i})">✕</button>
-  </div>`).join('');
+  el('com-post-img-preview').innerHTML=_comPostMidias.map((m,i)=>m.tipo==='pdf'
+    ? `<div class="com-pdf-preview"><span class="ico">PDF</span><span class="nome">${_escHtml(m.nome||'documento.pdf')}</span><span class="tam">${_fmtBytes(m.tamanho)}</span>
+        <button type="button" title="Remover" onclick="removerComPostImg(${i})">✕</button></div>`
+    : `<div class="com-img-preview">
+        ${m.tipo==='video'?`<video src="${m.url}" muted></video>`:`<img src="${m.url}" alt="">`}
+        <button type="button" title="Remover" onclick="removerComPostImg(${i})">✕</button>
+      </div>`).join('');
 }
 function removerComPostImg(idx){
   if(idx===undefined) _comPostMidias=[]; else _comPostMidias.splice(idx,1);
   _renderComPostMidiaPreview();
   el('com-post-img-file').value='';
+  el('com-post-pdf-file').value='';
+}
+function _fmtBytes(n){
+  if(!n) return '';
+  if(n<1024*1024) return Math.max(1,Math.round(n/1024))+' KB';
+  return (n/1024/1024).toFixed(1).replace('.',',')+' MB';
 }
 
 async function criarComPost(){
@@ -6081,9 +6162,10 @@ async function criarComPost(){
     tipo='certificado'; // marcar um certificado sempre vira esse tipo, não importa o que o dropdown diz
   }
   if(!conteudo && !_comPostMidias.length && !certificadoId){ toast('Escreva algo antes de publicar','err'); return; }
-  const payload={ user_id:CU.id, tipo, titulo, conteudo:conteudo||null, midias:_comPostMidias, imagem_url:null, certificado_id:certificadoId };
+  const payload={ user_id:CU.id, tipo, titulo, conteudo:conteudo||null, midias:_comPostMidias, imagem_url:null, certificado_id:certificadoId, marcados:_comMarcados };
   const {error}=await sb.from('portal_comunidade_posts').insert(payload);
   if(error){ toast('Erro ao publicar: '+error.message,'err'); return; }
+  _comMarcados=[]; _renderComMarcados();
   el('com-post-texto').value='';
   el('com-post-texto').style.height='auto';
   el('com-post-tipo').value='geral';
@@ -7045,6 +7127,185 @@ async function ativarAvisosDispositivo(){
     else toast('Você não permitiu os avisos','err');
   }catch(e){ toast('Não foi possível ativar: '+e.message,'err'); }
   _atualizarBlocoPermissaoNotif();
+}
+
+/* ═══════════════════════════════════════════════
+   COMUNIDADE — PDF nos posts + marcar pessoas
+   PDF entra em `midias` com tipo:'pdf' (+ nome/tamanho) e aparece como cartão de anexo, fora do carrossel.
+   "Marcar pessoas" grava os uuids em posts.marcados; o banco limpa a lista (só quem existe, sem repetir, sem
+   marcar a si mesmo, máx. 20) e avisa cada marcado pelo sino.
+═══════════════════════════════════════════════ */
+let _comMarcados=[]; // pessoas marcadas no post que está sendo escrito
+
+/* ── PDF ── */
+function _comRenderAnexos(p){
+  const pdfs=_comMidiasDe(p).filter(m=>m.tipo==='pdf');
+  if(!pdfs.length) return '';
+  return `<div class="com-anexos">${pdfs.map(m=>{
+    const nome=m.nome||'documento.pdf';
+    return `<div class="com-anexo">
+      <div class="com-anexo-ico">PDF</div>
+      <div class="com-anexo-info">
+        <div class="com-anexo-nome" title="${_escAttr(nome)}">${_escHtml(nome)}</div>
+        <div class="com-anexo-meta">${m.tamanho?_fmtBytes(m.tamanho)+' · ':''}Documento PDF</div>
+      </div>
+      <div class="com-anexo-acoes">
+        <button type="button" class="btn-primary" data-url="${_escAttr(m.url)}" data-nome="${_escAttr(nome)}" onclick="abrirPdfComunidade(this.dataset.url,this.dataset.nome)">Ler</button>
+        <a class="btn-outline" href="${_escAttr(m.url)}?download=${encodeURIComponent(nome)}">Baixar</a>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// Leitor dentro do app (o Portal roda como PWA, onde abrir aba nova é ruim). Diferente do leitor do GR News, que
+// desenha TODAS as páginas de uma vez (bom pra jornal de poucas páginas): aqui o PDF é de qualquer colega e pode ter
+// centenas de páginas — cada canvas pesa MBs e derrubaria a aba. Acima do limite, cai pra "abrir em nova aba".
+const COM_PDF_MAX_PAGINAS_LEITOR=40;
+async function abrirPdfComunidade(url,nome){
+  if(!_comUrlSegura(url)) return;
+  // Fullscreen API só renderiza o elemento em tela cheia e seus descendentes — um filho solto do <body> some.
+  const host=document.fullscreenElement||document.body;
+  const modal=document.createElement('div');
+  modal.className='modal-bg on';
+  modal.innerHTML=`<div class="modal com-pdf-modal">
+    <div class="com-pdf-head">
+      <div class="com-pdf-titulo">${_escHtml(nome||'PDF')}</div>
+      <div class="com-pdf-head-acoes">
+        <span class="com-pdf-paginas"></span>
+        <a class="btn-outline" href="${_escAttr(url)}" target="_blank" rel="noopener noreferrer">Nova aba</a>
+        <button class="modal-close" style="position:static" onclick="this.closest('.modal-bg').remove()" aria-label="Fechar">✕</button>
+      </div>
+    </div>
+    <div class="com-pdf-corpo"></div>
+  </div>`;
+  modal.addEventListener('click',e=>{ if(e.target===modal) modal.remove(); });
+  host.appendChild(modal);
+  await _renderPdfComunidade(url,modal);
+}
+async function _renderPdfComunidade(url,modal){
+  const corpo=modal.querySelector('.com-pdf-corpo');
+  const novaAba=`<a class="btn-primary" href="${_escAttr(url)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:14px;text-decoration:none">Abrir em nova aba</a>`;
+  corpo.innerHTML='<div class="com-pdf-msg">Carregando PDF...</div>';
+  let pdf=null;
+  try{
+    if(!window.pdfjsLib) throw new Error('leitor indisponível');
+    pdf=await pdfjsLib.getDocument(url).promise;
+    modal.querySelector('.com-pdf-paginas').textContent=pdf.numPages+(pdf.numPages>1?' páginas':' página');
+    if(pdf.numPages>COM_PDF_MAX_PAGINAS_LEITOR){
+      corpo.innerHTML=`<div class="com-pdf-msg">Este PDF tem ${pdf.numPages} páginas — grande demais pra ler aqui.<br>${novaAba}</div>`;
+      return;
+    }
+    corpo.innerHTML='';
+    const largura=Math.min((corpo.clientWidth||860)-16,820);
+    for(let i=1;i<=pdf.numPages;i++){
+      if(!modal.isConnected) return; // fechou o leitor no meio: para de renderizar
+      const page=await pdf.getPage(i);
+      const base=page.getViewport({scale:1});
+      const vp=page.getViewport({scale:(largura/base.width)*Math.min(window.devicePixelRatio||1,1.5)});
+      const canvas=document.createElement('canvas');
+      canvas.width=vp.width; canvas.height=vp.height;
+      canvas.style.cssText=`width:100%;max-width:${largura}px;display:block;margin:0 auto 10px;border-radius:4px;box-shadow:0 2px 16px rgba(0,0,0,.3);background:#fff`;
+      corpo.appendChild(canvas); // entra já na ordem certa e vai "pintando" conforme renderiza
+      await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
+    }
+  }catch(err){
+    console.warn('[comunidade] leitor de PDF:',err?.message||err);
+    if(modal.isConnected) corpo.innerHTML=`<div class="com-pdf-msg">Não foi possível abrir o PDF aqui.<br>${novaAba}</div>`;
+  }finally{
+    try{ pdf?.destroy?.(); }catch(e){}
+  }
+}
+
+/* ── marcar pessoas: como aparece no post ── */
+function _comMarcadosHtml(p){
+  const ids=p.marcados||[];
+  if(!ids.length) return '';
+  const link=uid=>`<span class="com-autor-link com-marcado" onclick="abrirPerfil('${uid}')">${_escHtml(_diretorioNome(uid))}</span>`;
+  const mostrar=ids.slice(0,2), resto=ids.length-mostrar.length;
+  let txt=(mostrar.length===2 && !resto) ? `${link(mostrar[0])} e ${link(mostrar[1])}` : mostrar.map(link).join(', ');
+  if(resto>0) txt+=` e <span class="com-autor-link com-marcado" onclick="abrirMarcados('${p.id}')">mais ${resto}</span>`;
+  return `<div class="com-post-marcados">👥 com ${txt}</div>`;
+}
+function abrirMarcados(postId){
+  const p=allComPosts.find(x=>x.id===postId);
+  if(!p) return;
+  const modal=document.createElement('div');
+  modal.className='modal-bg on';
+  modal.innerHTML=`<div class="modal" style="width:360px;max-width:92vw;padding:22px">
+    <button class="modal-close" onclick="this.closest('.modal-bg').remove()">✕</button>
+    <div style="font-family:var(--font-d);font-weight:700;font-size:16px;margin-bottom:12px">Pessoas marcadas</div>
+    <div style="max-height:340px;overflow-y:auto">${(p.marcados||[]).map(uid=>{
+      const nome=_diretorioNome(uid), foto=_diretorioFoto(uid);
+      return `<div class="com-conv-item" onclick="this.closest('.modal-bg').remove();abrirPerfil('${uid}')">
+        <div class="com-post-avatar" style="width:30px;height:30px;font-size:12px">${foto?`<img src="${_escAttr(foto)}" alt="">`:_escHtml(nome.charAt(0).toUpperCase())}</div>
+        <div style="font-weight:600">${_escHtml(nome)}</div></div>`;
+    }).join('')}</div>
+  </div>`;
+  modal.addEventListener('click',e=>{ if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
+/* ── marcar pessoas: no compositor ── */
+function _renderComMarcados(){
+  const w=el('com-post-marcados'); if(!w) return;
+  if(!_comMarcados.length){ w.innerHTML=''; return; }
+  w.innerHTML=`<div class="com-marcados-box"><span>👥 com</span>${_comMarcados.map(uid=>
+    `<span class="com-marcado-chip">${_escHtml(_diretorioNome(uid))}<button type="button" title="Remover" onclick="_desmarcarPessoa('${uid}')">✕</button></span>`).join('')}
+    <button type="button" class="com-marcado-add" onclick="abrirSeletorMarcados()">+ marcar</button></div>`;
+}
+function _desmarcarPessoa(uid){ _comMarcados=_comMarcados.filter(x=>x!==uid); _renderComMarcados(); }
+async function abrirSeletorMarcados(){
+  await _garantirDiretorio();
+  el('com-marcar-modal')?.remove();
+  const modal=document.createElement('div');
+  modal.className='modal-bg on';
+  modal.id='com-marcar-modal';
+  modal.innerHTML=`<div class="modal" style="width:400px;max-width:94vw;padding:22px">
+    <button class="modal-close" onclick="this.closest('.modal-bg').remove()">✕</button>
+    <div style="font-family:var(--font-d);font-weight:700;font-size:16px;margin-bottom:12px">Marcar pessoas</div>
+    <input type="text" class="adm-input" id="com-marcar-busca" placeholder="Buscar por nome, cargo ou equipe..." style="margin-bottom:10px" oninput="_filtrarSeletorMarcados()">
+    <div id="com-marcar-lista" style="max-height:320px;overflow-y:auto"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px">
+      <span id="com-marcar-cont" style="font-size:11px;color:var(--muted2)"></span>
+      <button class="btn-primary" onclick="el('com-marcar-modal').remove()">Concluir</button>
+    </div>
+  </div>`;
+  modal.addEventListener('click',e=>{ if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
+  _filtrarSeletorMarcados();
+  el('com-marcar-busca').focus();
+}
+function _filtrarSeletorMarcados(){
+  const lista=el('com-marcar-lista'); if(!lista) return;
+  const q=_normBusca((el('com-marcar-busca')?.value||'').trim());
+  const rolagem=lista.scrollTop; // redesenhar a lista ao marcar alguém não pode jogar a pessoa de volta pro topo
+  const pessoas=_diretorio.filter(u=>u.user_id!==CU.id && (u.nome||'').trim()
+    && (!q || _normBusca([u.nome,u.cargo,u.equipe].join(' ')).includes(q)));
+  lista.innerHTML=pessoas.map(u=>{
+    const on=_comMarcados.includes(u.user_id);
+    return `<label class="com-marcar-item ${on?'on':''}">
+      <input type="checkbox" ${on?'checked':''} onchange="_alternarMarcado('${u.user_id}',this.checked)">
+      <div class="com-post-avatar" style="width:30px;height:30px;font-size:12px">${u.foto_url?`<img src="${_escAttr(u.foto_url)}" alt="">`:_escHtml((u.nome||'?').charAt(0).toUpperCase())}</div>
+      <div style="min-width:0"><div style="font-weight:600;font-size:13px">${_escHtml(u.nome)}</div>
+        <div style="font-size:10px;color:var(--muted2)">${_escHtml([u.cargo,u.equipe].filter(Boolean).join(' · '))}</div></div>
+    </label>`;
+  }).join('') || '<div style="font-size:11px;color:var(--muted2);padding:8px">Ninguém encontrado</div>';
+  lista.scrollTop=rolagem;
+  _atualizarContMarcados();
+}
+function _alternarMarcado(uid,ligado){
+  if(ligado){
+    if(_comMarcados.length>=COM_MARCADOS_MAX){ toast(`Máximo de ${COM_MARCADOS_MAX} pessoas por publicação`,'err'); _filtrarSeletorMarcados(); return; }
+    if(!_comMarcados.includes(uid)) _comMarcados.push(uid);
+  }else{
+    _comMarcados=_comMarcados.filter(x=>x!==uid);
+  }
+  _renderComMarcados();
+  _filtrarSeletorMarcados(); // redesenha a lista (mantém a busca) já com o destaque certo
+}
+function _atualizarContMarcados(){
+  const c=el('com-marcar-cont');
+  if(c) c.textContent=_comMarcados.length?`${_comMarcados.length} selecionada${_comMarcados.length>1?'s':''}`:'Ninguém selecionado';
 }
 </script>
 </body>
