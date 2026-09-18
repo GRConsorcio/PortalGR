@@ -1405,6 +1405,12 @@ symbol .f{fill:currentColor;fill-opacity:.2}
 .com-pdf-corpo{flex:1;overflow-y:auto;background:var(--s2);border-radius:6px;padding:8px;display:flex;flex-direction:column}
 .com-pdf-msg{margin:auto;text-align:center;color:var(--muted2);font-size:12.5px;line-height:1.6;padding:24px}
 @media(max-width:640px){.com-pdf-head-acoes .btn-outline{display:none}}
+.com-video-erro{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:190px;padding:22px 18px;text-align:center;background:var(--s3);border:1px dashed var(--border2);border-radius:var(--radius-sm);color:var(--muted2)}
+.com-video-erro .ico{width:34px;height:34px;color:#f0506e}
+.com-video-erro .t{font-weight:700;font-size:13.5px;color:var(--text)}
+.com-video-erro .s{font-size:11.5px;line-height:1.5;max-width:340px}
+.com-video-erro .btn-outline{margin-top:4px;text-decoration:none;padding:7px 16px;font-size:10.5px}
+.com-vid-cancelar{background:none;border:none;color:var(--gold2);font-size:10px;font-family:var(--font-b);text-decoration:underline;cursor:pointer;margin-left:6px;padding:0}
 </style>
 </head>
 <body>
@@ -5978,7 +5984,7 @@ function _comRenderCarrossel(p){
   const cid='com-carrossel-'+p.id;
   const slides=midias.map(m=>`<div class="com-carrossel-slide">${
     m.tipo==='video'
-      ? `<video src="${_escAttr(m.url)}" controls></video>`
+      ? `<video src="${_escAttr(m.url)}" data-url="${_escAttr(m.url)}" controls playsinline preload="metadata" onloadedmetadata="_comVideoVerificar(this)" onerror="_comVideoIncompativel(this,false)"></video>`
       : `<img src="${_escAttr(m.url)}" alt="" data-url="${_escAttr(m.url)}" onclick="abrirLightbox(this.dataset.url)">`
   }</div>`).join('');
   const nav=midias.length>1?`
@@ -6126,6 +6132,7 @@ function _comAtualizarContador(){
 const COM_MIDIA_MAX=4; // limite de anexos (fotos/vídeos/PDFs somados) num post — o banco também recusa mais que isso
 const COM_PDF_MAX_MB=50; // PDF é lido/baixado por todo mundo no feed; acima disso, melhor compartilhar um link
 const COM_MARCADOS_MAX=20; // o banco também limita — cada pessoa marcada recebe uma notificação
+let _comUploadEmAndamento=false; // enquanto sobe/converte anexo, "Publicar" espera — senão o post saía sem o vídeo
 // Carrossel: aceita várias imagens e/ou vídeo no mesmo post (bucket dedicado
 // portal-comunidade-midia, 20GB/arquivo — portal-uploads é 15MB e usado por
 // avatar/PDF/etc, não dava pra reusar pra vídeo). Envia um por vez (upload
@@ -6139,28 +6146,41 @@ async function handleComPostMidiaUpload(e){
   if(vagas<=0){ toast(`Máximo de ${COM_MIDIA_MAX} itens por publicação`,'err'); e.target.value=''; return; }
   const aEnviar=files.slice(0,vagas);
   if(files.length>vagas) toast(`Só cabem mais ${vagas} — o restante foi ignorado`,'err');
-  for(let i=0;i<aEnviar.length;i++){
-    const file=aEnviar[i];
-    // PDF vira anexo (cartão com nome/tamanho), não entra no carrossel de imagem/vídeo. Alguns navegadores mandam
-    // file.type vazio pra PDF — por isso também olha a extensão.
-    const isPdf=file.type==='application/pdf' || (!file.type && /\.pdf$/i.test(file.name));
-    const isVideo=file.type.startsWith('video/');
-    if(!isPdf && !isVideo && !file.type.startsWith('image/')){ toast(`"${file.name}": formato não suportado (use imagem, vídeo ou PDF)`,'err'); continue; }
-    if(isPdf && file.size>COM_PDF_MAX_MB*1024*1024){ toast(`"${file.name}" tem mais de ${COM_PDF_MAX_MB}MB — reduza o PDF antes de anexar`,'err'); continue; }
-    if(file.size>20*1024*1024*1024){ toast(`"${file.name}" muito grande (máx. 20GB)`,'err'); continue; }
-    statusEl.textContent=`Enviando ${i+1}/${aEnviar.length}...`; statusEl.style.color='var(--muted2)';
-    const ext=isPdf?'pdf':(file.name.split('.').pop()||(isVideo?'mp4':'jpg')).toLowerCase();
-    const path=`comunidade/${Date.now()}-${i}.${ext}`;
-    const {error}=await sb.storage.from('portal-comunidade-midia').upload(path,file,{upsert:true,...(isPdf?{contentType:'application/pdf'}:{})});
-    if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast(`Erro ao enviar "${file.name}": `+error.message,'err'); continue; }
-    const {data}=sb.storage.from('portal-comunidade-midia').getPublicUrl(path);
-    _comPostMidias.push(isPdf
-      ? {tipo:'pdf', url:data.publicUrl, nome:(file.name||'documento.pdf').slice(0,120), tamanho:file.size}
-      : {tipo:isVideo?'video':'imagem', url:data.publicUrl});
+  _comUploadEmAndamento=true;
+  try{
+    for(let i=0;i<aEnviar.length;i++){
+      const file=aEnviar[i];
+      // PDF vira anexo (cartão com nome/tamanho), não entra no carrossel de imagem/vídeo. Alguns navegadores mandam
+      // file.type vazio pra PDF — por isso também olha a extensão.
+      const isPdf=file.type==='application/pdf' || (!file.type && /\.pdf$/i.test(file.name));
+      const isVideo=file.type.startsWith('video/');
+      if(!isPdf && !isVideo && !file.type.startsWith('image/')){ toast(`"${file.name}": formato não suportado (use imagem, vídeo ou PDF)`,'err'); continue; }
+      if(isPdf && file.size>COM_PDF_MAX_MB*1024*1024){ toast(`"${file.name}" tem mais de ${COM_PDF_MAX_MB}MB — reduza o PDF antes de anexar`,'err'); continue; }
+      if(file.size>20*1024*1024*1024){ toast(`"${file.name}" muito grande (máx. 20GB)`,'err'); continue; }
+      // Vídeo de celular novo costuma vir em HEVC/H.265: toca no celular, mas em muitos computadores só sai o áudio
+      // (largura/altura 0). Se for HEVC, converte pra H.264 aqui mesmo antes de subir — ver _prepararVideoParaUpload.
+      let arquivo=file, converteu=false;
+      if(isVideo){
+        const prep=await _prepararVideoParaUpload(file,statusEl);
+        if(!prep) continue; // pessoa desistiu de enviar esse vídeo
+        arquivo=prep.file; converteu=prep.converteu;
+      }
+      statusEl.textContent=`Enviando ${i+1}/${aEnviar.length}...`; statusEl.style.color='var(--muted2)';
+      const ext=isPdf?'pdf':converteu?'mp4':(file.name.split('.').pop()||(isVideo?'mp4':'jpg')).toLowerCase();
+      const path=`comunidade/${Date.now()}-${i}.${ext}`;
+      const {error}=await sb.storage.from('portal-comunidade-midia').upload(path,arquivo,{upsert:true,...(isPdf?{contentType:'application/pdf'}:converteu?{contentType:'video/mp4'}:{})});
+      if(error){ statusEl.textContent='Falha no envio'; statusEl.style.color='var(--red)'; toast(`Erro ao enviar "${file.name}": `+error.message,'err'); continue; }
+      const {data}=sb.storage.from('portal-comunidade-midia').getPublicUrl(path);
+      _comPostMidias.push(isPdf
+        ? {tipo:'pdf', url:data.publicUrl, nome:(file.name||'documento.pdf').slice(0,120), tamanho:file.size}
+        : {tipo:isVideo?'video':'imagem', url:data.publicUrl});
+    }
+  }finally{
+    _comUploadEmAndamento=false;
+    statusEl.textContent='';
+    e.target.value='';
+    _renderComPostMidiaPreview();
   }
-  statusEl.textContent='';
-  e.target.value='';
-  _renderComPostMidiaPreview();
 }
 function _renderComPostMidiaPreview(){
   el('com-post-img-preview').innerHTML=_comPostMidias.map((m,i)=>m.tipo==='pdf'
@@ -6184,6 +6204,7 @@ function _fmtBytes(n){
 }
 
 async function criarComPost(){
+  if(_comUploadEmAndamento){ toast('Aguarde o envio do anexo terminar antes de publicar','err'); return; }
   const conteudo=el('com-post-texto').value.trim();
   let tipo=el('com-post-tipo').value;
   let titulo=null;
@@ -7339,6 +7360,239 @@ function _alternarMarcado(uid,ligado){
 function _atualizarContMarcados(){
   const c=el('com-marcar-cont');
   if(c) c.textContent=_comMarcados.length?`${_comMarcados.length} selecionada${_comMarcados.length>1?'s':''}`:'Ninguém selecionado';
+}
+
+/* ═══════════════════════════════════════════════
+   VÍDEO — compatibilidade (HEVC → H.264)
+   Celular novo grava em HEVC/H.265. No celular toca, mas o Chrome de muitos computadores não decodifica HEVC: o <video>
+   reporta a duração certa e largura/altura 0, e só o áudio toca (era o "player de áudio" no feed). Ao escolher um
+   vídeo, lê o codec direto do arquivo (sem decodificar). Sendo HEVC e o aparelho conseguindo, converte pra H.264 (720p)
+   antes de subir — WebCodecs + mp4box (lê o MP4) + mp4-muxer (escreve), carregados só nessa hora. O áudio AAC passa
+   direto, sem recodificar. Qualquer falha cai no arquivo original com aviso: nunca trava o post.
+═══════════════════════════════════════════════ */
+const VID_MAX_LADO=1280;        // maior lado do vídeo convertido (720p): bom pro feed e bem menor que o original
+const VID_CONVERTER_MAX_MB=150; // o demux guarda arquivo + amostras na memória; acima disso pesa demais no celular
+let _vidCancelar=false, _vidUltimoPct=-1, _libsVideo=null;
+
+function _carregarScript(src){
+  return new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=()=>no(new Error('não carregou '+src)); document.head.appendChild(s); });
+}
+function _carregarLibsVideo(){
+  if(!_libsVideo) _libsVideo=Promise.all([
+    window.MP4Box ? 0 : _carregarScript('https://cdn.jsdelivr.net/npm/mp4box@0.5.2/dist/mp4box.all.min.js'),
+    window.Mp4Muxer ? 0 : _carregarScript('https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.3/build/mp4-muxer.js'),
+  ]).catch(e=>{ _libsVideo=null; throw e; });
+  return _libsVideo;
+}
+
+// Descobre o codec de vídeo lendo só a ESTRUTURA do arquivo (átomos MP4/MOV) — não decodifica nada. O `moov` fica no FIM
+// do arquivo nos vídeos de celular, então caminha pelos átomos de topo pulando o `mdat` gigante e só lê o `moov`.
+async function _detectarCodecVideo(file){
+  try{
+    const u32=(u,i)=>((u[i]<<24)|(u[i+1]<<16)|(u[i+2]<<8)|u[i+3])>>>0;
+    const quatro=(u,i)=>String.fromCharCode(u[i],u[i+1],u[i+2],u[i+3]);
+    let pos=0;
+    for(let voltas=0; pos+8<=file.size && voltas<40; voltas++){
+      const h=new Uint8Array(await file.slice(pos,pos+16).arrayBuffer());
+      let size=u32(h,0); const tipo=quatro(h,4);
+      if(size===1 && h.length>=16) size=u32(h,8)*4294967296+u32(h,12); // átomo com tamanho de 64 bits
+      else if(size===0) size=file.size-pos;
+      if(tipo==='moov'){
+        const moov=new Uint8Array(await file.slice(pos,pos+Math.min(size,16*1024*1024)).arrayBuffer());
+        const achou=new Set();
+        for(let i=0;i<moov.length-3;i++){ const c=quatro(moov,i); if(/^(hvc1|hev1|dvh1|dvhe|avc1|avc3|av01|vp09)$/.test(c)) achou.add(c); }
+        if(['hvc1','hev1','dvh1','dvhe'].some(c=>achou.has(c))) return 'hevc';
+        if(achou.has('avc1')||achou.has('avc3')) return 'h264';
+        if(achou.has('av01')) return 'av1';
+        if(achou.has('vp09')) return 'vp9';
+        return 'desconhecido';
+      }
+      if(size<8) break;
+      pos+=size;
+    }
+  }catch(e){ console.warn('[video] não consegui ler o codec:',e.message); }
+  return null;
+}
+
+// Espera as filas do decodificador/codificador esvaziarem um pouco (sem isso os quadros — ~14MB cada em 2K —
+// se acumulam e estouram a memória). Por evento "dequeue", não por timer: timer é freado em aba em segundo plano.
+async function _esperarFilasVideo(dec,enc){
+  while(dec.decodeQueueSize>8 || enc.encodeQueueSize>8){
+    await new Promise(r=>{ let ok=false; const f=()=>{ if(!ok){ ok=true; r(); } }; dec.addEventListener('dequeue',f,{once:true}); enc.addEventListener('dequeue',f,{once:true}); setTimeout(f,50); });
+  }
+}
+
+async function _converterVideoParaH264(file,{maxLado=VID_MAX_LADO,aoProgresso=()=>{},cancelado=()=>false}={}){
+  await _carregarLibsVideo();
+  const us=(cts,ts)=>Math.round(1e6*cts/ts);
+  // 1) LER o arquivo (mp4box). A extração das amostras é armada dentro do onReady: assim funciona tanto com o moov no
+  //    fim (celular — as amostras já estão em memória quando ele aparece) quanto no começo (chegam durante a leitura).
+  const mp4=MP4Box.createFile();
+  const vSamples=[], aSamples=[];
+  let vt=null, at=null;
+  const info=new Promise((ok,no)=>{
+    mp4.onError=e=>no(new Error('mp4box: '+e));
+    mp4.onReady=inf=>{
+      vt=inf.videoTracks[0]; at=inf.audioTracks[0];
+      if(vt){
+        mp4.onSamples=(id,u,samples)=>{ for(const s of samples) (id===vt.id?vSamples:aSamples).push(s); };
+        mp4.setExtractionOptions(vt.id,null,{nbSamples:200});
+        if(at) mp4.setExtractionOptions(at.id,null,{nbSamples:200});
+        mp4.start();
+      }
+      ok(inf);
+    };
+  });
+  const CH=4*1024*1024;
+  for(let off=0; off<file.size; ){
+    if(cancelado()) throw new Error('cancelado');
+    const buf=await file.slice(off,off+CH).arrayBuffer();
+    buf.fileStart=off; mp4.appendBuffer(buf); off+=buf.byteLength;
+  }
+  mp4.flush();
+  await info;
+  if(!vt) throw new Error('sem trilha de vídeo');
+  for(let t=0; vSamples.length<vt.nb_samples && t<20; t++) await new Promise(r=>setTimeout(r,100)); // amostras atrasadas
+  if(vSamples.length<vt.nb_samples) throw new Error(`amostras incompletas (${vSamples.length}/${vt.nb_samples})`);
+  // 2) DECODIFICADOR: a "description" é o conteúdo do avcC/hvcC sem o cabeçalho de 8 bytes do box
+  const entry=mp4.getTrackById(vt.id).mdia.minf.stbl.stsd.entries[0];
+  const cfgBox=entry.avcC||entry.hvcC||entry.vpcC||entry.av1C;
+  if(!cfgBox) throw new Error('sem configuração do codec');
+  const ds=new DataStream(undefined,0,DataStream.BIG_ENDIAN); cfgBox.write(ds);
+  const decCfg={codec:vt.codec, codedWidth:vt.video.width, codedHeight:vt.video.height, description:new Uint8Array(ds.buffer,8)};
+  if(!(await VideoDecoder.isConfigSupported(decCfg)).supported) throw new Error('este aparelho não decodifica '+vt.codec);
+  // 3) tamanho de saída, taxa, bitrate e rotação (vídeo vertical de celular = quadros deitados + matriz de rotação)
+  const cw=vt.video.width, ch=vt.video.height, esc=Math.min(1,maxLado/Math.max(cw,ch));
+  const par=n=>Math.max(2,Math.round(n/2)*2);
+  const W=par(cw*esc), H=par(ch*esc);
+  const dur=vt.duration/vt.timescale, fps=Math.min(60,Math.max(15,vt.nb_samples/dur));
+  const bitrate=Math.round(Math.min(6e6,Math.max(1.2e6,W*H*fps*0.09)));
+  const m=Array.from(vt.matrix||[65536,0,0,0,65536,0,0,0,1073741824]);
+  let rot=Math.round(Math.atan2(m[1]/65536,m[0]/65536)*180/Math.PI/90)*90; rot=((rot%360)+360)%360;
+  let encCfg=null;
+  for(const codec of ['avc1.640028','avc1.4d0028','avc1.42001f']){
+    const c={codec,width:W,height:H,bitrate,framerate:Math.round(fps),latencyMode:'quality',avc:{format:'avc'}};
+    if((await VideoEncoder.isConfigSupported(c)).supported){ encCfg=c; break; }
+  }
+  if(!encCfg) throw new Error('este aparelho não codifica H.264');
+  // 4) ÁUDIO: AAC passa direto (sem recodificar). Outro codec de áudio -> recusa e vai o original, em vez de perder o som.
+  let audioCfg=null;
+  if(at){
+    const ae=mp4.getTrackById(at.id).mdia.minf.stbl.stsd.entries[0];
+    const asc=ae.esds&&ae.esds.esd&&ae.esds.esd.descs&&ae.esds.esd.descs[0]&&ae.esds.esd.descs[0].descs&&ae.esds.esd.descs[0].descs[0]&&ae.esds.esd.descs[0].descs[0].data;
+    if(!/^mp4a\.40\./.test(at.codec) || !asc) throw new Error('áudio não é AAC ('+at.codec+')');
+    audioCfg={codec:at.codec, numberOfChannels:at.audio.channel_count, sampleRate:at.audio.sample_rate, description:asc};
+  }
+  const muxer=new Mp4Muxer.Muxer({
+    target:new Mp4Muxer.ArrayBufferTarget(),
+    video:{codec:'avc',width:W,height:H,rotation:rot},
+    audio:at?{codec:'aac',numberOfChannels:audioCfg.numberOfChannels,sampleRate:audioCfg.sampleRate}:undefined,
+    fastStart:'in-memory', firstTimestampBehavior:'cross-track-offset', // moov no começo: o vídeo já começa a tocar no feed
+  });
+  let ai=0, primeiroAudio=true, falha=null, n=0;
+  const gop=Math.round(fps*2);
+  // áudio entra intercalado com o vídeo, na ordem do tempo
+  const empurrarAudioAte=t=>{
+    while(ai<aSamples.length && us(aSamples[ai].cts,aSamples[ai].timescale)<=t){
+      const s=aSamples[ai++];
+      muxer.addAudioChunk(new EncodedAudioChunk({type:'key',timestamp:us(s.cts,s.timescale),duration:us(s.duration,s.timescale),data:s.data}),primeiroAudio?{decoderConfig:audioCfg}:undefined);
+      primeiroAudio=false;
+    }
+  };
+  const enc=new VideoEncoder({ output:(chunk,meta)=>{ try{ empurrarAudioAte(chunk.timestamp); muxer.addVideoChunk(chunk,meta); }catch(e){ falha=e; } }, error:e=>{ falha=e; } });
+  enc.configure(encCfg);
+  const canvas=new OffscreenCanvas(W,H), ctx=canvas.getContext('2d');
+  const dec=new VideoDecoder({
+    output:frame=>{
+      try{
+        ctx.drawImage(frame,0,0,W,H); // reduz pro tamanho de saída
+        const f2=new VideoFrame(canvas,{timestamp:frame.timestamp,duration:frame.duration??undefined});
+        frame.close(); enc.encode(f2,{keyFrame:(n++%gop)===0}); f2.close();
+      }catch(e){ falha=e; try{ frame.close(); }catch(_){} }
+    },
+    error:e=>{ falha=e; },
+  });
+  dec.configure(decCfg);
+  // 5) DECODIFICAR -> reduzir -> CODIFICAR, com freio nas filas
+  let i=0;
+  try{
+    for(const s of vSamples){
+      if(cancelado()) throw new Error('cancelado');
+      if(falha) throw falha;
+      await _esperarFilasVideo(dec,enc);
+      dec.decode(new EncodedVideoChunk({type:s.is_sync?'key':'delta',timestamp:us(s.cts,s.timescale),duration:us(s.duration,s.timescale),data:s.data}));
+      aoProgresso(++i/vSamples.length);
+    }
+    await dec.flush(); await enc.flush();
+    if(falha) throw falha;
+    empurrarAudioAte(Infinity);
+    muxer.finalize();
+  }finally{
+    try{ dec.close(); }catch(_){} try{ enc.close(); }catch(_){}
+  }
+  return {blob:new Blob([muxer.target.buffer],{type:'video/mp4'}), W, H, duracao:dur};
+}
+
+// Confere que o vídeo convertido realmente abre (imagem + duração parecida) antes de trocar pelo original.
+function _videoTocaBem(blob,duracaoEsperada){
+  return new Promise(res=>{
+    const url=URL.createObjectURL(blob), v=document.createElement('video');
+    const fim=ok=>{ clearTimeout(t); URL.revokeObjectURL(url); res(ok); };
+    const t=setTimeout(()=>fim(false),10000);
+    v.muted=true; v.preload='metadata';
+    v.onloadedmetadata=()=>fim(v.videoWidth>0 && v.videoHeight>0 && Math.abs(v.duration-duracaoEsperada)<=2);
+    v.onerror=()=>fim(false);
+    v.src=url;
+  });
+}
+function _statusConversao(statusEl,p){
+  const pct=Math.floor(p*100);
+  if(pct===_vidUltimoPct) return; // não reescreve o DOM a cada quadro
+  _vidUltimoPct=pct;
+  statusEl.style.color='var(--muted2)';
+  statusEl.innerHTML=`Otimizando o vídeo pra abrir em qualquer aparelho… <b>${pct}%</b> <button type="button" class="com-vid-cancelar" onclick="_vidCancelar=true">Enviar sem converter</button>`;
+}
+
+// Decide o que enviar: vídeo que não é HEVC segue como está; HEVC tenta converter; se não der, pergunta antes de subir.
+async function _prepararVideoParaUpload(file,statusEl){
+  const ehMp4=/mp4|quicktime|m4v/i.test(file.type) || /\.(mp4|mov|m4v)$/i.test(file.name);
+  if(!ehMp4) return {file,converteu:false}; // webm etc. não tem esse problema
+  const codec=await _detectarCodecVideo(file);
+  if(codec!=='hevc') return {file,converteu:false};
+  const podeTentar=file.size<=VID_CONVERTER_MAX_MB*1024*1024 && typeof VideoDecoder==='function' && typeof VideoEncoder==='function' && typeof OffscreenCanvas==='function';
+  if(podeTentar){
+    _vidCancelar=false; _vidUltimoPct=-1;
+    _statusConversao(statusEl,0);
+    let trava=null;
+    try{ trava=await navigator.wakeLock?.request('screen'); }catch(e){} // celular não apaga a tela no meio da conversão
+    try{
+      const r=await _converterVideoParaH264(file,{aoProgresso:p=>_statusConversao(statusEl,p),cancelado:()=>_vidCancelar});
+      if(!(await _videoTocaBem(r.blob,r.duracao))) throw new Error('o vídeo convertido não passou na verificação');
+      toast(`Vídeo otimizado: ${_fmtBytes(file.size)} → ${_fmtBytes(r.blob.size)}`,'ok');
+      return {file:new File([r.blob],(file.name||'video').replace(/\.[^.]+$/,'')+'.mp4',{type:'video/mp4'}),converteu:true};
+    }catch(e){
+      if(e.message==='cancelado') return {file,converteu:false}; // a pessoa escolheu "Enviar sem converter"
+      console.warn('[video] conversão não rolou, segue o original:',e.message);
+    }finally{ try{ trava&&trava.release(); }catch(e){} }
+  }
+  const ok=confirm('Este vídeo está no formato HEVC (H.265), comum em celulares novos. Ele toca no celular, mas em muitos computadores só aparece o áudio, sem imagem.\n\nDica: nas configurações da câmera, use o formato mais compatível (H.264) e grave de novo.\n\nEnviar mesmo assim?');
+  return ok?{file,converteu:false}:null;
+}
+
+/* ── Player: vídeo que este navegador não decodifica (HEVC) — mostra aviso + baixar em vez do "player de áudio" ── */
+function _comVideoVerificar(v){
+  // duração > 0 mas sem imagem = só o áudio foi decodificado (HEVC num navegador sem suporte)
+  if(v.videoWidth===0 && v.videoHeight===0 && v.duration>0) _comVideoIncompativel(v,true);
+}
+function _comVideoIncompativel(v,porCodec){
+  const slide=v.closest('.com-carrossel-slide'); if(!slide) return;
+  const url=v.getAttribute('data-url')||'';
+  slide.innerHTML=`<div class="com-video-erro">
+    <svg class="ico"><use href="#ic-video"/></svg>
+    <div class="t">${porCodec?'Este vídeo não abre neste aparelho':'Não foi possível carregar o vídeo'}</div>
+    <div class="s">${porCodec?'Ele foi gravado num formato (HEVC/H.265) que este navegador não reproduz — no celular costuma abrir normalmente.':'Tente de novo em instantes ou baixe o arquivo.'}</div>
+    ${_comUrlSegura(url)?`<a class="btn-outline" href="${_escAttr(url)}?download=video.mp4">Baixar vídeo</a>`:''}
+  </div>`;
 }
 </script>
 </body>
