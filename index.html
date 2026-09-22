@@ -1561,9 +1561,18 @@ symbol .f{fill:currentColor;fill-opacity:.2}
 .cx-tbl td b{color:var(--cx-text);font-family:var(--cx-font-d);font-size:16px;font-weight:700}
 .cx-tbl tr.q td:first-child{box-shadow:inset 3px 0 0 var(--cx-ok)}
 .cx-tbl tr.lead td:first-child{box-shadow:inset 3px 0 0 var(--cx-accent)}
+.cx-tbl tr.exp{opacity:.5}
+.cx-tbl tr.exp td:first-child{box-shadow:inset 3px 0 0 var(--cx-bad)}
+.cx-tbl tr.clic{cursor:pointer;transition:background .15s}
+.cx-tbl tr.clic:hover,.cx-tbl tr.clic:focus-visible{background:var(--cx-s2);outline:none}
 .cx-rk{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;font-size:10px;font-weight:700;background:var(--cx-s3);color:var(--cx-mut2)}
 tr.q .cx-rk{background:color-mix(in srgb,var(--cx-ok) 18%,transparent);color:var(--cx-ok)}
 tr.lead .cx-rk{background:var(--cx-accent);color:var(--cx-on-accent)}
+tr.exp .cx-rk{background:color-mix(in srgb,var(--cx-bad) 16%,transparent);color:var(--cx-bad)}
+.cx-exptag{display:block;font-size:8.5px;font-weight:800;letter-spacing:.1em;color:var(--cx-bad)}
+.cx-cart{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--cx-mut)}
+.cx-cart.am{color:var(--cx-warn)}
+.cx-cart.verm{color:var(--cx-bad)}
 .cx-tm{display:flex;align-items:center;gap:9px;min-width:0}
 .cx-tm .cx-crest{width:22px;height:25px}
 .cx-tm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
@@ -11341,9 +11350,11 @@ function novoEstado(titulo) {
     titulo: titulo || 'Copa GR',
     subtitulo: 'Temporada ' + new Date().getFullYear(),
     logo: '🏆', // emoji ou URL https de imagem
-    cfg: { formato: 'grupos', nGrupos: 4, classificam: 2, turnos: 1, terceiro: true, pontos: { v: 3, e: 1, d: 0 } },
+    cfg: { formato: 'grupos', nGrupos: 4, classificam: 2, terceiro: true },
     times: [],
-    grupos: null, // [{ id:'A', ids:[idDoTime,...] }] depois do sorteio
+    grupos: null, // [{ id:'A', ids:[idDoTime,...] }] depois do sorteio. Times ficam livres pra mover de grupo até a fase fechar
+    gruposFechados: false, // true = classificação por cotas travada (mata-mata já sorteado, ou temporada de pontos corridos encerrada)
+    bracketInicial: null, // só p/ formato 'grupos': ids (ou 'BYE') na ordem do 1º round, calculado ao fechar a fase de grupos
     seeds: null, // mata-mata direto: ids na ordem do chaveamento (cabeça de chave primeiro)
     jogos: [],
     tema: clone(TEMA_PADRAO),
@@ -11361,8 +11372,16 @@ function novoTime(p) {
     sub: String(p.sub || '').trim().slice(0, 40),
     cab: !!p.cab,
     ser: p.ser || '',
+    // cotas vendidas (editadas pelo admin) e cartões: são do TIME, não da rodada — sobrevivem a mudar de grupo ou editar nome/cor
+    cotas: clamp(Math.floor(Number(p.cotas) || 0), 0, 999999),
+    camarelo: clamp(Math.floor(Number(p.camarelo) || 0), 0, 20),
+    cvermelho: !!p.cvermelho,
   };
 }
+// cartão vermelho OU 3+ amarelos = fora da classificação, mesmo tendo mais cotas que os outros
+const expulso = t => !!(t && (t.cvermelho || (t.camarelo || 0) >= 3));
+// cada cartão amarelo tira 1 cota na hora de ranquear (nunca fica negativo)
+const cotasLiquidas = t => Math.max(0, (t && t.cotas || 0) - (t && t.camarelo || 0));
 
 /* ---------- validação da configuração ---------- */
 function tamanhoMinGrupo(nTimes, nG) { return Math.floor(nTimes / Math.max(1, nG)); }
@@ -11390,38 +11409,6 @@ function validarCfg(E) {
   return erros;
 }
 
-/* ---------- rodadas de um grupo (método do círculo: todo mundo joga uma vez por rodada) ---------- */
-function rodadasTodosContraTodos(ids) {
-  const n = ids.length;
-  if (n < 2) return [];
-  const arr = ids.slice();
-  if (n % 2) arr.push(null);
-  const m = arr.length, rodadas = [];
-  for (let r = 0; r < m - 1; r++) {
-    const pares = [];
-    for (let i = 0; i < m / 2; i++) {
-      const x = arr[i], y = arr[m - 1 - i];
-      if (x !== null && y !== null) pares.push(r % 2 === 0 ? [x, y] : [y, x]);
-    }
-    rodadas.push(pares);
-    arr.splice(1, 0, arr.pop());
-  }
-  return rodadas;
-}
-function jogosDoGrupo(grupo, turnos) {
-  const base = rodadasTodosContraTodos(grupo.ids), out = [];
-  const passadas = turnos === 2 ? 2 : 1;
-  for (let t = 0; t < passadas; t++) {
-    base.forEach((pares, r) => {
-      const rod = t * base.length + r + 1;
-      pares.forEach(([a, b], i) => {
-        out.push({ id: `g${grupo.id}${rod}_${i}`, fase: 'g', grupo: grupo.id, rodada: rod, a: t % 2 ? b : a, b: t % 2 ? a : b, ga: null, gb: null, st: 'ag', dt: '', loc: '' });
-      });
-    });
-  }
-  return out;
-}
-
 /* ---------- sorteios ---------- */
 // distribui os times pelos grupos: cabeças de chave primeiro (um por grupo), depois o resto, sempre no grupo mais vazio
 function sortearGrupos(times, nG, rnd) {
@@ -11438,57 +11425,17 @@ function sortearSeeds(times, rnd) {
   return [...shuffle(times.filter(t => t.cab), rnd), ...shuffle(times.filter(t => !t.cab), rnd)].map(t => t.id);
 }
 
-/* ---------- classificação de um grupo ---------- */
-function cmpBase(a, b) { return b.pts - a.pts || b.v - a.v || b.sg - a.sg || b.gp - a.gp; }
-function acumular(map, j, P) {
-  const A = map.get(j.a), B = map.get(j.b);
-  if (!A || !B) return;
-  A.j++; B.j++; A.gp += j.ga; A.gc += j.gb; B.gp += j.gb; B.gc += j.ga;
-  if (j.ga > j.gb) { A.v++; B.d++; A.pts += P.v; B.pts += P.d; }
-  else if (j.ga < j.gb) { B.v++; A.d++; B.pts += P.v; A.pts += P.d; }
-  else { A.e++; B.e++; A.pts += P.e; B.pts += P.e; }
-}
-// critérios: pontos, vitórias, saldo, gols pró, confronto direto entre os empatados, e por fim a ordem do sorteio
-function desempateConfronto(bloco, jogos, P) {
-  const ids = new Set(bloco.map(r => r.id));
-  const m = new Map(bloco.map(r => [r.id, { id: r.id, pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0 }]));
-  for (const j of jogos) if (ids.has(j.a) && ids.has(j.b)) acumular(m, j, P);
-  m.forEach(r => { r.sg = r.gp - r.gc; });
-  const h = r => m.get(r.id);
-  const ord = bloco.slice().sort((x, y) => (h(y).pts - h(x).pts) || (h(y).sg - h(x).sg) || (h(y).gp - h(x).gp) || (x.ord - y.ord));
-  const out = []; let i = 0;
-  while (i < ord.length) {
-    let k = i + 1;
-    while (k < ord.length && h(ord[k]).pts === h(ord[i]).pts && h(ord[k]).sg === h(ord[i]).sg && h(ord[k]).gp === h(ord[i]).gp) k++;
-    const sub = ord.slice(i, k);
-    // subgrupo ainda empatado e menor que o original: aplica o confronto direto só entre eles
-    out.push(...(sub.length > 1 && sub.length < bloco.length ? desempateConfronto(sub, jogos, P) : sub));
-    i = k;
-  }
-  return out;
-}
+/* ---------- classificação de um grupo: por cotas líquidas (cotas − cartões amarelos), expulsos sempre por último ---------- */
 function tabelaGrupo(E, gid) {
   const g = (E.grupos || []).find(x => x.id === gid);
   if (!g) return [];
-  const P = E.cfg.pontos || { v: 3, e: 1, d: 0 };
-  const rows = new Map(g.ids.map((id, i) => [id, { id, ord: i, pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0 }]));
-  const jg = E.jogos.filter(j => j.fase === 'g' && j.grupo === gid && j.st === 'fim' && isNum(j.ga) && isNum(j.gb));
-  for (const j of jg) acumular(rows, j, P);
-  rows.forEach(r => { r.sg = r.gp - r.gc; });
-  const lista = [...rows.values()].sort((a, b) => cmpBase(a, b) || a.ord - b.ord);
-  const out = []; let i = 0;
-  while (i < lista.length) {
-    let k = i + 1;
-    while (k < lista.length && cmpBase(lista[i], lista[k]) === 0) k++;
-    const bloco = lista.slice(i, k);
-    out.push(...(bloco.length > 1 ? desempateConfronto(bloco, jg, P) : bloco));
-    i = k;
-  }
-  return out;
-}
-function grupoCompleto(E, gid) {
-  const js = E.jogos.filter(j => j.fase === 'g' && j.grupo === gid);
-  return js.length > 0 && js.every(j => j.st === 'fim' && isNum(j.ga) && isNum(j.gb));
+  const tm = new Map(E.times.map(t => [t.id, t]));
+  const linhas = g.ids.map((id, ord) => {
+    const t = tm.get(id);
+    const cotas = t ? (t.cotas || 0) : 0, camarelo = t ? (t.camarelo || 0) : 0, cvermelho = !!(t && t.cvermelho);
+    return { id, ord, cotas, camarelo, cvermelho, expulso: expulso(t), net: cotasLiquidas(t) };
+  });
+  return linhas.sort((a, b) => (a.expulso - b.expulso) || (b.net - a.net) || (b.cotas - a.cotas) || (a.ord - b.ord));
 }
 
 /* ---------- mata-mata ---------- */
@@ -11498,29 +11445,19 @@ function padraoSeeds(N) {
   for (let n = 4; n <= N; n *= 2) { const nx = []; for (const s of arr) nx.push(s, n + 1 - s); arr = nx; }
   return N === 1 ? [1] : arr;
 }
-// as N posições do 1º round, de cima para baixo (posições vizinhas formam um jogo). `bye` = folga
+// as N posições do 1º round, de cima para baixo (posições vizinhas formam um jogo). `bye` = folga.
+// Formato 'grupos': só existe depois de fechar a fase de grupos (E.bracketInicial já vem calculado e fixo — cotas
+// continuam editáveis depois disso só pra registro, sem efeito no chaveamento já sorteado).
 function posicoesMata(E) {
   const cfg = E.cfg;
   if (cfg.formato === 'mata') {
     const T = (E.seeds || []).length, N = nextPow2(Math.max(T, 2));
     return padraoSeeds(N).map(s => (s <= T ? { t: 'time', id: E.seeds[s - 1] } : { t: 'bye' }));
   }
-  const G = E.grupos.length, k = cfg.classificam, Q = G * k, N = nextPow2(Math.max(Q, 2));
-  const gid = i => E.grupos[i].id;
-  if (G === 1) return padraoSeeds(N).map(s => (s <= Q ? { t: 'grupo', g: gid(0), pos: s } : { t: 'bye' }));
-  if (N === Q && k === 2 && G % 2 === 0) {
-    // cruzamento de Copa do Mundo: 1ºA×2ºB e 1ºB×2ºA em metades opostas (só se reencontram na final)
-    const topo = [], base = [];
-    for (let b = 0; b < G / 2; b++) {
-      const a = gid(2 * b), c = gid(2 * b + 1);
-      topo.push({ t: 'grupo', g: a, pos: 1 }, { t: 'grupo', g: c, pos: 2 });
-      base.push({ t: 'grupo', g: c, pos: 1 }, { t: 'grupo', g: a, pos: 2 });
-    }
-    return [...topo, ...base];
+  if (cfg.formato === 'grupos' && E.gruposFechados && E.bracketInicial) {
+    return E.bracketInicial.map(id => (id === 'BYE' ? { t: 'bye' } : { t: 'time', id }));
   }
-  if (N === Q && k === 1) return E.grupos.map(g => ({ t: 'grupo', g: g.id, pos: 1 }));
-  // demais casos: classificados ordenados num ranking geral (resolvido quando todos os grupos acabam)
-  return padraoSeeds(N).map((s, i) => (s <= Q ? { t: 'slot', i, n: s } : { t: 'bye' }));
+  return [];
 }
 function idMata(rd, pos, terceiro) { return terceiro ? `m${rd}_t` : `m${rd}_${pos}`; }
 function novoJogoMata(rd, pos, a, b, terceiro) {
@@ -11553,16 +11490,20 @@ function nomeCurtoRodada(rd, R) {
   const n = Math.pow(2, R - 1 - rd);
   return n === 1 ? 'Final' : n === 2 ? 'Semi' : n === 4 ? 'Quarta' : n === 8 ? 'Oitava' : `Rodada ${rd + 1}`;
 }
-// ranking dos classificados de todos os grupos (para chaves sem cruzamento fixo)
-function rankingGeral(E, V) {
+// quem se classifica de cada grupo (não-expulsos, por cotas líquidas), numa lista única pronta pro chaveamento:
+// 1ºs colocados primeiro (entre si por cotas), depois os 2ºs etc. — mesma lógica de prioridade de um ranking geral
+function classificadosPorGrupo(E) {
   const k = E.cfg.classificam, out = [];
-  E.grupos.forEach((g, gi) => (V.tabelas[g.id] || []).slice(0, k).forEach((r, i) => out.push({ id: r.id, g: g.id, gi, pos: i + 1, r })));
-  return out.sort((x, y) => (x.pos - y.pos) || (y.r.pts - x.r.pts) || (y.r.sg - x.r.sg) || (y.r.gp - x.r.gp) || (y.r.v - x.r.v) || (x.gi - y.gi));
+  E.grupos.forEach((g, gi) => {
+    tabelaGrupo(E, g.id).filter(r => !r.expulso).slice(0, k)
+      .forEach((r, pos) => out.push({ id: r.id, g: g.id, gi, pos, net: r.net, cotas: r.cotas }));
+  });
+  return out.sort((x, y) => (x.pos - y.pos) || (y.net - x.net) || (y.cotas - x.cotas) || (x.gi - y.gi));
 }
-// coloca o ranking nas posições da chave e troca o de baixo quando dois do mesmo grupo se enfrentariam já no 1º jogo
-function colocarNoRanking(E, V) {
-  const rank = rankingGeral(E, V), Q = rank.length, N = nextPow2(Math.max(Q, 2));
-  const slots = padraoSeeds(N).map(s => (s <= Q ? rank[s - 1] : null));
+// arruma o 1º round pra ninguém do mesmo grupo se enfrentar de cara, quando dá pra evitar trocando com outro confronto
+function evitarMesmoGrupoNoPrimeiroJogo(rankComGrupo) {
+  const Q = rankComGrupo.length, N = nextPow2(Math.max(Q, 2));
+  const slots = padraoSeeds(N).map(s => (s <= Q ? rankComGrupo[s - 1] : null));
   const conflito = i => slots[2 * i] && slots[2 * i + 1] && slots[2 * i].g === slots[2 * i + 1].g;
   const npares = N / 2;
   for (let i = 0; i < npares; i++) {
@@ -11581,22 +11522,17 @@ function colocarNoRanking(E, V) {
 
 /* ---------- visão calculada: tudo que a tela precisa, derivado do estado ---------- */
 function computarView(E) {
-  const V = { tabelas: {}, completo: {}, todosCompletos: false, slots: null, mata: new Map(), R: 0, campeao: null, fase: 'times', stats: { times: E.times.length, jogos: 0, feitos: 0, vivo: 0, gols: 0 } };
+  const V = { tabelas: {}, mata: new Map(), R: 0, campeao: null, fase: 'times', stats: { times: E.times.length, jogos: 0, feitos: 0, vivo: 0, gols: 0, cotas: 0, camarelo: 0, vermelho: 0 } };
   const temGrupos = Array.isArray(E.grupos) && E.grupos.length > 0;
-  if (temGrupos) {
-    for (const g of E.grupos) { V.tabelas[g.id] = tabelaGrupo(E, g.id); V.completo[g.id] = grupoCompleto(E, g.id); }
-    V.todosCompletos = E.grupos.every(g => V.completo[g.id]);
-  }
+  if (temGrupos) for (const g of E.grupos) V.tabelas[g.id] = tabelaGrupo(E, g.id);
+  for (const t of E.times) { V.stats.cotas += t.cotas || 0; V.stats.camarelo += t.camarelo || 0; if (t.cvermelho) V.stats.vermelho++; }
   const mataJogos = E.jogos.filter(j => j.fase === 'm').sort((x, y) => (x.rd - y.rd) || (x.terceiro - y.terceiro) || (x.pos - y.pos));
   V.R = mataJogos.length ? Math.max(...mataJogos.map(j => j.rd)) + 1 : 0;
-  if (temGrupos && mataJogos.some(j => (j.a && j.a.t === 'slot') || (j.b && j.b.t === 'slot')) && V.todosCompletos) V.slots = colocarNoRanking(E, V);
   const res = o => {
     if (!o) return null;
     switch (o.t) {
       case 'time': return o.id;
       case 'bye': return 'BYE';
-      case 'grupo': { const t = V.tabelas[o.g]; return V.completo[o.g] && t && t[o.pos - 1] ? t[o.pos - 1].id : null; }
-      case 'slot': return V.slots ? (V.slots[o.i] || null) : null;
       case 'venc': { const r = V.mata.get(o.j); return r && r.venc ? r.venc : null; }
       case 'perd': { const r = V.mata.get(o.j); return r && r.perd ? r.perd : null; }
       default: return null;
@@ -11623,7 +11559,7 @@ function computarView(E) {
   // campeão e fase atual
   const fmt = E.cfg.formato;
   if (fmt === 'pontos') {
-    if (temGrupos && V.todosCompletos) V.campeao = V.tabelas[E.grupos[0].id][0] ? V.tabelas[E.grupos[0].id][0].id : null;
+    if (temGrupos && E.gruposFechados) { const t = V.tabelas[E.grupos[0].id]; V.campeao = t && t[0] && !t[0].expulso ? t[0].id : null; }
   } else if (V.R) {
     const fin = mataJogos.find(j => j.rd === V.R - 1 && !j.terceiro);
     const r = fin && V.mata.get(fin.id);
@@ -11633,7 +11569,7 @@ function computarView(E) {
   else if (!temGrupos && !(E.seeds && E.seeds.length)) V.fase = 'sorteio';
   else if (V.campeao) V.fase = 'campeao';
   else if (fmt === 'pontos') V.fase = 'grupos';
-  else if (fmt === 'grupos' && !V.todosCompletos) V.fase = 'grupos';
+  else if (fmt === 'grupos' && !E.gruposFechados) V.fase = 'grupos';
   else {
     const aberta = mataJogos.find(j => !V.mata.get(j.id).done && !V.mata.get(j.id).bye && !j.terceiro) || mataJogos.find(j => !V.mata.get(j.id).done && !V.mata.get(j.id).bye);
     V.fase = aberta ? 'mata:' + aberta.rd : 'mata:' + Math.max(0, V.R - 1);
@@ -11674,30 +11610,24 @@ function sanear(E) {
 
 /* ---------- ações sobre o estado (todas recebem um estado clonado e o alteram no lugar) ---------- */
 function construirEstrutura(E) {
-  const fmt = E.cfg.formato;
-  if (fmt === 'grupos' || fmt === 'pontos') {
-    const gs = E.grupos || [];
-    E.jogos = gs.flatMap(g => jogosDoGrupo(g, E.cfg.turnos));
-    if (fmt === 'grupos') E.jogos.push(...jogosMata(E));
-  } else if (fmt === 'mata') {
-    E.jogos = jogosMata(E);
-  }
+  // grupos/pontos: jogos (mata-mata) só nascem quando a fase de grupos fecha (fecharFaseDeGrupos) — até lá é só cotas/cartões
+  E.jogos = E.cfg.formato === 'mata' ? jogosMata(E) : [];
 }
 function aplicarSorteioGrupos(E, grupos) {
   E.grupos = grupos.map(g => ({ id: g.id, ids: g.ids.slice() }));
-  E.seeds = null;
+  E.seeds = null; E.gruposFechados = false; E.bracketInicial = null;
   construirEstrutura(E);
 }
 function aplicarSeeds(E, seeds) {
-  E.grupos = null; E.seeds = seeds.slice();
+  E.grupos = null; E.seeds = seeds.slice(); E.gruposFechados = false; E.bracketInicial = null;
   construirEstrutura(E);
 }
 function aplicarPontosCorridos(E) {
   E.grupos = [{ id: 'A', ids: E.times.map(t => t.id) }];
-  E.seeds = null;
+  E.seeds = null; E.gruposFechados = false; E.bracketInicial = null;
   construirEstrutura(E);
 }
-function reiniciarSorteio(E) { E.grupos = null; E.seeds = null; E.jogos = []; }
+function reiniciarSorteio(E) { E.grupos = null; E.seeds = null; E.gruposFechados = false; E.bracketInicial = null; E.jogos = []; }
 function zerarResultados(E) { E.jogos.forEach(zerarJogo); }
 function alternarTerceiro(E, ligado) {
   E.cfg.terceiro = !!ligado;
@@ -11706,6 +11636,53 @@ function alternarTerceiro(E, ligado) {
     const R = rodadasMata(E);
     if (ligado && R >= 2 && terceiroPossivel(posicoesMata(E))) E.jogos.push(novoJogoMata(R - 1, 1, { t: 'perd', j: idMata(R - 2, 0) }, { t: 'perd', j: idMata(R - 2, 1) }, true));
   }
+}
+
+/* ---------- cotas e cartões (fase de grupos) ---------- */
+function definirCotas(E, timeId, valor) {
+  const t = E.times.find(x => x.id === timeId);
+  if (!t) return { ok: false, erro: 'Time não encontrado.' };
+  t.cotas = clamp(Math.floor(Number(valor) || 0), 0, 999999);
+  return { ok: true };
+}
+function ajustarCartaoAmarelo(E, timeId, delta) {
+  const t = E.times.find(x => x.id === timeId);
+  if (!t) return { ok: false, erro: 'Time não encontrado.' };
+  t.camarelo = clamp((t.camarelo || 0) + delta, 0, 20);
+  return { ok: true };
+}
+function alternarCartaoVermelho(E, timeId) {
+  const t = E.times.find(x => x.id === timeId);
+  if (!t) return { ok: false, erro: 'Time não encontrado.' };
+  t.cvermelho = !t.cvermelho;
+  return { ok: true };
+}
+// só pode mover enquanto a fase de grupos não fechou — depois disso o mata-mata já foi sorteado com base na posição anterior
+function moverTimeDeGrupo(E, timeId, novoGrupoId) {
+  if (!E.grupos) return { ok: false, erro: 'Ainda não há grupos.' };
+  if (E.gruposFechados) return { ok: false, erro: 'A fase de grupos já foi fechada.' };
+  const alvo = E.grupos.find(g => g.id === novoGrupoId);
+  if (!alvo) return { ok: false, erro: 'Grupo não encontrado.' };
+  E.grupos.forEach(g => { g.ids = g.ids.filter(id => id !== timeId); });
+  alvo.ids.push(timeId);
+  return { ok: true };
+}
+// fecha a classificação por cotas e trava. 'grupos': monta o mata-mata com quem se classificou. 'pontos': só define o campeão (o líder do grupo único)
+function fecharFaseDeGrupos(E) {
+  if (!E.grupos || !E.grupos.length) return { ok: false, erro: 'Ainda não há grupos.' };
+  if (E.gruposFechados) return { ok: false, erro: 'A fase de grupos já está fechada.' };
+  E.gruposFechados = true;
+  if (E.cfg.formato === 'grupos') {
+    E.bracketInicial = evitarMesmoGrupoNoPrimeiroJogo(classificadosPorGrupo(E));
+    E.jogos = jogosMata(E);
+  }
+  return { ok: true };
+}
+// desfaz o fechamento (ex.: corrigir uma cota depois de fechar por engano). Cotas/cartões e os grupos continuam como estão;
+// se já tinha mata-mata sorteado, ele é apagado (não dá pra "editar" um chaveamento que já saiu, só refazer)
+function reabrirFaseDeGrupos(E) {
+  E.gruposFechados = false; E.bracketInicial = null; E.jogos = [];
+  return { ok: true };
 }
 
 // edita placar/estado de um jogo. Devolve { ok, erro? }
@@ -12124,8 +12101,8 @@ function migrar(E) {
   const base = novoEstado(E && E.titulo);
   const out = Object.assign(base, E || {});
   out.cfg = Object.assign(base.cfg, (E && E.cfg) || {});
-  out.cfg.pontos = Object.assign({ v: 3, e: 1, d: 0 }, out.cfg.pontos || {});
-  out.times = Array.isArray(out.times) ? out.times : [];
+  delete out.cfg.turnos; delete out.cfg.pontos; // extintos: grupo não tem mais jogo, só cotas/cartões
+  out.times = (Array.isArray(out.times) ? out.times : []).map(t => Object.assign({ cotas: 0, camarelo: 0, cvermelho: false }, t));
   out.jogos = Array.isArray(out.jogos) ? out.jogos : [];
   out.tema = Object.assign({}, out.tema || {});
   return out;
@@ -12192,7 +12169,9 @@ function abasDaCopa() {
   if (f === 'grupos') out.push(['grupos', 'Grupos']);
   if (f === 'pontos') out.push(['grupos', 'Classificação']);
   if (f !== 'pontos') out.push(['mata', 'Mata-mata']);
-  out.push(['jogos', 'Jogos'], ['times', 'Times']);
+  // pontos corridos não tem jogo nenhum (é só cotas/cartões): a aba "Jogos" nunca teria conteúdo
+  if (f !== 'pontos') out.push(['jogos', 'Jogos']);
+  out.push(['times', 'Times']);
   return out;
 }
 function abaPadrao() {
@@ -12203,18 +12182,24 @@ function abaPadrao() {
   return f === 'mata' ? 'mata' : 'grupos';
 }
 
+// enquanto a fase de grupos está aberta (cotas/cartões rolando, sem mata-mata ainda) os cards do meio mostram
+// Cotas/Cartões em vez de Jogos/Gols — não tem "jogo" nenhum acontecendo nessa fase
+const emFaseDeCotas = E => E.cfg.formato === 'pontos' || (E.cfg.formato === 'grupos' && !E.gruposFechados);
 function htmlCabecalho() {
   const E = S.E, V = S.V, st = V.stats;
   const logo = E.logo || '🏆';
   const img = safeUrl(logo);
   const marca = img ? `<img src="${esc(img)}" alt="">` : `<span>${esc(String(logo).slice(0, 4))}</span>`;
+  const cotas = emFaseDeCotas(E) && (E.grupos && E.grupos.length);
+  const meio = cotas
+    ? `<div class="cx-stat"><b>${st.cotas}</b><span>Cotas</span></div><div class="cx-stat"><b>${st.camarelo + st.vermelho ? `<span style="color:${st.vermelho ? 'var(--cx-bad)' : 'var(--cx-warn)'}">${st.camarelo}${st.vermelho ? '+' + st.vermelho + '🟥' : ''}</span>` : '0'}</b><span>Cartões</span></div>`
+    : `<div class="cx-stat"><b>${st.feitos}<small style="font-size:14px;color:var(--cx-mut)">/${st.jogos}</small></b><span>Jogos</span></div><div class="cx-stat"><b>${st.vivo ? `<span style="color:var(--cx-bad)">${st.vivo}</span>` : st.gols}</b><span>${st.vivo ? 'Ao vivo' : 'Gols'}</span></div>`;
   return `<header class="cx-head">
       <div class="cx-mark">${marca}</div>
       <div class="cx-ttl"><h2>${esc(E.titulo)}</h2><p>${esc(E.subtitulo || '')}</p></div>
       <div class="cx-stats">
         <div class="cx-stat"><b>${st.times}</b><span>Times</span></div>
-        <div class="cx-stat"><b>${st.feitos}<small style="font-size:14px;color:var(--cx-mut)">/${st.jogos}</small></b><span>Jogos</span></div>
-        <div class="cx-stat"><b>${st.vivo ? `<span style="color:var(--cx-bad)">${st.vivo}</span>` : st.gols}</b><span>${st.vivo ? 'Ao vivo' : 'Gols'}</span></div>
+        ${meio}
         <div class="cx-stat"><b style="font-size:${rotuloFase(V, E).length > 9 ? 17 : 24}px;line-height:${rotuloFase(V, E).length > 9 ? '24px' : '1'}">${esc(rotuloFase(V, E))}</b><span>Fase</span></div>
       </div>
     </header>
@@ -12240,7 +12225,8 @@ function htmlBarra() {
     else if (!est) b.push(f === 'pontos'
       ? `<button class="cx-btn pri" data-cx="iniciarPontos">${ico('play')}Iniciar campeonato</button>`
       : `<button class="cx-btn pri" data-cx="sorteio">${ico('shuffle')}Sortear ${f === 'mata' ? 'chaveamento' : 'grupos'}</button>`);
-    else b.push(`<button class="cx-btn" data-cx="sorteio" ${f === 'pontos' ? 'hidden' : ''}>${ico('shuffle')}Refazer sorteio</button>`);
+    else if (f !== 'mata' && !E.gruposFechados) b.push(`<button class="cx-btn pri" data-cx="fecharGrupos">${ico('check')}${f === 'pontos' ? 'Encerrar temporada' : 'Fechar grupos e sortear mata-mata'}</button>`);
+    if (est && (f === 'mata' || E.gruposFechados)) b.push(`<button class="cx-btn" data-cx="sorteio">${ico('shuffle')}Refazer sorteio</button>`);
     if (E.times.length && !est) b.push(`<button class="cx-btn" data-cx="addTimes">${ico('plus')}Times</button>`);
     b.push(`<button class="cx-btn" data-cx="config">${ico('gear')}Configurar</button>`);
     b.push(`<button class="cx-btn" data-cx="tema">${ico('drop')}Tema</button>`);
@@ -12266,7 +12252,7 @@ function vazio(icone, titulo, texto, botoes) {
 function vazioSemEstrutura() {
   const f = S.E.cfg.formato;
   if (!S.E.times.length) return vazio('users', 'Comece pelos times', S.admin ? 'Adicione clubes do Brasileirão ou qualquer outro nome para montar a copa.' : 'Os times ainda não foram cadastrados.', S.admin ? `<button class="cx-btn pri" data-cx="addTimes">${ico('plus')}Adicionar times</button>` : '');
-  const txt = f === 'pontos' ? 'Todos jogam contra todos e o líder no fim é o campeão.' : f === 'mata' ? 'O sorteio define o chaveamento do mata-mata.' : 'O sorteio distribui os times em grupos e monta o mata-mata.';
+  const txt = f === 'pontos' ? 'Um grupo só: acompanhe as cotas e cartões de cada time e encerre quando quiser definir a campeã.' : f === 'mata' ? 'O sorteio define o chaveamento do mata-mata.' : 'O sorteio distribui os times em grupos. Lá você acompanha cotas e cartões e, quando quiser, fecha a fase e sorteia o mata-mata.';
   return vazio('shuffle', 'Tudo pronto para começar', S.admin ? txt : 'A copa ainda não começou. Assim que o sorteio sair, ele aparece aqui.',
     S.admin ? `<button class="cx-btn pri" data-cx="${f === 'pontos' ? 'iniciarPontos' : 'sorteio'}">${ico(f === 'pontos' ? 'play' : 'shuffle')}${f === 'pontos' ? 'Iniciar campeonato' : 'Sortear'}</button><button class="cx-btn" data-cx="config">${ico('gear')}Configurar</button>` : '');
 }
@@ -12290,27 +12276,27 @@ function htmlLinhaJogo(j, o) {
   return `<button class="cx-mrow ${j.st} ${S.pulse.has(j.id) ? 'pulse' : ''}" data-cx="jogo" data-id="${esc(j.id)}" aria-label="Abrir jogo">${nome(L.a, clsA)}<span class="cx-msc">${mid}</span>${nome(L.b, clsB)}<span class="cx-mst">${badge}${esc(statusRotulo(j))}</span></button>`;
 }
 
-/* ---------- grupos / classificação ---------- */
+/* ---------- grupos / classificação: por Cotas (editadas pelo admin) e Cartões (amarelo tira 1 cota, 3 amarelos ou 1 vermelho = expulso) ---------- */
+function htmlCartoes(r) {
+  if (r.cvermelho) return `<span class="cx-cart verm" title="Cartão vermelho — expulso">🟥</span>`;
+  if (r.camarelo >= 3) return `<span class="cx-cart verm" title="3 cartões amarelos — expulso">🟨×${r.camarelo}</span>`;
+  if (r.camarelo > 0) return `<span class="cx-cart am" title="${r.camarelo} cartão(ões) amarelo(s) — tira ${r.camarelo} cota(s)">🟨×${r.camarelo}</span>`;
+  return `<span class="cx-cart">—</span>`;
+}
 function htmlTabelaGrupo(g, gi) {
   const E = S.E, V = S.V, pontos = E.cfg.formato === 'pontos', tab = V.tabelas[g.id] || [], k = pontos ? 0 : E.cfg.classificam;
-  const jg = E.jogos.filter(j => j.fase === 'g' && j.grupo === g.id), feitos = jg.filter(j => j.st === 'fim').length;
-  const cor = corGrupo(gi), aberto = pontos ? true : !!S.abertos[g.id];
-  const rodadas = [...new Set(jg.map(j => j.rodada))].sort((a, b) => a - b);
-  const cab = pontos
-    ? '<th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th>'
-    : '<th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th>';
+  const cor = corGrupo(gi), podeEditar = S.admin && !E.gruposFechados;
   const linhas = tab.map((r, i) => {
     const t = timePorId(r.id) || { n: '?', s: '?', c: ['#888', '#fff'] };
-    const cls = i < k ? 'q' : (pontos && i === 0 && feitos ? 'lead' : '');
-    const sg = (r.sg > 0 ? '+' : '') + r.sg;
-    return `<tr class="${cls}"><td><span class="cx-rk">${i + 1}</span></td><td class="nm"><div class="cx-tm">${escudo(t)}<span>${esc(t.n)}</span></div></td><td><b>${r.pts}</b></td><td>${r.j}</td><td>${r.v}</td><td>${r.e}</td><td>${r.d}</td>${pontos ? `<td>${r.gp}</td><td>${r.gc}</td>` : ''}<td>${sg}</td></tr>`;
+    const cls = r.expulso ? 'exp' : i < k ? 'q' : '';
+    const conteudo = `<td><span class="cx-rk">${r.expulso ? '×' : i + 1}</span></td><td class="nm"><div class="cx-tm">${escudo(t)}<span>${esc(t.n)}</span>${r.expulso ? '<small class="cx-exptag">EXPULSO</small>' : ''}</div></td><td><b>${r.cotas}</b></td><td>${htmlCartoes(r)}</td>`;
+    return S.admin
+      ? `<tr class="${cls} clic" data-cx="editCotas" data-id="${esc(r.id)}" tabindex="0" role="button" aria-label="Editar cotas e cartões de ${esc(t.n)}">${conteudo}</tr>`
+      : `<tr class="${cls}">${conteudo}</tr>`;
   }).join('');
-  const jogos = rodadas.map(r => `<div class="cx-rod">Rodada ${r}</div>${jg.filter(j => j.rodada === r).map(j => htmlLinhaJogo(j)).join('')}`).join('');
   return `<article class="cx-card cx-hov cx-gcard" style="--gc:${cor};--i:${gi}">
-      <div class="cx-ghead"><span class="cx-gbadge">${pontos ? '★' : esc(g.id)}</span><b>${pontos ? 'Tabela do campeonato' : 'Grupo ' + esc(g.id)}</b><span class="pr">${feitos}/${jg.length} jogos</span><div class="cx-gbar"><i style="width:${jg.length ? Math.round(feitos * 100 / jg.length) : 0}%"></i></div></div>
-      <table class="cx-tbl"><thead><tr>${cab}</tr></thead><tbody>${linhas}</tbody></table>
-      ${pontos ? '' : `<button class="cx-gtoggle" data-cx="toggleJogos" data-g="${esc(g.id)}" aria-expanded="${aberto}">Jogos do grupo ${ico('down')}</button>`}
-      <div class="cx-gjogos" data-ctx ${aberto ? '' : 'hidden'}>${jogos}</div>
+      <div class="cx-ghead"><span class="cx-gbadge">${pontos ? '★' : esc(g.id)}</span><b>${pontos ? 'Tabela do campeonato' : 'Grupo ' + esc(g.id)}</b><span class="pr">${tab.length} time${tab.length !== 1 ? 's' : ''}</span></div>
+      <table class="cx-tbl"><thead><tr><th>#</th><th>Time</th><th>Cotas</th><th>Cartões</th></tr></thead><tbody>${linhas}</tbody></table>
     </article>`;
 }
 function vGrupos() {
@@ -12318,7 +12304,10 @@ function vGrupos() {
   if (!E.grupos || !E.grupos.length) return vazioSemEstrutura();
   const pontos = E.cfg.formato === 'pontos';
   const info = pontos ? '' : `<div class="cx-sec">${E.grupos.length} grupo${E.grupos.length > 1 ? 's' : ''} · classificam ${E.cfg.classificam} por grupo</div>`;
-  return `${info}<div class="cx-ggrid" style="${pontos ? 'grid-template-columns:minmax(0,760px)' : ''}">${E.grupos.map((g, i) => htmlTabelaGrupo(g, i)).join('')}</div>${pontos ? '' : '<p class="cx-hint" style="margin-top:14px"><span style="color:var(--cx-ok)">▍</span> Faixa verde = posição que classifica para o mata-mata.</p>'}`;
+  const dica = S.admin
+    ? (pontos ? 'Clique num time pra ajustar cotas e cartões.' : (E.gruposFechados ? 'A fase de grupos está fechada: cotas e cartões continuam editáveis pra registro, mas não mudam mais o mata-mata já sorteado.' : 'Clique num time pra ajustar cotas, cartões, ou mover pra outro grupo.'))
+    : (pontos ? 'Quem está na frente em cotas lidera.' : 'Faixa verde = posição que classifica para o mata-mata.');
+  return `${info}<div class="cx-ggrid" style="${pontos ? 'grid-template-columns:minmax(0,760px)' : ''}">${E.grupos.map((g, i) => htmlTabelaGrupo(g, i)).join('')}</div><p class="cx-hint" style="margin-top:14px">${esc(dica)}</p>`;
 }
 
 /* ---------- mata-mata ---------- */
@@ -12678,7 +12667,8 @@ async function salvarTime(id) {
   if (S.E.times.some(t => t.id !== id && t.n.toLowerCase() === f.n.toLowerCase())) return avisar('Já existe um time com esse nome.', 'err');
   const r = await mutar(E => {
     const t = E.times.find(x => x.id === id); if (!t) return { ok: false, erro: 'Time não encontrado.' };
-    const novo = novoTime({ id, n: f.n, s: f.s, c1: f.c1, c2: f.c2, logo: f.logo, sub: f.sub, cab: f.cab, ser: t.ser });
+    // preserva cotas/cartões: editar nome/cor não pode apagar o que já foi apurado pro time
+    const novo = novoTime({ id, n: f.n, s: f.s, c1: f.c1, c2: f.c2, logo: f.logo, sub: f.sub, cab: f.cab, ser: t.ser, cotas: t.cotas, camarelo: t.camarelo, cvermelho: t.cvermelho });
     Object.assign(t, novo);
   }, { rot: 'Editar time' });
   if (r && r.ok) fecharModal(S.modais.find(m => m.dataset.kind === 'time'));
@@ -12691,6 +12681,64 @@ async function excluirTime(id) {
   if (r && r.ok) fecharModal(S.modais.find(m => m.dataset.kind === 'time'));
 }
 
+/* ═════════ COTAS E CARTÕES (fase de grupos) ═════════ */
+function abrirEditarCotas(timeId) {
+  const t = timePorId(timeId); if (!t || !S.admin) return;
+  S.cotasAlvo = timeId;
+  abrirModal(htmlEditarCotas(), { kind: 'cotas', foco: false, onClose: () => { S.cotasAlvo = null; } });
+}
+function htmlEditarCotas() {
+  const t = timePorId(S.cotasAlvo); if (!t) return '';
+  const E = S.E, grupoAtual = (E.grupos || []).find(g => g.ids.includes(t.id));
+  const podeMover = !E.gruposFechados && E.grupos && E.grupos.length > 1;
+  const exp = expulso(t);
+  const corpo = `<div class="cx-prev">${escudo(t)}<div style="min-width:0"><b style="font-size:15px">${esc(t.n)}</b>${grupoAtual ? `<div class="cx-hint">Grupo ${esc(grupoAtual.id)}</div>` : ''}</div></div>
+    ${exp ? `<div class="cx-warn bad">${ico('alert')}<div>Expulso — não entra na classificação, mesmo tendo mais cotas que os outros.</div></div>` : ''}
+    <div class="cx-f"><label for="cx-cot-n">Cotas</label><input class="cx-in" id="cx-cot-n" type="number" inputmode="numeric" min="0" step="1" value="${t.cotas}" data-cxi="cotasNum"></div>
+    <div class="cx-lbl" style="margin:14px 0 8px">Cartões</div>
+    <div class="cx-row" style="align-items:flex-end;flex-wrap:wrap">
+      <div class="cx-f" style="margin:0;min-width:170px"><label>Amarelos <span class="cx-hint" style="font-weight:400">· cada um tira 1 cota, 3 expulsam</span></label>
+        <div class="cx-step2"><button type="button" data-cx="cotCartaoAm" data-d="-1" aria-label="Menos um amarelo">−</button><output>${t.camarelo}</output><button type="button" data-cx="cotCartaoAm" data-d="1" aria-label="Mais um amarelo">+</button></div>
+      </div>
+      <button type="button" class="cx-btn ${t.cvermelho ? 'bad' : ''}" data-cx="cotCartaoVerm">🟥 ${t.cvermelho ? 'Remover cartão vermelho' : 'Aplicar cartão vermelho'}</button>
+    </div>
+    ${podeMover ? `<div class="cx-f" style="margin-top:16px"><label for="cx-cot-grp">Mover para o grupo</label><select class="cx-sel" id="cx-cot-grp" data-cxi="cotasGrupo">${E.grupos.map(g => `<option value="${esc(g.id)}" ${grupoAtual && grupoAtual.id === g.id ? 'selected' : ''}>Grupo ${esc(g.id)}</option>`).join('')}</select></div>` : ''}`;
+  return moldura({ titulo: 'Cotas e cartões', sub: t.n, cls: 'sm', corpo, rodape: `<button class="cx-btn pri blk" data-cx="fechar">Pronto</button>` });
+}
+function repintarEditarCotas() {
+  const ovl = S.modais.find(m => m.dataset.kind === 'cotas'); if (!ovl || !S.cotasAlvo) return;
+  ovl.innerHTML = htmlEditarCotas();
+}
+
+/* ═════════ FECHAR A FASE DE GRUPOS ═════════ */
+function abrirFecharGrupos() {
+  if (!S.admin) return;
+  const E = S.E, pontos = E.cfg.formato === 'pontos';
+  if (pontos) {
+    const t = tabelaGrupo(E, E.grupos[0].id), lider = t.find(r => !r.expulso);
+    const nome = lider ? (timePorId(lider.id) || {}).n : null;
+    confirmar({ titulo: 'Encerrar temporada?', msg: nome ? `"${nome}" está na liderança e vira campeã. Dá pra reabrir depois, se precisar corrigir algo.` : 'Ainda não há um líder definido (empate ou só times expulsos).', ok: 'Encerrar', perigo: true })
+      .then(ok => { if (ok) mutar(E2 => fecharFaseDeGrupos(E2), { rot: 'Encerrar temporada', perguntar: false }); });
+    return;
+  }
+  abrirModal(htmlFecharGrupos(), { kind: 'fecharGrupos', foco: false });
+}
+function htmlFecharGrupos() {
+  const E = S.E;
+  const porGrupo = E.grupos.map((g, gi) => ({ g, gi, fila: tabelaGrupo(E, g.id) }));
+  const corpo = `<p class="cx-hint" style="margin:0 0 14px">Isso trava as cotas e cartões de agora e sorteia o mata-mata com quem se classificou. Dá pra reabrir depois (menu Mais) se precisar corrigir algo, mas o mata-mata já sorteado é apagado.</p>
+    <div class="cx-draw">${porGrupo.map(({ g, gi, fila }) => `<div class="cx-dg" style="--gc:${corGrupo(gi)}"><h5><span class="cx-gbadge">${esc(g.id)}</span>Grupo ${esc(g.id)}</h5><ul>${fila.map((r, i) => {
+    const t = timePorId(r.id) || { n: '?', s: '?', c: ['#888', '#fff'] }, vai = !r.expulso && i < E.cfg.classificam;
+    return `<li style="--i:${gi * 4 + i};opacity:${r.expulso ? '.5' : '1'}">${escudo(t)}<span>${esc(t.n)}${r.expulso ? ' · expulso' : ''}</span><b style="color:${vai ? 'var(--cx-ok)' : 'var(--cx-mut)'};font-family:var(--cx-font-d);font-size:13px;flex:none">${r.cotas}</b></li>`;
+  }).join('')}</ul></div>`).join('')}</div>
+    <p class="cx-hint" style="margin-top:12px"><span style="color:var(--cx-ok)">▍</span> vai pro mata-mata (classificam ${E.cfg.classificam} por grupo).</p>`;
+  return moldura({ titulo: 'Fechar fase de grupos', sub: 'Confira antes de sortear o mata-mata', corpo, cls: 'wide', rodape: `<button class="cx-btn ghost" data-cx="fechar">Cancelar</button><span class="sp"></span><button class="cx-btn pri" data-cx="fecharGruposOk">${ico('check')}Fechar e sortear mata-mata</button>` });
+}
+async function confirmarFecharGrupos() {
+  const r = await mutar(E => fecharFaseDeGrupos(E), { rot: 'Fechar fase de grupos', perguntar: false });
+  if (r && r.ok) { fecharModal(S.modais.find(m => m.dataset.kind === 'fecharGrupos')); S.aba = 'mata'; S.animar = true; render(); avisar('Mata-mata sorteado!'); }
+}
+
 /* ═════════ CONFIGURAÇÃO ═════════ */
 function abrirConfig() {
   if (!S.admin) return;
@@ -12700,16 +12748,16 @@ function abrirConfig() {
 }
 function estruturalMudou(d) {
   const a = S.E.cfg, b = d.cfg;
-  return a.formato !== b.formato || (b.formato === 'grupos' && (a.nGrupos !== b.nGrupos || a.classificam !== b.classificam)) || (b.formato !== 'mata' && a.turnos !== b.turnos);
+  return a.formato !== b.formato || (b.formato === 'grupos' && (a.nGrupos !== b.nGrupos || a.classificam !== b.classificam));
 }
 function resumoCfg(d) {
   const c = d.cfg, T = S.E.times.length;
   if (!T) return 'Depois de adicionar os times, aqui aparece o resumo do formato.';
-  if (c.formato === 'pontos') return `${T} times jogam todos contra todos${c.turnos === 2 ? ' (ida e volta)' : ''}: ${c.turnos === 2 ? T * (T - 1) : T * (T - 1) / 2} jogos. O líder no fim é o campeão.`;
+  if (c.formato === 'pontos') return `${T} times, todos no mesmo grupo. Cotas e cartões definem quem lidera; você encerra a temporada quando quiser.`;
   if (c.formato === 'mata') { const N = nextPow2(Math.max(T, 2)); return `${T} times em chave de ${N} vagas${N > T ? ` (${N - T} folga${N - T > 1 ? 's' : ''} para os cabeças de chave)` : ''}: ${nomeRodadaMata(0, log2(N))} até a final.`; }
   const q = c.nGrupos * c.classificam, N = nextPow2(Math.max(q, 2));
   const tam = Math.floor(T / c.nGrupos), extra = T % c.nGrupos;
-  return `${c.nGrupos} grupo${c.nGrupos > 1 ? 's' : ''} de ${tam}${extra ? ` ou ${tam + 1}` : ''} times. Classificam ${c.classificam} por grupo (${q}) → ${nomeRodadaMata(0, log2(N))}${N > q ? ` (${N - q} folga${N - q > 1 ? 's' : ''})` : ''}.`;
+  return `${c.nGrupos} grupo${c.nGrupos > 1 ? 's' : ''} de ${tam}${extra ? ` ou ${tam + 1}` : ''} times, por cotas e cartões. Classificam ${c.classificam} por grupo (${q}) → ${nomeRodadaMata(0, log2(N))}${N > q ? ` (${N - q} folga${N - q > 1 ? 's' : ''})` : ''} quando você fechar a fase de grupos.`;
 }
 function htmlConfig() {
   const d = S.cfgDraft, c = d.cfg, T = S.E.times.length;
@@ -12723,12 +12771,10 @@ function htmlConfig() {
     <div class="cx-f"><label for="cx-c-logo">Ícone (emoji ou imagem)</label><div class="cx-photo"><input class="cx-in" id="cx-c-logo" maxlength="300" value="${esc(d.logo)}" data-cxi="cfgTexto" data-k="logo" placeholder="🏆"><button class="cx-btn sm" type="button" data-cx="upload" data-alvo="cx-c-logo" data-pasta="copa-logos">${ico('upload')}</button></div></div></div>
     <div class="cx-lbl" style="margin-bottom:8px">Formato</div><div class="cx-opts">${fmt('grupos', 'Fase de grupos + mata-mata', 'Estilo Copa do Mundo: grupos, depois eliminatórias até a final.')}${fmt('mata', 'Mata-mata direto', 'Chave eliminatória desde o começo (com folga se o número de times não for potência de 2).')}${fmt('pontos', 'Pontos corridos', 'Estilo Brasileirão: todos contra todos, o líder é o campeão.')}</div>
     ${c.formato === 'grupos' ? `<div class="cx-row"><div class="cx-f"><label>Quantidade de grupos</label>${stepper('nGrupos')}</div><div class="cx-f"><label>Classificam por grupo</label>${stepper('classificam')}</div></div>` : ''}
-    ${c.formato !== 'mata' ? tog('turnos', 'Ida e volta', c.formato === 'pontos' ? 'Cada dupla se enfrenta duas vezes (como no Brasileirão).' : 'Cada dupla do grupo se enfrenta duas vezes.') : ''}
     ${c.formato !== 'pontos' ? tog('terceiro', 'Disputa de 3º lugar', 'Os perdedores das semifinais jogam entre si.') : ''}
-    <div class="cx-lbl" style="margin:6px 0 8px">Pontuação</div><div class="cx-row"><div class="cx-f"><label>Vitória</label><input class="cx-in" type="number" min="0" max="9" value="${c.pontos.v}" data-cxi="cfgPts" data-k="v"></div><div class="cx-f"><label>Empate</label><input class="cx-in" type="number" min="0" max="9" value="${c.pontos.e}" data-cxi="cfgPts" data-k="e"></div><div class="cx-f"><label>Derrota</label><input class="cx-in" type="number" min="0" max="9" value="${c.pontos.d}" data-cxi="cfgPts" data-k="d"></div></div>
     <div class="cx-prev" style="margin-bottom:0"><div class="cx-hint" style="color:var(--cx-text)" id="cx-cfg-res">${esc(resumoCfg(d))}</div></div>
     ${erros.length ? `<div class="cx-warn" style="margin-top:14px">${ico('alert')}<div>${esc(erros[0])}</div></div>` : ''}
-    ${estr ? `<div class="cx-warn bad" style="margin-top:14px">${ico('alert')}<div>Mudar o formato, os grupos ou a ida e volta <b>refaz o sorteio e apaga todos os jogos e resultados</b>. Os times continuam na copa.</div></div>` : ''}`;
+    ${estr ? `<div class="cx-warn bad" style="margin-top:14px">${ico('alert')}<div>Mudar o formato ou os grupos <b>refaz o sorteio</b> (volta pra fase de times/cotas). Os times continuam na copa, com as cotas e cartões que já tiverem.</div></div>` : ''}`;
   return moldura({ titulo: 'Configurar copa', sub: 'Formato e regras', corpo, rodape: `<button class="cx-btn ghost" data-cx="fechar">Cancelar</button><span class="sp"></span><button class="cx-btn pri" data-cx="cfgSalvar">Salvar</button>`, cls: '' });
 }
 function repintarConfig() {
@@ -12849,8 +12895,9 @@ function abrirMais() {
     it('copas', 'layers', 'Copas', 'Abrir outra copa ou criar uma nova'),
     !S.meta.ativo ? it('tornarAtivaAtual', 'star', 'Tornar esta a copa vigente', 'É a que aparece para todo mundo') : '',
     V.campeao ? it('historico', 'book', 'Registrar campeã no histórico', 'Adiciona em "Campeões por edição"') : '',
-    temEstrutura(E) ? it('zerar', 'refresh', 'Zerar resultados', 'Mantém times e sorteio, limpa todos os placares') : '',
-    temEstrutura(E) ? it('resetSorteio', 'shuffle', f === 'pontos' ? 'Reiniciar campeonato' : 'Refazer sorteio', 'Apaga os jogos e volta ao sorteio') : '',
+    E.gruposFechados ? it('reabrirGrupos', 'undo', f === 'pontos' ? 'Reabrir temporada' : 'Reabrir fase de grupos', f === 'pontos' ? 'Tira a campeã, volta a aceitar cotas/cartões' : 'Apaga o mata-mata sorteado; cotas e grupos continuam') : '',
+    E.jogos.length ? it('zerar', 'refresh', 'Zerar resultados do mata-mata', 'Mantém o chaveamento, limpa os placares') : '',
+    temEstrutura(E) ? it('resetSorteio', 'shuffle', f === 'pontos' ? 'Reiniciar temporada' : 'Refazer sorteio', 'Apaga tudo isso e volta pra fase de times') : '',
     it('excluirAtual', 'trash', 'Excluir esta copa', 'Não dá para desfazer', 'bad'),
   ].filter(Boolean).join('');
   abrirModal(moldura({ titulo: 'Mais opções', cls: 'sm', corpo: `<div class="cx-menu">${itens}</div>` }), { kind: 'mais', foco: false });
@@ -12883,11 +12930,6 @@ const ehAdminAgora = () => (typeof isAdmin === 'function' ? !!isAdmin() : !!wind
 
 const ACOES = {
   aba(el) { S.aba = el.dataset.a; S.animar = true; render(); },
-  toggleJogos(el) {
-    const g = el.dataset.g; S.abertos[g] = !S.abertos[g];
-    const box = el.nextElementSibling; if (box) box.hidden = !S.abertos[g];
-    el.setAttribute('aria-expanded', String(!!S.abertos[g]));
-  },
   jogo(el) {
     const cont = el.closest('[data-ctx]');
     const ids = cont ? $$('[data-cx="jogo"]', cont).map(x => x.dataset.id) : [el.dataset.id];
@@ -12959,7 +13001,7 @@ const ACOES = {
     else c.classificam = clamp(c.classificam + d, 1, T ? Math.max(1, tamanhoMinGrupo(T, c.nGrupos)) : 8);
     repintarConfig();
   },
-  cfgTog(el) { const c = S.cfgDraft.cfg, k = el.dataset.k; if (k === 'turnos') c.turnos = c.turnos === 2 ? 1 : 2; else c[k] = !c[k]; repintarConfig(); },
+  cfgTog(el) { const c = S.cfgDraft.cfg, k = el.dataset.k; c[k] = !c[k]; repintarConfig(); },
   cfgSalvar: () => salvarConfig(),
 
   /* sorteio */
@@ -12969,6 +13011,24 @@ const ACOES = {
     const i = +el.dataset.i, j = i + (+el.dataset.d), a = S.sorteio.seeds;
     if (j < 0 || j >= a.length) return;
     [a[i], a[j]] = [a[j], a[i]]; repintarSorteio();
+  },
+
+  /* fase de grupos: cotas, cartões, mover de grupo, fechar/reabrir */
+  editCotas(el) { abrirEditarCotas(el.dataset.id); },
+  cotCartaoAm(el) {
+    const id = S.cotasAlvo; if (!id) return;
+    mutar(E => ajustarCartaoAmarelo(E, id, +el.dataset.d), { rot: 'Cartão amarelo', coal: 'am:' + id, perguntar: false }).then(() => repintarEditarCotas());
+  },
+  cotCartaoVerm() {
+    const id = S.cotasAlvo; if (!id) return;
+    mutar(E => alternarCartaoVermelho(E, id), { rot: 'Cartão vermelho', perguntar: false }).then(() => repintarEditarCotas());
+  },
+  fecharGrupos: () => abrirFecharGrupos(),
+  fecharGruposOk: () => confirmarFecharGrupos(),
+  reabrirGrupos() {
+    fecharModal(S.modais.find(m => m.dataset.kind === 'mais'));
+    confirmar({ titulo: S.E.cfg.formato === 'pontos' ? 'Reabrir temporada?' : 'Reabrir fase de grupos?', msg: S.E.cfg.formato === 'pontos' ? 'Volta a aceitar ajustes de cotas/cartões sem campeã definida. Você encerra de novo quando quiser.' : 'O mata-mata já sorteado é apagado. Cotas, cartões e os grupos continuam como estão.', ok: 'Reabrir', perigo: true })
+      .then(ok => { if (ok) mutar(E => reabrirFaseDeGrupos(E), { rot: 'Reabrir fase de grupos', perguntar: false }); });
   },
 
   /* tema */
@@ -13060,6 +13120,10 @@ const EIN = { // evento "input" (a cada tecla / arraste)
     alterarTema(T => { T[k] = v; }, false);
     const l = document.getElementById('cx-v-' + k); if (l) l.textContent = v + (k === 'radius' ? 'px' : '%');
   },
+  cotasNum(el) {
+    const id = S.cotasAlvo; if (!id) return;
+    mutar(E => definirCotas(E, id, el.value), { rot: 'Cotas', coal: 'cotas:' + id, perguntar: false });
+  },
 };
 const ECH = { // evento "change" (ao confirmar)
   rodada(el) { S.rodadaSel = el.value; render(); },
@@ -13076,7 +13140,10 @@ const ECH = { // evento "change" (ao confirmar)
     s.grupos.forEach(g => { g.ids = g.ids.filter(x => x !== id); });
     dest.ids.push(id); repintarSorteio();
   },
-  cfgPts(el) { S.cfgDraft.cfg.pontos[el.dataset.k] = clamp(parseInt(el.value, 10) || 0, 0, 9); },
+  cotasGrupo(el) {
+    const id = S.cotasAlvo; if (!id) return;
+    mutar(E => moverTimeDeGrupo(E, id, el.value), { rot: 'Mover de grupo', perguntar: false }).then(r => { if (r && r.ok) repintarEditarCotas(); });
+  },
   temaHex(el) {
     const k = el.dataset.k; let v = el.value.trim(); if (v && v[0] !== '#') v = '#' + v;
     if (!isHex(v)) { avisar('Use uma cor no formato #RRGGBB.', 'err'); return repintarTema(); }
@@ -13188,7 +13255,8 @@ window.CX = {
   abrir: montar, sair,
   // ganchos usados só nos testes
   _S: S, _acoes: ACOES, _abrirCopa: abrirCopa, _montar: montar, _render: render, _salvarAgora: salvarAgora,
-  _engine: { computarView, definirJogo, sanear, tabelaGrupo, aplicarSorteioGrupos, aplicarSeeds, novoEstado, novoTime, validarCfg, sortearGrupos, sortearSeeds, clone, CATALOGO },
+  _engine: { computarView, definirJogo, sanear, tabelaGrupo, aplicarSorteioGrupos, aplicarSeeds, aplicarPontosCorridos, novoEstado, novoTime, validarCfg, sortearGrupos, sortearSeeds, clone,
+    CATALOGO, definirCotas, ajustarCartaoAmarelo, alternarCartaoVermelho, moverTimeDeGrupo, fecharFaseDeGrupos, reabrirFaseDeGrupos, classificadosPorGrupo, expulso, cotasLiquidas, reiniciarSorteio },
 };
 })();
 </script>
