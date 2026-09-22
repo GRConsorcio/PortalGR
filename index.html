@@ -11947,6 +11947,7 @@ const ICONS = {
   drop: '<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>',
   alert: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
   play: '<polygon points="5 3 19 12 5 21 5 3"/>',
+  pause: '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>',
   list: '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
   layers: '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
   grid: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
@@ -11985,6 +11986,7 @@ const S = {
   modais: [], picker: null, jogoAberto: null,
   salvando: false, tSalvar: 0, tRetry: 0, remotoPendente: null, ix: 0, iw: 0,
   store: null,
+  apresent: false, apresentI: 0,
 };
 const storeAtual = () => S.store || (window.CX_STORE_OVERRIDE) || storeSB;
 function avisar(msg, tipo) {
@@ -12329,15 +12331,24 @@ function htmlTabelaGrupo(g, gi) {
       <table class="cx-tbl"><thead><tr><th>#</th><th>Time</th><th>Cotas</th><th>Cartões</th>${S.admin ? '<th></th>' : ''}</tr></thead><tbody>${linhas}</tbody></table>
     </article>`;
 }
+function htmlApresentBtn(ativo) {
+  return `<button class="cx-chip ${ativo ? 'on' : ''}" style="margin-left:auto" data-cx="apresentToggle" aria-pressed="${ativo}">${ico(ativo ? 'pause' : 'play')} ${ativo ? 'Sair da apresentação' : 'Apresentação'}</button>`;
+}
 function vGrupos() {
   const E = S.E;
   if (!E.grupos || !E.grupos.length) return vazioSemEstrutura();
   const pontos = E.cfg.formato === 'pontos';
-  const info = pontos ? '' : `<div class="cx-sec">${E.grupos.length} grupo${E.grupos.length > 1 ? 's' : ''} · classificam ${E.cfg.classificam} por grupo</div>`;
+  const multi = !pontos && E.grupos.length > 1;
+  const info = pontos ? '' : `<div class="cx-sec">${E.grupos.length} grupo${E.grupos.length > 1 ? 's' : ''} · classificam ${E.cfg.classificam} por grupo${multi ? htmlApresentBtn(S.apresent) : ''}</div>`;
   const comIcone = S.admin && !(!pontos && E.gruposFechados); // só quando o lápis de editar realmente aparece nas linhas
   const dica = S.admin
     ? (pontos ? 'Toque no lápis pra ajustar cotas e cartões de um time.' : (E.gruposFechados ? 'A fase de grupos está fechada: cotas e cartões continuam editáveis pra registro, mas não mudam mais o mata-mata já sorteado.' : 'Toque no lápis pra ajustar cotas, cartões, ou mover o time pra outro grupo.'))
     : (pontos ? 'Quem está na frente em cotas lidera.' : 'Faixa verde = posição que classifica para o mata-mata.');
+  if (multi && S.apresent) {
+    const i = clamp(S.apresentI, 0, E.grupos.length - 1);
+    const dots = E.grupos.map((g, gi) => `<button class="cx-adot ${gi === i ? 'on' : ''}" data-cx="apresentDot" data-i="${gi}" aria-label="Ir para o grupo ${esc(g.id)}"></button>`).join('');
+    return `${info}<div class="cx-ggrid cx-apresent" style="grid-template-columns:minmax(0,520px)"><div data-cx="apresentProx" role="button" tabindex="0" aria-label="Próximo grupo" title="Toque para passar para o próximo grupo">${htmlTabelaGrupo(E.grupos[i], i)}</div></div><div class="cx-adots">${dots}</div><p class="cx-hint" style="margin-top:10px">${ico('play')} Passando os grupos sozinho — toque no card ou nas bolinhas pra pular.</p>`;
+  }
   return `${info}<div class="cx-ggrid" style="${pontos ? 'grid-template-columns:minmax(0,760px)' : ''}">${E.grupos.map((g, i) => htmlTabelaGrupo(g, i)).join('')}</div><p class="cx-hint" style="margin-top:14px">${comIcone ? ico('edit') + ' ' : ''}${esc(dica)}</p>`;
 }
 
@@ -12959,8 +12970,27 @@ async function registrarHistorico() {
 const jogoAtual = () => (S.jogoAberto ? jogoPorId(S.jogoAberto.id) : null);
 const ehAdminAgora = () => (typeof isAdmin === 'function' ? !!isAdmin() : !!window.__cxAdmin);
 
+/* ---------- apresentação: passa os grupos sozinho (clicar também avança) ---------- */
+let apresentTimer = null;
+function apresentarAgendar() {
+  clearTimeout(apresentTimer);
+  apresentTimer = setTimeout(() => {
+    if (!S.apresent || !S.E || !S.E.grupos || !S.E.grupos.length) return;
+    S.apresentI = (S.apresentI + 1) % S.E.grupos.length; S.animar = true; render(); apresentarAgendar();
+  }, 6500);
+}
+function apresentarLigar() { S.apresent = true; S.apresentI = 0; S.animar = true; render(); apresentarAgendar(); }
+function apresentarDesligar() { S.apresent = false; clearTimeout(apresentTimer); apresentTimer = null; }
+function apresentarProx() {
+  if (!S.E || !S.E.grupos || !S.E.grupos.length) return;
+  S.apresentI = (S.apresentI + 1) % S.E.grupos.length; S.animar = true; render(); apresentarAgendar();
+}
+
 const ACOES = {
-  aba(el) { S.aba = el.dataset.a; S.animar = true; render(); },
+  aba(el) { if (S.apresent && el.dataset.a !== 'grupos') apresentarDesligar(); S.aba = el.dataset.a; S.animar = true; render(); },
+  apresentToggle() { if (S.apresent) apresentarDesligar(); else apresentarLigar(); render(); },
+  apresentProx() { apresentarProx(); },
+  apresentDot(el) { const i = +el.dataset.i; if (!Number.isFinite(i)) return; S.apresentI = i; S.animar = true; render(); apresentarAgendar(); },
   jogo(el) {
     const cont = el.closest('[data-ctx]');
     const ids = cont ? $$('[data-cx="jogo"]', cont).map(x => x.dataset.id) : [el.dataset.id];
@@ -13276,6 +13306,7 @@ async function montar() {
   S.carregando = false; render(); assinar();
 }
 function sair() {
+  apresentarDesligar();
   clearTimeout(S.tSalvar);
   if (S.admin && S.salvo === 'sujo') salvarAgora(); // não perde a última alteração ao trocar de aba
   try { storeAtual().desassinar(); } catch (e) { /* já solto */ }
