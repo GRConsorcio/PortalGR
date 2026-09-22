@@ -11239,12 +11239,11 @@ if('serviceWorker' in navigator){
    COPA GR (aba Copa) — app novo (times, sorteio, grupos, mata-mata, tema editavel).
    Tudo dentro de uma IIFE: nao declara nada global alem de window.CX. So le sb/toast/el/esc/isAdmin/allCopaEdicoes/renderCopaTimeline do resto do Portal.
 ═══════════════════════════════════════════════ */
-(function(){
-'use strict';
-/* ═══════════════════════════════════════════════════════════════════════
-   MOTOR DA COPA — funções puras (sem DOM, sem rede). Tudo que decide "quem joga com quem",
-   "quem está na frente" e "quem avança" mora aqui, e a tela só desenha o resultado.
-   ═══════════════════════════════════════════════════════════════════════ */
+(function(){'use strict';
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   MOTOR DA COPA â€” funÃ§Ãµes puras (sem DOM, sem rede). Tudo que decide "quem joga com quem",
+   "quem estÃ¡ na frente" e "quem avanÃ§a" mora aqui, e a tela sÃ³ desenha o resultado.
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const LETRAS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const FORMATOS = {
   grupos: 'Fase de grupos + mata-mata',
@@ -11275,7 +11274,7 @@ function luminancia(h) {
   const [r, g, b] = hexToRgb(h).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
-// cor de texto que lê bem em cima de `h`
+// cor de texto que lÃª bem em cima de `h`
 const textoSobre = h => (luminancia(h) > 0.36 ? '#0d0d12' : '#ffffff');
 function hslToHex(h, s, l) {
   s /= 100; l /= 100;
@@ -11283,7 +11282,7 @@ function hslToHex(h, s, l) {
   const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
   return rgbToHex(f(0) * 255, f(8) * 255, f(4) * 255);
 }
-// nome sem cor escolhida ganha uma cor estável (mesmo nome, mesma cor)
+// nome sem cor escolhida ganha uma cor estÃ¡vel (mesmo nome, mesma cor)
 function corDoNome(nome) {
   let h = 0; for (const ch of String(nome || '')) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return [hslToHex(h % 360, 62, 46), hslToHex((h + 28) % 360, 40, 92)];
@@ -11291,55 +11290,55 @@ function corDoNome(nome) {
 function siglaDe(nome, s) {
   const limpa = String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
   if (limpa) return limpa;
-  const sem = String(nome || '').normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const sem = String(nome || '').normalize('NFD').replace(/[Ì€-Í¯]/g, '');
   const w = sem.split(/[\s\-]+/).filter(x => x && !/^(de|da|do|das|dos|e|fc|ec|sc|ac)$/i.test(x));
   const base = w.length >= 2 ? w.slice(0, 3).map(x => x[0]).join('') : (w[0] || '?').slice(0, 3);
   return base.toUpperCase().replace(/[^A-Z0-9]/g, '') || '?';
 }
 
-/* ---------- catálogo: clubes do Brasileirão (a lista é só ponto de partida: cada time pode ser editado) ---------- */
+/* ---------- catÃ¡logo: clubes do BrasileirÃ£o (a lista Ã© sÃ³ ponto de partida: cada time pode ser editado) ---------- */
 const CATALOGO = [
-  // Série A (2025/26)
-  { n: 'Flamengo', s: 'FLA', uf: 'RJ', c: ['#C8102E', '#111111'], ser: 'A' },
-  { n: 'Palmeiras', s: 'PAL', uf: 'SP', c: ['#0B6B3A', '#FFFFFF'], ser: 'A' },
-  { n: 'Corinthians', s: 'COR', uf: 'SP', c: ['#161616', '#FFFFFF'], ser: 'A' },
-  { n: 'São Paulo', s: 'SAO', uf: 'SP', c: ['#E4002B', '#161616'], ser: 'A' },
-  { n: 'Santos', s: 'SAN', uf: 'SP', c: ['#F2F2F2', '#161616'], ser: 'A' },
-  { n: 'RB Bragantino', s: 'RBB', uf: 'SP', c: ['#E4002B', '#FFFFFF'], ser: 'A' },
-  { n: 'Mirassol', s: 'MIR', uf: 'SP', c: ['#F5C400', '#0A7A33'], ser: 'A' },
-  { n: 'Fluminense', s: 'FLU', uf: 'RJ', c: ['#7A1F3D', '#0B7A4B'], ser: 'A' },
-  { n: 'Botafogo', s: 'BOT', uf: 'RJ', c: ['#161616', '#FFFFFF'], ser: 'A' },
-  { n: 'Vasco da Gama', s: 'VAS', uf: 'RJ', c: ['#161616', '#FFFFFF'], ser: 'A' },
-  { n: 'Atlético-MG', s: 'CAM', uf: 'MG', c: ['#161616', '#FFFFFF'], ser: 'A' },
-  { n: 'Cruzeiro', s: 'CRU', uf: 'MG', c: ['#0033A0', '#FFFFFF'], ser: 'A' },
-  { n: 'Grêmio', s: 'GRE', uf: 'RS', c: ['#0D80BF', '#161616'], ser: 'A' },
-  { n: 'Internacional', s: 'INT', uf: 'RS', c: ['#E4002B', '#FFFFFF'], ser: 'A' },
-  { n: 'Juventude', s: 'JUV', uf: 'RS', c: ['#0A7A33', '#FFFFFF'], ser: 'A' },
-  { n: 'Athletico-PR', s: 'CAP', uf: 'PR', c: ['#E4002B', '#161616'], ser: 'A' },
-  { n: 'Coritiba', s: 'CFC', uf: 'PR', c: ['#0A7A33', '#FFFFFF'], ser: 'A' },
-  { n: 'Chapecoense', s: 'CHA', uf: 'SC', c: ['#0A7A33', '#FFFFFF'], ser: 'A' },
-  { n: 'Bahia', s: 'BAH', uf: 'BA', c: ['#0057B8', '#E4002B'], ser: 'A' },
-  { n: 'Vitória', s: 'VIT', uf: 'BA', c: ['#E4002B', '#161616'], ser: 'A' },
-  { n: 'Fortaleza', s: 'FOR', uf: 'CE', c: ['#0033A0', '#E4002B'], ser: 'A' },
-  { n: 'Ceará', s: 'CEA', uf: 'CE', c: ['#161616', '#FFFFFF'], ser: 'A' },
-  { n: 'Sport', s: 'SPO', uf: 'PE', c: ['#E4002B', '#161616'], ser: 'A' },
-  { n: 'Remo', s: 'REM', uf: 'PA', c: ['#0A2A6B', '#FFFFFF'], ser: 'A' },
-  // Série B e outros tradicionais
-  { n: 'Goiás', s: 'GOI', uf: 'GO', c: ['#0A7A33', '#FFFFFF'], ser: 'B' },
+  // SÃ©rie A (2025/26)
+  { n: 'Flamengo', s: 'FLA', uf: 'RJ', c: ['#C8102E', '#111111'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/9/96/Clube_de_Regatas_do_Flamengo_logo.svg' },
+  { n: 'Palmeiras', s: 'PAL', uf: 'SP', c: ['#0B6B3A', '#FFFFFF'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/6/60/SE_Palmeiras_2025_crest.png' },
+  { n: 'Corinthians', s: 'COR', uf: 'SP', c: ['#161616', '#FFFFFF'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/pt/b/b4/Corinthians_simbolo.png' },
+  { n: 'SÃ£o Paulo', s: 'SAO', uf: 'SP', c: ['#E4002B', '#161616'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/f/f4/S%C3%A3o_Paulo_Futebol_Clube_logo_%282022%29.svg' },
+  { n: 'Santos', s: 'SAN', uf: 'SP', c: ['#F2F2F2', '#161616'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Santos_Futebol_Clube_logo_%28with_stars_and_crown%29.png' },
+  { n: 'RB Bragantino', s: 'RBB', uf: 'SP', c: ['#E4002B', '#FFFFFF'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/pt/9/9e/RedBullBragantino.png' },
+  { n: 'Mirassol', s: 'MIR', uf: 'SP', c: ['#F5C400', '#0A7A33'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/f/fd/Mirassol_Futebol_Clube_logo_%283_stars%29.png' },
+  { n: 'Fluminense', s: 'FLU', uf: 'RJ', c: ['#7A1F3D', '#0B7A4B'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/1/12/Fluminense_Football_Club.svg' },
+  { n: 'Botafogo', s: 'BOT', uf: 'RJ', c: ['#161616', '#FFFFFF'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/5/52/Botafogo_de_Futebol_e_Regatas_logo.svg' },
+  { n: 'Vasco da Gama', s: 'VAS', uf: 'RJ', c: ['#161616', '#FFFFFF'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/pt/8/8b/EscudoDoVascoDaGama.svg' },
+  { n: 'AtlÃ©tico-MG', s: 'CAM', uf: 'MG', c: ['#161616', '#FFFFFF'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/4/41/Logo_of_Clube_Atl%C3%A9tico_Mineiro.svg' },
+  { n: 'Cruzeiro', s: 'CRU', uf: 'MG', c: ['#0033A0', '#FFFFFF'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/9/90/Cruzeiro_Esporte_Clube_%28logo%29.svg' },
+  { n: 'GrÃªmio', s: 'GRE', uf: 'RS', c: ['#0D80BF', '#161616'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Gremio_logo.svg' },
+  { n: 'Internacional', s: 'INT', uf: 'RS', c: ['#E4002B', '#FFFFFF'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/c/c5/Sport_Club_Internacional_logo.svg' },
+  { n: 'Juventude', s: 'JUV', uf: 'RS', c: ['#0A7A33', '#FFFFFF'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/b/bf/Juventude_crest.png' },
+  { n: 'Athletico-PR', s: 'CAP', uf: 'PR', c: ['#E4002B', '#161616'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/4/43/Athletico_Paranaense_%28Logo_2019%29.svg' },
+  { n: 'Coritiba', s: 'CFC', uf: 'PR', c: ['#0A7A33', '#FFFFFF'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/b/bd/Coritiba_Foot_Ball_Club_logo.svg' },
+  { n: 'Chapecoense', s: 'CHA', uf: 'SC', c: ['#0A7A33', '#FFFFFF'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/4/4e/Logo_Associa%C3%A7%C3%A3o_Chapecoense_de_Futebol.svg' },
+  { n: 'Bahia', s: 'BAH', uf: 'BA', c: ['#0057B8', '#E4002B'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Esporte_Clube_Bahia_logo.svg' },
+  { n: 'VitÃ³ria', s: 'VIT', uf: 'BA', c: ['#E4002B', '#161616'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/1/15/Esporte_Clube_Vit%C3%B3ria_%282024%29.svg' },
+  { n: 'Fortaleza', s: 'FOR', uf: 'CE', c: ['#0033A0', '#E4002B'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/6/6d/Fortaleza_Esporte_Clube_logo.png' },
+  { n: 'CearÃ¡', s: 'CEA', uf: 'CE', c: ['#161616', '#FFFFFF'], ser: 'A' },
+  { n: 'Sport', s: 'SPO', uf: 'PE', c: ['#E4002B', '#161616'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/pt/1/1a/Sport-clube-recife.svg' },
+  { n: 'Remo', s: 'REM', uf: 'PA', c: ['#0A2A6B', '#FFFFFF'], ser: 'A', l: 'https://upload.wikimedia.org/wikipedia/commons/7/70/Clube_do_Remo.svg' },
+  // SÃ©rie B e outros tradicionais
+  { n: 'GoiÃ¡s', s: 'GOI', uf: 'GO', c: ['#0A7A33', '#FFFFFF'], ser: 'B' },
   { n: 'Vila Nova', s: 'VNO', uf: 'GO', c: ['#E4002B', '#FFFFFF'], ser: 'B' },
-  { n: 'Cuiabá', s: 'CUI', uf: 'MT', c: ['#0A7A33', '#F5C400'], ser: 'B' },
-  { n: 'Criciúma', s: 'CRI', uf: 'SC', c: ['#F5C400', '#161616'], ser: 'B' },
-  { n: 'Avaí', s: 'AVA', uf: 'SC', c: ['#0057B8', '#FFFFFF'], ser: 'B' },
-  { n: 'América-MG', s: 'AME', uf: 'MG', c: ['#0A7A33', '#FFFFFF'], ser: 'B' },
+  { n: 'CuiabÃ¡', s: 'CUI', uf: 'MT', c: ['#0A7A33', '#F5C400'], ser: 'B' },
+  { n: 'CriciÃºma', s: 'CRI', uf: 'SC', c: ['#F5C400', '#161616'], ser: 'B' },
+  { n: 'AvaÃ­', s: 'AVA', uf: 'SC', c: ['#0057B8', '#FFFFFF'], ser: 'B' },
+  { n: 'AmÃ©rica-MG', s: 'AME', uf: 'MG', c: ['#0A7A33', '#FFFFFF'], ser: 'B', l: 'https://upload.wikimedia.org/wikipedia/commons/6/6f/Escudo_oficial_do_Am%C3%A9rica_Futebol_Clube.svg' },
   { n: 'Athletic-MG', s: 'ATH', uf: 'MG', c: ['#161616', '#FFFFFF'], ser: 'B' },
-  { n: 'Operário-PR', s: 'OPE', uf: 'PR', c: ['#161616', '#FFFFFF'], ser: 'B' },
+  { n: 'OperÃ¡rio-PR', s: 'OPE', uf: 'PR', c: ['#161616', '#FFFFFF'], ser: 'B' },
   { n: 'Ponte Preta', s: 'PON', uf: 'SP', c: ['#161616', '#FFFFFF'], ser: 'B' },
   { n: 'Guarani', s: 'GUA', uf: 'SP', c: ['#0A7A33', '#FFFFFF'], ser: 'B' },
   { n: 'Novorizontino', s: 'NOV', uf: 'SP', c: ['#F5C400', '#161616'], ser: 'B' },
   { n: 'Botafogo-SP', s: 'BSP', uf: 'SP', c: ['#E4002B', '#161616'], ser: 'B' },
-  { n: 'Ferroviária', s: 'FER', uf: 'SP', c: ['#7A1F3D', '#FFFFFF'], ser: 'B' },
+  { n: 'FerroviÃ¡ria', s: 'FER', uf: 'SP', c: ['#7A1F3D', '#FFFFFF'], ser: 'B' },
   { n: 'CRB', s: 'CRB', uf: 'AL', c: ['#E4002B', '#FFFFFF'], ser: 'B' },
-  { n: 'Náutico', s: 'NAU', uf: 'PE', c: ['#E4002B', '#FFFFFF'], ser: 'B' },
+  { n: 'NÃ¡utico', s: 'NAU', uf: 'PE', c: ['#E4002B', '#FFFFFF'], ser: 'B' },
   { n: 'Santa Cruz', s: 'STC', uf: 'PE', c: ['#E4002B', '#161616'], ser: 'B' },
   { n: 'Paysandu', s: 'PAY', uf: 'PA', c: ['#0057B8', '#FFFFFF'], ser: 'B' },
   { n: 'Amazonas', s: 'AMA', uf: 'AM', c: ['#F5C400', '#161616'], ser: 'B' },
@@ -11353,13 +11352,13 @@ function novoEstado(titulo) {
     v: 1,
     titulo: titulo || 'Copa GR',
     subtitulo: 'Temporada ' + new Date().getFullYear(),
-    logo: '🏆', // emoji ou URL https de imagem
+    logo: 'ðŸ†', // emoji ou URL https de imagem
     cfg: { formato: 'grupos', nGrupos: 4, classificam: 2, terceiro: true },
     times: [],
-    grupos: null, // [{ id:'A', ids:[idDoTime,...] }] depois do sorteio. Times ficam livres pra mover de grupo até a fase fechar
-    gruposFechados: false, // true = classificação por cotas travada (mata-mata já sorteado, ou temporada de pontos corridos encerrada)
-    bracketInicial: null, // só p/ formato 'grupos': ids (ou 'BYE') na ordem do 1º round, calculado ao fechar a fase de grupos
-    seeds: null, // mata-mata direto: ids na ordem do chaveamento (cabeça de chave primeiro)
+    grupos: null, // [{ id:'A', ids:[idDoTime,...] }] depois do sorteio. Times ficam livres pra mover de grupo atÃ© a fase fechar
+    gruposFechados: false, // true = classificaÃ§Ã£o por cotas travada (mata-mata jÃ¡ sorteado, ou temporada de pontos corridos encerrada)
+    bracketInicial: null, // sÃ³ p/ formato 'grupos': ids (ou 'BYE') na ordem do 1Âº round, calculado ao fechar a fase de grupos
+    seeds: null, // mata-mata direto: ids na ordem do chaveamento (cabeÃ§a de chave primeiro)
     jogos: [],
     tema: clone(TEMA_PADRAO),
   };
@@ -11376,18 +11375,18 @@ function novoTime(p) {
     sub: String(p.sub || '').trim().slice(0, 40),
     cab: !!p.cab,
     ser: p.ser || '',
-    // cotas vendidas (editadas pelo admin) e cartões: são do TIME, não da rodada — sobrevivem a mudar de grupo ou editar nome/cor
+    // cotas vendidas (editadas pelo admin) e cartÃµes: sÃ£o do TIME, nÃ£o da rodada â€” sobrevivem a mudar de grupo ou editar nome/cor
     cotas: clamp(Math.floor(Number(p.cotas) || 0), 0, 999999),
     camarelo: clamp(Math.floor(Number(p.camarelo) || 0), 0, 20),
     cvermelho: !!p.cvermelho,
   };
 }
-// cartão vermelho OU 3+ amarelos = fora da classificação, mesmo tendo mais cotas que os outros
+// cartÃ£o vermelho OU 3+ amarelos = fora da classificaÃ§Ã£o, mesmo tendo mais cotas que os outros
 const expulso = t => !!(t && (t.cvermelho || (t.camarelo || 0) >= 3));
-// cada cartão amarelo tira 1 cota na hora de ranquear (nunca fica negativo)
+// cada cartÃ£o amarelo tira 1 cota na hora de ranquear (nunca fica negativo)
 const cotasLiquidas = t => Math.max(0, (t && t.cotas || 0) - (t && t.camarelo || 0));
 
-/* ---------- validação da configuração ---------- */
+/* ---------- validaÃ§Ã£o da configuraÃ§Ã£o ---------- */
 function tamanhoMinGrupo(nTimes, nG) { return Math.floor(nTimes / Math.max(1, nG)); }
 function sugerirGrupos(T) {
   if (T < 4) return 1;
@@ -11398,11 +11397,11 @@ function validarCfg(E) {
   if (cfg.formato === 'grupos') {
     if (T < 4) erros.push('Adicione pelo menos 4 times para jogar com fase de grupos.');
     else {
-      if (cfg.nGrupos < 1 || cfg.nGrupos > Math.floor(T / 2)) erros.push(`Com ${T} times dá para ter de 1 a ${Math.floor(T / 2)} grupos (mínimo de 2 times por grupo).`);
+      if (cfg.nGrupos < 1 || cfg.nGrupos > Math.floor(T / 2)) erros.push(`Com ${T} times dÃ¡ para ter de 1 a ${Math.floor(T / 2)} grupos (mÃ­nimo de 2 times por grupo).`);
       else {
         const min = tamanhoMinGrupo(T, cfg.nGrupos);
-        if (cfg.classificam < 1 || cfg.classificam > min) erros.push(`Cada grupo terá pelo menos ${min} times: classifique de 1 a ${min} por grupo.`);
-        else if (cfg.nGrupos * cfg.classificam < 2) erros.push('É preciso classificar pelo menos 2 times para o mata-mata.');
+        if (cfg.classificam < 1 || cfg.classificam > min) erros.push(`Cada grupo terÃ¡ pelo menos ${min} times: classifique de 1 a ${min} por grupo.`);
+        else if (cfg.nGrupos * cfg.classificam < 2) erros.push('Ã‰ preciso classificar pelo menos 2 times para o mata-mata.');
       }
     }
   } else if (cfg.formato === 'mata') {
@@ -11414,7 +11413,7 @@ function validarCfg(E) {
 }
 
 /* ---------- sorteios ---------- */
-// distribui os times pelos grupos: cabeças de chave primeiro (um por grupo), depois o resto, sempre no grupo mais vazio
+// distribui os times pelos grupos: cabeÃ§as de chave primeiro (um por grupo), depois o resto, sempre no grupo mais vazio
 function sortearGrupos(times, nG, rnd) {
   const cab = shuffle(times.filter(t => t.cab), rnd), resto = shuffle(times.filter(t => !t.cab), rnd);
   const grupos = Array.from({ length: nG }, (_, i) => ({ id: LETRAS[i], ids: [] }));
@@ -11429,7 +11428,7 @@ function sortearSeeds(times, rnd) {
   return [...shuffle(times.filter(t => t.cab), rnd), ...shuffle(times.filter(t => !t.cab), rnd)].map(t => t.id);
 }
 
-/* ---------- classificação de um grupo: por cotas líquidas (cotas − cartões amarelos), expulsos sempre por último ---------- */
+/* ---------- classificaÃ§Ã£o de um grupo: por cotas lÃ­quidas (cotas âˆ’ cartÃµes amarelos), expulsos sempre por Ãºltimo ---------- */
 function tabelaGrupo(E, gid) {
   const g = (E.grupos || []).find(x => x.id === gid);
   if (!g) return [];
@@ -11443,15 +11442,15 @@ function tabelaGrupo(E, gid) {
 }
 
 /* ---------- mata-mata ---------- */
-// ordem clássica de chaveamento: 1×N, 4×(N-3)... com os cabeças de chave só se encontrando no fim
+// ordem clÃ¡ssica de chaveamento: 1Ã—N, 4Ã—(N-3)... com os cabeÃ§as de chave sÃ³ se encontrando no fim
 function padraoSeeds(N) {
   let arr = [1, 2];
   for (let n = 4; n <= N; n *= 2) { const nx = []; for (const s of arr) nx.push(s, n + 1 - s); arr = nx; }
   return N === 1 ? [1] : arr;
 }
-// as N posições do 1º round, de cima para baixo (posições vizinhas formam um jogo). `bye` = folga.
-// Formato 'grupos': só existe depois de fechar a fase de grupos (E.bracketInicial já vem calculado e fixo — cotas
-// continuam editáveis depois disso só pra registro, sem efeito no chaveamento já sorteado).
+// as N posiÃ§Ãµes do 1Âº round, de cima para baixo (posiÃ§Ãµes vizinhas formam um jogo). `bye` = folga.
+// Formato 'grupos': sÃ³ existe depois de fechar a fase de grupos (E.bracketInicial jÃ¡ vem calculado e fixo â€” cotas
+// continuam editÃ¡veis depois disso sÃ³ pra registro, sem efeito no chaveamento jÃ¡ sorteado).
 function posicoesMata(E) {
   const cfg = E.cfg;
   if (cfg.formato === 'mata') {
@@ -11477,7 +11476,7 @@ function jogosMata(E) {
   if (E.cfg.terceiro && terceiroPossivel(pos)) out.push(novoJogoMata(R - 1, 1, { t: 'perd', j: idMata(R - 2, 0) }, { t: 'perd', j: idMata(R - 2, 1) }, true));
   return out;
 }
-// disputa de 3º lugar precisa de dois perdedores de semifinal; com folga na semifinal (ex.: 3 classificados) não existe
+// disputa de 3Âº lugar precisa de dois perdedores de semifinal; com folga na semifinal (ex.: 3 classificados) nÃ£o existe
 function terceiroPossivel(pos) {
   const N = pos.length, R = log2(N);
   return R >= 2 && !(R === 2 && pos.some(p => p.t === 'bye'));
@@ -11494,8 +11493,8 @@ function nomeCurtoRodada(rd, R) {
   const n = Math.pow(2, R - 1 - rd);
   return n === 1 ? 'Final' : n === 2 ? 'Semi' : n === 4 ? 'Quarta' : n === 8 ? 'Oitava' : `Rodada ${rd + 1}`;
 }
-// quem se classifica de cada grupo (não-expulsos, por cotas líquidas), numa lista única pronta pro chaveamento:
-// 1ºs colocados primeiro (entre si por cotas), depois os 2ºs etc. — mesma lógica de prioridade de um ranking geral
+// quem se classifica de cada grupo (nÃ£o-expulsos, por cotas lÃ­quidas), numa lista Ãºnica pronta pro chaveamento:
+// 1Âºs colocados primeiro (entre si por cotas), depois os 2Âºs etc. â€” mesma lÃ³gica de prioridade de um ranking geral
 function classificadosPorGrupo(E) {
   const k = E.cfg.classificam, out = [];
   E.grupos.forEach((g, gi) => {
@@ -11504,7 +11503,7 @@ function classificadosPorGrupo(E) {
   });
   return out.sort((x, y) => (x.pos - y.pos) || (y.net - x.net) || (y.cotas - x.cotas) || (x.gi - y.gi));
 }
-// arruma o 1º round pra ninguém do mesmo grupo se enfrentar de cara, quando dá pra evitar trocando com outro confronto
+// arruma o 1Âº round pra ninguÃ©m do mesmo grupo se enfrentar de cara, quando dÃ¡ pra evitar trocando com outro confronto
 function evitarMesmoGrupoNoPrimeiroJogo(rankComGrupo) {
   const Q = rankComGrupo.length, N = nextPow2(Math.max(Q, 2));
   const slots = padraoSeeds(N).map(s => (s <= Q ? rankComGrupo[s - 1] : null));
@@ -11514,17 +11513,17 @@ function evitarMesmoGrupoNoPrimeiroJogo(rankComGrupo) {
     if (!conflito(i) || !slots[2 * i + 1]) continue;
     const cand = [...Array(npares).keys()].filter(j => j !== i).sort((a, b) => Math.abs(a - i) - Math.abs(b - i));
     for (const j of cand) {
-      if (!slots[2 * j + 1]) continue; // não troca com folga
+      if (!slots[2 * j + 1]) continue; // nÃ£o troca com folga
       const a = slots[2 * i + 1], b = slots[2 * j + 1];
       slots[2 * i + 1] = b; slots[2 * j + 1] = a;
       if (!conflito(i) && !conflito(j)) break;
-      slots[2 * i + 1] = a; slots[2 * j + 1] = b; // desfaz e tenta a próxima
+      slots[2 * i + 1] = a; slots[2 * j + 1] = b; // desfaz e tenta a prÃ³xima
     }
   }
   return slots.map(s => (s ? s.id : 'BYE'));
 }
 
-/* ---------- visão calculada: tudo que a tela precisa, derivado do estado ---------- */
+/* ---------- visÃ£o calculada: tudo que a tela precisa, derivado do estado ---------- */
 function computarView(E) {
   const V = { tabelas: {}, mata: new Map(), R: 0, campeao: null, fase: 'times', stats: { times: E.times.length, jogos: 0, feitos: 0, vivo: 0, gols: 0, cotas: 0, camarelo: 0, vermelho: 0 } };
   const temGrupos = Array.isArray(E.grupos) && E.grupos.length > 0;
@@ -11560,7 +11559,7 @@ function computarView(E) {
     if (j.st === 'vivo') V.stats.vivo++;
     if (j.st !== 'ag') V.stats.gols += (j.ga || 0) + (j.gb || 0);
   }
-  // campeão e fase atual
+  // campeÃ£o e fase atual
   const fmt = E.cfg.formato;
   if (fmt === 'pontos') {
     if (temGrupos && E.gruposFechados) { const t = V.tabelas[E.grupos[0].id]; V.campeao = t && t[0] && !t[0].expulso ? t[0].id : null; }
@@ -11585,16 +11584,16 @@ function rotuloFase(V, E) {
   if (f === 'times') return 'Times';
   if (f === 'sorteio') return 'Sorteio';
   if (f === 'grupos') return E.cfg.formato === 'pontos' ? 'Pontos corridos' : 'Grupos';
-  if (f === 'campeao') return 'Campeã';
+  if (f === 'campeao') return 'CampeÃ£';
   if (f.startsWith('mata:')) return nomeRodadaMata(+f.slice(5), V.R);
-  return '—';
+  return 'â€”';
 }
 
 /* ---------- limpeza de resultados que deixaram de fazer sentido ---------- */
 function zerarJogo(j) { j.ga = j.gb = null; if (j.fase === 'm') { j.pa = j.pb = null; j.snap = null; } j.st = 'ag'; }
 const temResultado = j => j.st !== 'ag' || isNum(j.ga) || isNum(j.gb) || isNum(j.pa) || isNum(j.pb);
-// depois de qualquer mudança: confere se cada jogo do mata-mata ainda é entre os mesmos times de quando foi jogado.
-// Se um resultado de cima mudou, o jogo de baixo (que dependia dele) é zerado. Devolve os ids zerados.
+// depois de qualquer mudanÃ§a: confere se cada jogo do mata-mata ainda Ã© entre os mesmos times de quando foi jogado.
+// Se um resultado de cima mudou, o jogo de baixo (que dependia dele) Ã© zerado. Devolve os ids zerados.
 function sanear(E) {
   const zerados = [];
   for (let guard = 0; guard < 200; guard++) {
@@ -11612,9 +11611,9 @@ function sanear(E) {
   return zerados;
 }
 
-/* ---------- ações sobre o estado (todas recebem um estado clonado e o alteram no lugar) ---------- */
+/* ---------- aÃ§Ãµes sobre o estado (todas recebem um estado clonado e o alteram no lugar) ---------- */
 function construirEstrutura(E) {
-  // grupos/pontos: jogos (mata-mata) só nascem quando a fase de grupos fecha (fecharFaseDeGrupos) — até lá é só cotas/cartões
+  // grupos/pontos: jogos (mata-mata) sÃ³ nascem quando a fase de grupos fecha (fecharFaseDeGrupos) â€” atÃ© lÃ¡ Ã© sÃ³ cotas/cartÃµes
   E.jogos = E.cfg.formato === 'mata' ? jogosMata(E) : [];
 }
 function aplicarSorteioGrupos(E, grupos) {
@@ -11642,39 +11641,39 @@ function alternarTerceiro(E, ligado) {
   }
 }
 
-/* ---------- cotas e cartões (fase de grupos) ---------- */
+/* ---------- cotas e cartÃµes (fase de grupos) ---------- */
 function definirCotas(E, timeId, valor) {
   const t = E.times.find(x => x.id === timeId);
-  if (!t) return { ok: false, erro: 'Time não encontrado.' };
+  if (!t) return { ok: false, erro: 'Time nÃ£o encontrado.' };
   t.cotas = clamp(Math.floor(Number(valor) || 0), 0, 999999);
   return { ok: true };
 }
 function ajustarCartaoAmarelo(E, timeId, delta) {
   const t = E.times.find(x => x.id === timeId);
-  if (!t) return { ok: false, erro: 'Time não encontrado.' };
+  if (!t) return { ok: false, erro: 'Time nÃ£o encontrado.' };
   t.camarelo = clamp((t.camarelo || 0) + delta, 0, 20);
   return { ok: true };
 }
 function alternarCartaoVermelho(E, timeId) {
   const t = E.times.find(x => x.id === timeId);
-  if (!t) return { ok: false, erro: 'Time não encontrado.' };
+  if (!t) return { ok: false, erro: 'Time nÃ£o encontrado.' };
   t.cvermelho = !t.cvermelho;
   return { ok: true };
 }
-// só pode mover enquanto a fase de grupos não fechou — depois disso o mata-mata já foi sorteado com base na posição anterior
+// sÃ³ pode mover enquanto a fase de grupos nÃ£o fechou â€” depois disso o mata-mata jÃ¡ foi sorteado com base na posiÃ§Ã£o anterior
 function moverTimeDeGrupo(E, timeId, novoGrupoId) {
-  if (!E.grupos) return { ok: false, erro: 'Ainda não há grupos.' };
-  if (E.gruposFechados) return { ok: false, erro: 'A fase de grupos já foi fechada.' };
+  if (!E.grupos) return { ok: false, erro: 'Ainda nÃ£o hÃ¡ grupos.' };
+  if (E.gruposFechados) return { ok: false, erro: 'A fase de grupos jÃ¡ foi fechada.' };
   const alvo = E.grupos.find(g => g.id === novoGrupoId);
-  if (!alvo) return { ok: false, erro: 'Grupo não encontrado.' };
+  if (!alvo) return { ok: false, erro: 'Grupo nÃ£o encontrado.' };
   E.grupos.forEach(g => { g.ids = g.ids.filter(id => id !== timeId); });
   alvo.ids.push(timeId);
   return { ok: true };
 }
-// fecha a classificação por cotas e trava. 'grupos': monta o mata-mata com quem se classificou. 'pontos': só define o campeão (o líder do grupo único)
+// fecha a classificaÃ§Ã£o por cotas e trava. 'grupos': monta o mata-mata com quem se classificou. 'pontos': sÃ³ define o campeÃ£o (o lÃ­der do grupo Ãºnico)
 function fecharFaseDeGrupos(E) {
-  if (!E.grupos || !E.grupos.length) return { ok: false, erro: 'Ainda não há grupos.' };
-  if (E.gruposFechados) return { ok: false, erro: 'A fase de grupos já está fechada.' };
+  if (!E.grupos || !E.grupos.length) return { ok: false, erro: 'Ainda nÃ£o hÃ¡ grupos.' };
+  if (E.gruposFechados) return { ok: false, erro: 'A fase de grupos jÃ¡ estÃ¡ fechada.' };
   E.gruposFechados = true;
   if (E.cfg.formato === 'grupos') {
     E.bracketInicial = evitarMesmoGrupoNoPrimeiroJogo(classificadosPorGrupo(E));
@@ -11682,8 +11681,8 @@ function fecharFaseDeGrupos(E) {
   }
   return { ok: true };
 }
-// desfaz o fechamento (ex.: corrigir uma cota depois de fechar por engano). Cotas/cartões e os grupos continuam como estão;
-// se já tinha mata-mata sorteado, ele é apagado (não dá pra "editar" um chaveamento que já saiu, só refazer)
+// desfaz o fechamento (ex.: corrigir uma cota depois de fechar por engano). Cotas/cartÃµes e os grupos continuam como estÃ£o;
+// se jÃ¡ tinha mata-mata sorteado, ele Ã© apagado (nÃ£o dÃ¡ pra "editar" um chaveamento que jÃ¡ saiu, sÃ³ refazer)
 function reabrirFaseDeGrupos(E) {
   E.gruposFechados = false; E.bracketInicial = null; E.jogos = [];
   return { ok: true };
@@ -11692,13 +11691,13 @@ function reabrirFaseDeGrupos(E) {
 // edita placar/estado de um jogo. Devolve { ok, erro? }
 function definirJogo(E, id, patch) {
   const j = E.jogos.find(x => x.id === id);
-  if (!j) return { ok: false, erro: 'Jogo não encontrado.' };
+  if (!j) return { ok: false, erro: 'Jogo nÃ£o encontrado.' };
   const V = computarView(E);
   let a = j.a, b = j.b;
   if (j.fase === 'm') {
     const r = V.mata.get(j.id);
-    if (r.bye) return { ok: false, erro: 'Este jogo é uma folga: o time avança direto.' };
-    if (!r.a || !r.b) return { ok: false, erro: 'Aguardando a definição dos dois times.' };
+    if (r.bye) return { ok: false, erro: 'Este jogo Ã© uma folga: o time avanÃ§a direto.' };
+    if (!r.a || !r.b) return { ok: false, erro: 'Aguardando a definiÃ§Ã£o dos dois times.' };
     a = r.a; b = r.b;
   }
   const lim = v => (v == null || v === '' ? null : clamp(Math.floor(Number(v)), 0, 99));
@@ -11710,14 +11709,14 @@ function definirJogo(E, id, patch) {
   if ('st' in patch) novo.st = patch.st;
   if (novo.st === 'vivo') { if (!isNum(novo.ga)) novo.ga = 0; if (!isNum(novo.gb)) novo.gb = 0; }
   if (novo.st === 'ag') { novo.ga = novo.gb = null; novo.pa = novo.pb = null; }
-  if (novo.ga !== novo.gb) { novo.pa = novo.pb = null; } // pênaltis só existem em empate
+  if (novo.ga !== novo.gb) { novo.pa = novo.pb = null; } // pÃªnaltis sÃ³ existem em empate
   let reaberto = false;
   if (novo.st === 'fim') {
     const semPlacar = !isNum(novo.ga) || !isNum(novo.gb);
     const empateSemDesempate = j.fase === 'm' && novo.ga === novo.gb && !(isNum(novo.pa) && isNum(novo.pb) && novo.pa !== novo.pb);
     if (semPlacar || empateSemDesempate) {
-      // pediu para encerrar: recusa. Só editou o placar de um jogo já encerrado: reabre em vez de perder a edição
-      if ('st' in patch) return { ok: false, erro: semPlacar ? 'Informe o placar antes de encerrar.' : 'Empate no mata-mata: informe o resultado dos pênaltis para definir o vencedor.', pedirPenaltis: !semPlacar };
+      // pediu para encerrar: recusa. SÃ³ editou o placar de um jogo jÃ¡ encerrado: reabre em vez de perder a ediÃ§Ã£o
+      if ('st' in patch) return { ok: false, erro: semPlacar ? 'Informe o placar antes de encerrar.' : 'Empate no mata-mata: informe o resultado dos pÃªnaltis para definir o vencedor.', pedirPenaltis: !semPlacar };
       novo.st = 'vivo'; reaberto = true;
     }
   }
@@ -11728,10 +11727,10 @@ function definirJogo(E, id, patch) {
   return { ok: true, reaberto };
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   TEMA — presets + cores/estilo livres. O tema mora dentro do estado da copa (todo mundo vê o que o admin escolheu)
-   e vira variáveis CSS na raiz da Copa e na camada de modais.
-   ═══════════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   TEMA â€” presets + cores/estilo livres. O tema mora dentro do estado da copa (todo mundo vÃª o que o admin escolheu)
+   e vira variÃ¡veis CSS na raiz da Copa e na camada de modais.
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const PRESETS = {
   ouro: { n: 'Ouro noturno', bg: '#080810', surf: '#10101b', text: '#ede8d8', accent: '#d4a847', accent2: '#f0c75a' },
   gramado: { n: 'Gramado', bg: '#06110b', surf: '#0d1a12', text: '#e6f2ea', accent: '#22c55e', accent2: '#6ee7a0' },
@@ -11747,12 +11746,12 @@ const FUNDOS = { grid: 'Grade', dots: 'Pontos', aurora: 'Aurora', none: 'Liso' }
 const FONTES = {
   portal: { n: 'Esportiva', f: "'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif", d: "'Barlow Condensed','DM Sans',system-ui,sans-serif" },
   sistema: { n: 'Sistema', f: "system-ui,-apple-system,'Segoe UI',sans-serif", d: "system-ui,-apple-system,'Segoe UI',sans-serif" },
-  serif: { n: 'Clássica', f: "'DM Sans',system-ui,sans-serif", d: "Georgia,'Times New Roman',serif" },
-  mono: { n: 'Técnica', f: "ui-monospace,Consolas,'Courier New',monospace", d: "ui-monospace,Consolas,'Courier New',monospace" },
+  serif: { n: 'ClÃ¡ssica', f: "'DM Sans',system-ui,sans-serif", d: "Georgia,'Times New Roman',serif" },
+  mono: { n: 'TÃ©cnica', f: "ui-monospace,Consolas,'Courier New',monospace", d: "ui-monospace,Consolas,'Courier New',monospace" },
 };
 const CORES_CHAVES = ['bg', 'surf', 'text', 'accent', 'accent2'];
 
-// junta o que o admin escolheu com os padrões e descarta qualquer valor inválido
+// junta o que o admin escolheu com os padrÃµes e descarta qualquer valor invÃ¡lido
 function resolverTema(t) {
   t = t || {};
   const chave = PRESETS[t.preset] ? t.preset : (t.preset === 'custom' ? 'custom' : 'ouro');
@@ -11772,7 +11771,7 @@ function resolverTema(t) {
 }
 function coresDoPreset(k) { const p = PRESETS[k]; return p && !p.follow ? { bg: p.bg, surf: p.surf, text: p.text, accent: p.accent, accent2: p.accent2 } : null; }
 
-// lê as cores do próprio Portal (tema claro/escuro dele) para o preset "Igual ao portal"
+// lÃª as cores do prÃ³prio Portal (tema claro/escuro dele) para o preset "Igual ao portal"
 function coresDoPortal() {
   const cs = getComputedStyle(document.documentElement), g = n => cs.getPropertyValue(n).trim();
   const pick = (n, fb) => (isHex(g(n)) ? g(n) : fb);
@@ -11802,15 +11801,15 @@ function aplicarTema(tema, els) {
   return T;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   PERSISTÊNCIA — Supabase (tabela portal_copa_torneios) ou memória (testes).
-   Regras: leitura para todo mundo logado, escrita só admin (RLS). `rev` evita que duas abas se sobrescrevam.
-   ═══════════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   PERSISTÃŠNCIA â€” Supabase (tabela portal_copa_torneios) ou memÃ³ria (testes).
+   Regras: leitura para todo mundo logado, escrita sÃ³ admin (RLS). `rev` evita que duas abas se sobrescrevam.
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const TABELA = 'portal_copa_torneios';
 function erroSB(error) {
   const e = new Error(
     error && (error.code === 'PGRST205' || /Could not find the table/i.test(error.message || ''))
-      ? 'A tabela da Copa ainda não existe no banco. Avise o administrador do sistema.'
+      ? 'A tabela da Copa ainda nÃ£o existe no banco. Avise o administrador do sistema.'
       : (error && error.message) || 'Falha ao falar com o servidor.'
   );
   e.code = error && error.code; e.raw = error;
@@ -11832,7 +11831,7 @@ const storeSB = {
     if (error) throw erroSB(error);
     return data;
   },
-  // grava só se a versão do servidor ainda for a que a tela conhece; senão { conflito:true }
+  // grava sÃ³ se a versÃ£o do servidor ainda for a que a tela conhece; senÃ£o { conflito:true }
   async salvar(id, rev, estado, titulo) {
     const { data, error } = await sb.from(TABELA).update({ estado, titulo, rev: rev + 1 }).eq('id', id).eq('rev', rev).select('rev').maybeSingle();
     if (error) throw erroSB(error);
@@ -11849,7 +11848,7 @@ const storeSB = {
     if (error) throw erroSB(error);
   },
   _canal: null,
-  // avisa a tela quando qualquer copa muda (a tela decide se é a que está aberta)
+  // avisa a tela quando qualquer copa muda (a tela decide se Ã© a que estÃ¡ aberta)
   assinar(cb) {
     this.desassinar();
     this._canal = sb.channel('portal-copa-torneios')
@@ -11859,7 +11858,7 @@ const storeSB = {
   desassinar() { if (this._canal) { sb.removeChannel(this._canal); this._canal = null; } },
 };
 
-// versão em memória: usada nos testes da interface (sem login e sem banco)
+// versÃ£o em memÃ³ria: usada nos testes da interface (sem login e sem banco)
 function criarStoreMem(opts) {
   opts = opts || {};
   const linhas = new Map();
@@ -11879,7 +11878,7 @@ function criarStoreMem(opts) {
     },
     async salvar(id, rev, estado, titulo) {
       await pausa();
-      if (api.falhar) throw new Error('Sem conexão (simulada)');
+      if (api.falhar) throw new Error('Sem conexÃ£o (simulada)');
       const l = linhas.get(id);
       if (!l || l.rev !== rev) return { conflito: true };
       l.estado = clone(estado); l.titulo = titulo; l.rev = rev + 1; l.atualizado_em = new Date().toISOString();
@@ -11896,9 +11895,9 @@ function criarStoreMem(opts) {
   return api;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   INTERFACE — base: estado da tela, ícones, escudos, modais, gravação.
-   ═══════════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   INTERFACE â€” base: estado da tela, Ã­cones, escudos, modais, gravaÃ§Ã£o.
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
 const ICONS = {
@@ -11943,7 +11942,7 @@ function escudo(t) {
   if (url) return `<span class="cx-crest"><img src="${esc(url)}" alt="" loading="lazy" referrerpolicy="no-referrer" data-c1="${c1}" data-c2="${c2}" data-s="${esc(t.s)}"></span>`;
   return `<span class="cx-crest">${escudoSvg(c1, c2, t.s)}</span>`;
 }
-// imagem de logo que não carrega volta para o escudo desenhado
+// imagem de logo que nÃ£o carrega volta para o escudo desenhado
 document.addEventListener('error', e => {
   const im = e.target;
   if (im && im.tagName === 'IMG' && im.closest && im.closest('.cx-crest') && im.dataset.c1) im.replaceWith(Object.assign(document.createElement('span'), { innerHTML: escudoSvg(im.dataset.c1, im.dataset.c2, im.dataset.s || '?') }).firstChild);
@@ -11976,24 +11975,24 @@ function recomputar() {
   S.V = S.E ? computarView(S.E) : null;
 }
 
-/* ---------- rótulos ---------- */
+/* ---------- rÃ³tulos ---------- */
 function rotuloOrigem(o) {
-  if (!o) return '—';
+  if (!o) return 'â€”';
   switch (o.t) {
-    case 'grupo': return `${o.pos}º do Grupo ${o.g}`;
+    case 'grupo': return `${o.pos}Âº do Grupo ${o.g}`;
     case 'slot': return `Classificado #${o.n}`;
     case 'bye': return 'Folga';
-    case 'time': { const t = timePorId(o.id); return t ? t.n : '—'; }
+    case 'time': { const t = timePorId(o.id); return t ? t.n : 'â€”'; }
     case 'venc': case 'perd': {
       const j = jogoPorId(o.j), pre = o.t === 'venc' ? 'Vencedor' : 'Perdedor';
       if (!j) return pre;
       const n = Math.pow(2, S.V.R - 1 - j.rd);
       return n === 1 ? `${pre} da Final` : `${pre} ${nomeCurtoRodada(j.rd, S.V.R)} ${j.pos + 1}`;
     }
-    default: return '—';
+    default: return 'â€”';
   }
 }
-// os dois lados de um jogo, já resolvidos: { a:{time,rot,bye}, b:{...} }
+// os dois lados de um jogo, jÃ¡ resolvidos: { a:{time,rot,bye}, b:{...} }
 function ladosDe(j) {
   if (j.fase === 'g') return { a: { time: timePorId(j.a), rot: '' }, b: { time: timePorId(j.b), rot: '' } };
   const r = S.V.mata.get(j.id) || {};
@@ -12007,7 +12006,7 @@ function vencedorDoJogo(j) {
   if (!r || !r.done) return null;
   return r.venc === r.a ? 'a' : 'b';
 }
-const nomeRodadaJogo = j => (j.fase === 'g' ? `Grupo ${j.grupo} · Rodada ${j.rodada}` : (j.terceiro ? 'Disputa de 3º lugar' : nomeRodadaMata(j.rd, S.V.R)));
+const nomeRodadaJogo = j => (j.fase === 'g' ? `Grupo ${j.grupo} Â· Rodada ${j.rodada}` : (j.terceiro ? 'Disputa de 3Âº lugar' : nomeRodadaMata(j.rd, S.V.R)));
 function dataCurta(dt) {
   if (!dt) return '';
   const d = new Date(dt);
@@ -12055,13 +12054,13 @@ function confirmar({ titulo, msg, ok, perigo, cancelar }) {
   });
 }
 
-/* ---------- gravação (autosave com versão) ---------- */
+/* ---------- gravaÃ§Ã£o (autosave com versÃ£o) ---------- */
 function marcarSync() {
   const el = $('.cx-sync', S.raiz);
   if (!el) return;
-  const txt = { ok: S.admin ? 'Salvo' : 'Ao vivo', salvando: 'Salvando…', sujo: 'Alterações pendentes…', erro: 'Sem conexão. Tentando de novo…', conflito: 'Atualizado por outra pessoa', leitura: 'Somente leitura · ao vivo' }[S.salvo] || '';
+  const txt = { ok: S.admin ? 'Salvo' : 'Ao vivo', salvando: 'Salvandoâ€¦', sujo: 'AlteraÃ§Ãµes pendentesâ€¦', erro: 'Sem conexÃ£o. Tentando de novoâ€¦', conflito: 'Atualizado por outra pessoa', leitura: 'Somente leitura Â· ao vivo' }[S.salvo] || '';
   el.dataset.s = S.admin ? S.salvo : 'leitura';
-  el.innerHTML = `<i></i>${esc(S.admin ? txt : 'Somente leitura · ao vivo')}`;
+  el.innerHTML = `<i></i>${esc(S.admin ? txt : 'Somente leitura Â· ao vivo')}`;
 }
 function agendarSalvar() {
   S.salvo = 'sujo'; marcarSync();
@@ -12094,10 +12093,10 @@ async function salvarAgora() {
 async function recarregarDoServidor(porConflito) {
   try {
     const row = await storeAtual().abrir(S.id);
-    if (!row) { S.salvo = 'erro'; marcarSync(); avisar('Esta copa não existe mais.', 'err'); return; }
+    if (!row) { S.salvo = 'erro'; marcarSync(); avisar('Esta copa nÃ£o existe mais.', 'err'); return; }
     S.E = migrar(row.estado); S.rev = row.rev; S.meta = { id: row.id, titulo: row.titulo, ativo: row.ativo };
     S.undo = []; S.salvo = 'ok'; recomputar(); render(); atualizarJogoAberto();
-    if (porConflito) avisar('Outra pessoa alterou a copa ao mesmo tempo. Carreguei a versão mais recente: refaça a sua última mudança.', 'err');
+    if (porConflito) avisar('Outra pessoa alterou a copa ao mesmo tempo. Carreguei a versÃ£o mais recente: refaÃ§a a sua Ãºltima mudanÃ§a.', 'err');
   } catch (e) { S.salvo = 'erro'; marcarSync(); S.tRetry = setTimeout(() => recarregarDoServidor(porConflito), 4000); }
 }
 // estados antigos/incompletos ganham os campos que faltam
@@ -12105,14 +12104,14 @@ function migrar(E) {
   const base = novoEstado(E && E.titulo);
   const out = Object.assign(base, E || {});
   out.cfg = Object.assign(base.cfg, (E && E.cfg) || {});
-  delete out.cfg.turnos; delete out.cfg.pontos; // extintos: grupo não tem mais jogo, só cotas/cartões
+  delete out.cfg.turnos; delete out.cfg.pontos; // extintos: grupo nÃ£o tem mais jogo, sÃ³ cotas/cartÃµes
   out.times = (Array.isArray(out.times) ? out.times : []).map(t => Object.assign({ cotas: 0, camarelo: 0, cvermelho: false }, t));
   out.jogos = Array.isArray(out.jogos) ? out.jogos : [];
   out.tema = Object.assign({}, out.tema || {});
   return out;
 }
 
-/* ---------- alterações ---------- */
+/* ---------- alteraÃ§Ãµes ---------- */
 function empilharUndo(rot, coal) {
   const agora = Date.now();
   if (coal && S.coalKey === coal && agora - S.coalT < 5000) { S.coalT = agora; return; }
@@ -12120,7 +12119,7 @@ function empilharUndo(rot, coal) {
   if (S.undo.length > 40) S.undo.shift();
   S.coalKey = coal || ''; S.coalT = agora;
 }
-// aplica uma mudança no estado: clona, altera, limpa o que ficou sem sentido, pergunta se perder resultado, grava
+// aplica uma mudanÃ§a no estado: clona, altera, limpa o que ficou sem sentido, pergunta se perder resultado, grava
 async function mutar(fn, o) {
   o = o || {};
   if (!S.admin || !S.E) return { ok: false };
@@ -12131,10 +12130,10 @@ async function mutar(fn, o) {
   const perdidos = zerados.filter(id => { const j = S.E.jogos.find(x => x.id === id); return j && temResultado(j); });
   if (perdidos.length && o.perguntar !== false) {
     const nomes = perdidos.slice(0, 4).map(id => { const j = jogoPorId(id); return j ? nomeRodadaJogo(j) : id; }).join(', ');
-    const ok = await confirmar({ titulo: 'Isso vai limpar resultados', msg: `Essa mudança altera ${perdidos.length} jogo(s) do mata-mata que já tinham resultado (${nomes}${perdidos.length > 4 ? '…' : ''}). Eles voltam para "agendado". Continuar?`, ok: 'Continuar', perigo: true });
+    const ok = await confirmar({ titulo: 'Isso vai limpar resultados', msg: `Essa mudanÃ§a altera ${perdidos.length} jogo(s) do mata-mata que jÃ¡ tinham resultado (${nomes}${perdidos.length > 4 ? 'â€¦' : ''}). Eles voltam para "agendado". Continuar?`, ok: 'Continuar', perigo: true });
     if (!ok) return { ok: false, cancelado: true };
   }
-  empilharUndo(o.rot || 'Alteração', o.coal);
+  empilharUndo(o.rot || 'AlteraÃ§Ã£o', o.coal);
   const antes = S.V;
   S.E = novo; recomputar();
   S.campeaoAntes = antes ? antes.campeao : null;
@@ -12151,7 +12150,7 @@ function desfazer() {
   render(); atualizarJogoAberto(); agendarSalvar();
   avisar('Desfeito: ' + u.rot, 'ok');
 }
-// campeã nova? mostra a comemoração (uma vez por campeã)
+// campeÃ£ nova? mostra a comemoraÃ§Ã£o (uma vez por campeÃ£)
 function verCampeao() {
   const c = S.V && S.V.campeao;
   if (S.campeaoVisto === undefined) { S.campeaoVisto = c || null; return; }
@@ -12165,15 +12164,15 @@ function aplicarTemaAtual() {
   return T;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   TELAS — cabeçalho, etapas, abas, barra e as quatro visões (grupos, mata-mata, jogos, times)
-   ═══════════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   TELAS â€” cabeÃ§alho, etapas, abas, barra e as quatro visÃµes (grupos, mata-mata, jogos, times)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function abasDaCopa() {
   const f = S.E.cfg.formato, out = [];
   if (f === 'grupos') out.push(['grupos', 'Grupos']);
-  if (f === 'pontos') out.push(['grupos', 'Classificação']);
+  if (f === 'pontos') out.push(['grupos', 'ClassificaÃ§Ã£o']);
   if (f !== 'pontos') out.push(['mata', 'Mata-mata']);
-  // pontos corridos não tem jogo nenhum (é só cotas/cartões): a aba "Jogos" nunca teria conteúdo
+  // pontos corridos nÃ£o tem jogo nenhum (Ã© sÃ³ cotas/cartÃµes): a aba "Jogos" nunca teria conteÃºdo
   if (f !== 'pontos') out.push(['jogos', 'Jogos']);
   out.push(['times', 'Times']);
   return out;
@@ -12186,17 +12185,17 @@ function abaPadrao() {
   return f === 'mata' ? 'mata' : 'grupos';
 }
 
-// enquanto a fase de grupos está aberta (cotas/cartões rolando, sem mata-mata ainda) os cards do meio mostram
-// Cotas/Cartões em vez de Jogos/Gols — não tem "jogo" nenhum acontecendo nessa fase
+// enquanto a fase de grupos estÃ¡ aberta (cotas/cartÃµes rolando, sem mata-mata ainda) os cards do meio mostram
+// Cotas/CartÃµes em vez de Jogos/Gols â€” nÃ£o tem "jogo" nenhum acontecendo nessa fase
 const emFaseDeCotas = E => E.cfg.formato === 'pontos' || (E.cfg.formato === 'grupos' && !E.gruposFechados);
 function htmlCabecalho() {
   const E = S.E, V = S.V, st = V.stats;
-  const logo = E.logo || '🏆';
+  const logo = E.logo || 'ðŸ†';
   const img = safeUrl(logo);
   const marca = img ? `<img src="${esc(img)}" alt="">` : `<span>${esc(String(logo).slice(0, 4))}</span>`;
   const cotas = emFaseDeCotas(E) && (E.grupos && E.grupos.length);
   const meio = cotas
-    ? `<div class="cx-stat"><b>${st.cotas}</b><span>Cotas</span></div><div class="cx-stat"><b>${st.camarelo + st.vermelho ? `<span style="color:${st.vermelho ? 'var(--cx-bad)' : 'var(--cx-warn)'}">${st.camarelo}${st.vermelho ? '+' + st.vermelho + '🟥' : ''}</span>` : '0'}</b><span>Cartões</span></div>`
+    ? `<div class="cx-stat"><b>${st.cotas}</b><span>Cotas</span></div><div class="cx-stat"><b>${st.camarelo + st.vermelho ? `<span style="color:${st.vermelho ? 'var(--cx-bad)' : 'var(--cx-warn)'}">${st.camarelo}${st.vermelho ? '+' + st.vermelho + 'ðŸŸ¥' : ''}</span>` : '0'}</b><span>CartÃµes</span></div>`
     : `<div class="cx-stat"><b>${st.feitos}<small style="font-size:14px;color:var(--cx-mut)">/${st.jogos}</small></b><span>Jogos</span></div><div class="cx-stat"><b>${st.vivo ? `<span style="color:var(--cx-bad)">${st.vivo}</span>` : st.gols}</b><span>${st.vivo ? 'Ao vivo' : 'Gols'}</span></div>`;
   return `<header class="cx-head">
       <div class="cx-mark">${marca}</div>
@@ -12207,16 +12206,16 @@ function htmlCabecalho() {
         <div class="cx-stat"><b style="font-size:${rotuloFase(V, E).length > 9 ? 17 : 24}px;line-height:${rotuloFase(V, E).length > 9 ? '24px' : '1'}">${esc(rotuloFase(V, E))}</b><span>Fase</span></div>
       </div>
     </header>
-    <div class="cx-sync" data-s="${S.admin ? S.salvo : 'leitura'}"><i></i>${S.admin ? 'Salvo' : 'Somente leitura · ao vivo'}</div>`;
+    <div class="cx-sync" data-s="${S.admin ? S.salvo : 'leitura'}"><i></i>${S.admin ? 'Salvo' : 'Somente leitura Â· ao vivo'}</div>`;
 }
 function htmlEtapas() {
   const E = S.E, V = S.V, f = E.cfg.formato;
-  const passos = f === 'grupos' ? [['times', 'Times'], ['sorteio', 'Sorteio'], ['grupos', 'Grupos'], ['mata', 'Mata-mata'], ['campeao', 'Campeã']]
-    : f === 'mata' ? [['times', 'Times'], ['sorteio', 'Sorteio'], ['mata', 'Mata-mata'], ['campeao', 'Campeã']]
-      : [['times', 'Times'], ['grupos', 'Pontos corridos'], ['campeao', 'Campeã']];
+  const passos = f === 'grupos' ? [['times', 'Times'], ['sorteio', 'Sorteio'], ['grupos', 'Grupos'], ['mata', 'Mata-mata'], ['campeao', 'CampeÃ£']]
+    : f === 'mata' ? [['times', 'Times'], ['sorteio', 'Sorteio'], ['mata', 'Mata-mata'], ['campeao', 'CampeÃ£']]
+      : [['times', 'Times'], ['grupos', 'Pontos corridos'], ['campeao', 'CampeÃ£']];
   const atual = V.fase.startsWith('mata') ? 'mata' : V.fase;
   const idx = Math.max(0, passos.findIndex(p => p[0] === atual));
-  return `<div class="cx-steps" aria-label="Etapas da copa">${passos.map((p, i) => `<div class="cx-step ${i < idx || (atual === 'campeao' && i === idx) ? 'on' : ''} ${i === idx && atual !== 'campeao' ? 'now' : ''}"><i>${i < idx || (atual === 'campeao') ? '✓' : i + 1}</i>${esc(p[1])}</div>`).join('')}</div>`;
+  return `<div class="cx-steps" aria-label="Etapas da copa">${passos.map((p, i) => `<div class="cx-step ${i < idx || (atual === 'campeao' && i === idx) ? 'on' : ''} ${i === idx && atual !== 'campeao' ? 'now' : ''}"><i>${i < idx || (atual === 'campeao') ? 'âœ“' : i + 1}</i>${esc(p[1])}</div>`).join('')}</div>`;
 }
 function htmlAbas() {
   const abas = abasDaCopa();
@@ -12246,7 +12245,7 @@ function htmlBarra() {
 function htmlCampea() {
   const V = S.V, t = V.campeao && timePorId(V.campeao);
   if (!t) return '';
-  return `<div class="cx-champ">${escudo(t)}<div><small>${S.E.cfg.formato === 'pontos' ? 'Campeã do campeonato' : 'Campeã da copa'}</small><b>${esc(t.n)}</b></div><span class="sp"></span>${S.admin ? `<button class="cx-btn sm" data-cx="historico">${ico('book')}Registrar no histórico</button>` : ''}<button class="cx-btn sm ghost" data-cx="celebrar">${ico('trophy')}Ver comemoração</button></div>`;
+  return `<div class="cx-champ">${escudo(t)}<div><small>${S.E.cfg.formato === 'pontos' ? 'CampeÃ£ do campeonato' : 'CampeÃ£ da copa'}</small><b>${esc(t.n)}</b></div><span class="sp"></span>${S.admin ? `<button class="cx-btn sm" data-cx="historico">${ico('book')}Registrar no histÃ³rico</button>` : ''}<button class="cx-btn sm ghost" data-cx="celebrar">${ico('trophy')}Ver comemoraÃ§Ã£o</button></div>`;
 }
 
 /* ---------- vazios ---------- */
@@ -12255,9 +12254,9 @@ function vazio(icone, titulo, texto, botoes) {
 }
 function vazioSemEstrutura() {
   const f = S.E.cfg.formato;
-  if (!S.E.times.length) return vazio('users', 'Comece pelos times', S.admin ? 'Adicione clubes do Brasileirão ou qualquer outro nome para montar a copa.' : 'Os times ainda não foram cadastrados.', S.admin ? `<button class="cx-btn pri" data-cx="addTimes">${ico('plus')}Adicionar times</button>` : '');
-  const txt = f === 'pontos' ? 'Um grupo só: acompanhe as cotas e cartões de cada time e encerre quando quiser definir a campeã.' : f === 'mata' ? 'O sorteio define o chaveamento do mata-mata.' : 'O sorteio distribui os times em grupos. Lá você acompanha cotas e cartões e, quando quiser, fecha a fase e sorteia o mata-mata.';
-  return vazio('shuffle', 'Tudo pronto para começar', S.admin ? txt : 'A copa ainda não começou. Assim que o sorteio sair, ele aparece aqui.',
+  if (!S.E.times.length) return vazio('users', 'Comece pelos times', S.admin ? 'Adicione clubes do BrasileirÃ£o ou qualquer outro nome para montar a copa.' : 'Os times ainda nÃ£o foram cadastrados.', S.admin ? `<button class="cx-btn pri" data-cx="addTimes">${ico('plus')}Adicionar times</button>` : '');
+  const txt = f === 'pontos' ? 'Um grupo sÃ³: acompanhe as cotas e cartÃµes de cada time e encerre quando quiser definir a campeÃ£.' : f === 'mata' ? 'O sorteio define o chaveamento do mata-mata.' : 'O sorteio distribui os times em grupos. LÃ¡ vocÃª acompanha cotas e cartÃµes e, quando quiser, fecha a fase e sorteia o mata-mata.';
+  return vazio('shuffle', 'Tudo pronto para comeÃ§ar', S.admin ? txt : 'A copa ainda nÃ£o comeÃ§ou. Assim que o sorteio sair, ele aparece aqui.',
     S.admin ? `<button class="cx-btn pri" data-cx="${f === 'pontos' ? 'iniciarPontos' : 'sorteio'}">${ico(f === 'pontos' ? 'play' : 'shuffle')}${f === 'pontos' ? 'Iniciar campeonato' : 'Sortear'}</button><button class="cx-btn" data-cx="config">${ico('gear')}Configurar</button>` : '');
 }
 
@@ -12275,17 +12274,17 @@ function htmlLinhaJogo(j, o) {
   const clsB = venc === 'b' ? 'w' : venc === 'a' ? 'l' : '';
   let mid;
   if (j.st === 'ag') mid = `<span class="vs">${dataCurta(j.dt) ? esc(dataCurta(j.dt)) : 'VS'}</span>`;
-  else mid = `<b>${j.ga}</b><i>×</i><b>${j.gb}</b>${isNum(j.pa) && isNum(j.pb) ? `<small>(${j.pa}-${j.pb})</small>` : ''}`;
+  else mid = `<b>${j.ga}</b><i>Ã—</i><b>${j.gb}</b>${isNum(j.pa) && isNum(j.pb) ? `<small>(${j.pa}-${j.pb})</small>` : ''}`;
   const badge = o.badge ? `<span class="cx-tag g" style="--gc:${o.badge.cor};margin-right:2px">${esc(o.badge.txt)}</span>` : '';
   return `<button class="cx-mrow ${j.st} ${S.pulse.has(j.id) ? 'pulse' : ''}" data-cx="jogo" data-id="${esc(j.id)}" aria-label="Abrir jogo">${nome(L.a, clsA)}<span class="cx-msc">${mid}</span>${nome(L.b, clsB)}<span class="cx-mst">${badge}${esc(statusRotulo(j))}</span></button>`;
 }
 
-/* ---------- grupos / classificação: por Cotas (editadas pelo admin) e Cartões (amarelo tira 1 cota, 3 amarelos ou 1 vermelho = expulso) ---------- */
+/* ---------- grupos / classificaÃ§Ã£o: por Cotas (editadas pelo admin) e CartÃµes (amarelo tira 1 cota, 3 amarelos ou 1 vermelho = expulso) ---------- */
 function htmlCartoes(r) {
-  if (r.cvermelho) return `<span class="cx-cart verm" title="Cartão vermelho — expulso">🟥</span>`;
-  if (r.camarelo >= 3) return `<span class="cx-cart verm" title="3 cartões amarelos — expulso">🟨×${r.camarelo}</span>`;
-  if (r.camarelo > 0) return `<span class="cx-cart am" title="${r.camarelo} cartão(ões) amarelo(s) — tira ${r.camarelo} cota(s)">🟨×${r.camarelo}</span>`;
-  return `<span class="cx-cart">—</span>`;
+  if (r.cvermelho) return `<span class="cx-cart verm" title="CartÃ£o vermelho â€” expulso">ðŸŸ¥</span>`;
+  if (r.camarelo >= 3) return `<span class="cx-cart verm" title="3 cartÃµes amarelos â€” expulso">ðŸŸ¨Ã—${r.camarelo}</span>`;
+  if (r.camarelo > 0) return `<span class="cx-cart am" title="${r.camarelo} cartÃ£o(Ãµes) amarelo(s) â€” tira ${r.camarelo} cota(s)">ðŸŸ¨Ã—${r.camarelo}</span>`;
+  return `<span class="cx-cart">â€”</span>`;
 }
 function htmlTabelaGrupo(g, gi) {
   const E = S.E, V = S.V, pontos = E.cfg.formato === 'pontos', tab = V.tabelas[g.id] || [], k = pontos ? 0 : E.cfg.classificam;
@@ -12293,26 +12292,26 @@ function htmlTabelaGrupo(g, gi) {
   const linhas = tab.map((r, i) => {
     const t = timePorId(r.id) || { n: '?', s: '?', c: ['#888', '#fff'] };
     const cls = r.expulso ? 'exp' : i < k ? 'q' : '';
-    const conteudo = `<td><span class="cx-rk">${r.expulso ? '×' : i + 1}</span></td><td class="nm"><div class="cx-tm">${escudo(t)}<span>${esc(t.n)}</span>${r.expulso ? '<small class="cx-exptag">EXPULSO</small>' : ''}</div></td><td><b>${r.cotas}</b></td><td>${htmlCartoes(r)}</td>`;
-    // ícone sempre visível (não só no hover) pra ficar óbvio que dá pra tocar/clicar, inclusive no celular
+    const conteudo = `<td><span class="cx-rk">${r.expulso ? 'Ã—' : i + 1}</span></td><td class="nm"><div class="cx-tm">${escudo(t)}<span>${esc(t.n)}</span>${r.expulso ? '<small class="cx-exptag">EXPULSO</small>' : ''}</div></td><td><b>${r.cotas}</b></td><td>${htmlCartoes(r)}</td>`;
+    // Ã­cone sempre visÃ­vel (nÃ£o sÃ³ no hover) pra ficar Ã³bvio que dÃ¡ pra tocar/clicar, inclusive no celular
     return S.admin
-      ? `<tr class="${cls} clic" data-cx="editCotas" data-id="${esc(r.id)}" tabindex="0" role="button" aria-label="Editar cotas e cartões de ${esc(t.n)}">${conteudo}<td class="cx-editcol">${ico('edit')}</td></tr>`
+      ? `<tr class="${cls} clic" data-cx="editCotas" data-id="${esc(r.id)}" tabindex="0" role="button" aria-label="Editar cotas e cartÃµes de ${esc(t.n)}">${conteudo}<td class="cx-editcol">${ico('edit')}</td></tr>`
       : `<tr class="${cls}">${conteudo}</tr>`;
   }).join('');
   return `<article class="cx-card cx-hov cx-gcard" style="--gc:${cor};--i:${gi}">
-      <div class="cx-ghead"><span class="cx-gbadge">${pontos ? '★' : esc(g.id)}</span><b>${pontos ? 'Tabela do campeonato' : 'Grupo ' + esc(g.id)}</b><span class="pr">${tab.length} time${tab.length !== 1 ? 's' : ''}</span></div>
-      <table class="cx-tbl"><thead><tr><th>#</th><th>Time</th><th>Cotas</th><th>Cartões</th>${S.admin ? '<th></th>' : ''}</tr></thead><tbody>${linhas}</tbody></table>
+      <div class="cx-ghead"><span class="cx-gbadge">${pontos ? 'â˜…' : esc(g.id)}</span><b>${pontos ? 'Tabela do campeonato' : 'Grupo ' + esc(g.id)}</b><span class="pr">${tab.length} time${tab.length !== 1 ? 's' : ''}</span></div>
+      <table class="cx-tbl"><thead><tr><th>#</th><th>Time</th><th>Cotas</th><th>CartÃµes</th>${S.admin ? '<th></th>' : ''}</tr></thead><tbody>${linhas}</tbody></table>
     </article>`;
 }
 function vGrupos() {
   const E = S.E;
   if (!E.grupos || !E.grupos.length) return vazioSemEstrutura();
   const pontos = E.cfg.formato === 'pontos';
-  const info = pontos ? '' : `<div class="cx-sec">${E.grupos.length} grupo${E.grupos.length > 1 ? 's' : ''} · classificam ${E.cfg.classificam} por grupo</div>`;
-  const comIcone = S.admin && !(!pontos && E.gruposFechados); // só quando o lápis de editar realmente aparece nas linhas
+  const info = pontos ? '' : `<div class="cx-sec">${E.grupos.length} grupo${E.grupos.length > 1 ? 's' : ''} Â· classificam ${E.cfg.classificam} por grupo</div>`;
+  const comIcone = S.admin && !(!pontos && E.gruposFechados); // sÃ³ quando o lÃ¡pis de editar realmente aparece nas linhas
   const dica = S.admin
-    ? (pontos ? 'Toque no lápis pra ajustar cotas e cartões de um time.' : (E.gruposFechados ? 'A fase de grupos está fechada: cotas e cartões continuam editáveis pra registro, mas não mudam mais o mata-mata já sorteado.' : 'Toque no lápis pra ajustar cotas, cartões, ou mover o time pra outro grupo.'))
-    : (pontos ? 'Quem está na frente em cotas lidera.' : 'Faixa verde = posição que classifica para o mata-mata.');
+    ? (pontos ? 'Toque no lÃ¡pis pra ajustar cotas e cartÃµes de um time.' : (E.gruposFechados ? 'A fase de grupos estÃ¡ fechada: cotas e cartÃµes continuam editÃ¡veis pra registro, mas nÃ£o mudam mais o mata-mata jÃ¡ sorteado.' : 'Toque no lÃ¡pis pra ajustar cotas, cartÃµes, ou mover o time pra outro grupo.'))
+    : (pontos ? 'Quem estÃ¡ na frente em cotas lidera.' : 'Faixa verde = posiÃ§Ã£o que classifica para o mata-mata.');
   return `${info}<div class="cx-ggrid" style="${pontos ? 'grid-template-columns:minmax(0,760px)' : ''}">${E.grupos.map((g, i) => htmlTabelaGrupo(g, i)).join('')}</div><p class="cx-hint" style="margin-top:14px">${comIcone ? ico('edit') + ' ' : ''}${esc(dica)}</p>`;
 }
 
@@ -12327,7 +12326,7 @@ function htmlCartaoMata(j, i) {
   };
   if (r.bye) {
     const quem = r.a === 'BYE' ? L.b : L.a;
-    return `<div class="cx-mc bye" style="--i:${i}"><div class="ln ${quem.time ? 'w' : 'tbd'}">${escudo(quem.time)}<span class="nm">${esc(quem.time ? quem.time.n : quem.rot)}</span></div><div class="ln tbd"><span class="nm">Folga · avança direto</span></div></div>`;
+    return `<div class="cx-mc bye" style="--i:${i}"><div class="ln ${quem.time ? 'w' : 'tbd'}">${escudo(quem.time)}<span class="nm">${esc(quem.time ? quem.time.n : quem.rot)}</span></div><div class="ln tbd"><span class="nm">Folga Â· avanÃ§a direto</span></div></div>`;
   }
   const rodape = j.st === 'vivo' ? 'Ao vivo' : j.st === 'fim' ? 'Encerrado' : (dataCurta(j.dt) || 'A definir');
   return `<button class="cx-mc ${j.st} ${S.pulse.has(j.id) ? 'pulse' : ''}" data-cx="jogo" data-id="${esc(j.id)}" style="--i:${i}" aria-label="Abrir jogo">${linha(L.a, 'a')}${linha(L.b, 'b')}<div class="ft"><span>${esc(rodape)}</span><span>${esc(j.loc || '')}</span></div></button>`;
@@ -12338,7 +12337,7 @@ function htmlPodio() {
   if (!rf || !rf.done) return '';
   const terc = E.jogos.find(j => j.terceiro), rt = terc && V.mata.get(terc.id);
   const item = (cls, rot, id) => { const t = timePorId(id); return t ? `<div class="cx-card cx-pod ${cls}">${escudo(t)}<div><small>${rot}</small><b>${esc(t.n)}</b></div></div>` : ''; };
-  return `<div class="cx-podio">${item('gold', '1º · Campeã', rf.venc)}${item('', '2º · Vice', rf.perd)}${rt && rt.done ? item('', '3º lugar', rt.venc) : ''}</div>`;
+  return `<div class="cx-podio">${item('gold', '1Âº Â· CampeÃ£', rf.venc)}${item('', '2Âº Â· Vice', rf.perd)}${rt && rt.done ? item('', '3Âº lugar', rt.venc) : ''}</div>`;
 }
 function vMata() {
   const E = S.E, V = S.V;
@@ -12353,7 +12352,7 @@ function vMata() {
     }).join('')}</div></div>`);
   }
   const terc = E.jogos.find(j => j.terceiro);
-  const bloco3 = terc ? `<div class="cx-third"><h4>Disputa de 3º lugar</h4>${htmlCartaoMata(terc, 0)}</div>` : '';
+  const bloco3 = terc ? `<div class="cx-third"><h4>Disputa de 3Âº lugar</h4>${htmlCartaoMata(terc, 0)}</div>` : '';
   return `${htmlPodio()}<div class="cx-bwrap" id="cx-bwrap"><div class="cx-bracket" data-ctx>${cols.join('')}</div>${bloco3}</div>`;
 }
 
@@ -12363,7 +12362,7 @@ function rodadasDisponiveis() {
   const g = [...new Set(E.jogos.filter(j => j.fase === 'g').map(j => j.rodada))].sort((a, b) => a - b);
   g.forEach(r => out.push({ k: 'g' + r, n: `Rodada ${r}`, f: j => j.fase === 'g' && j.rodada === r }));
   for (let rd = 0; rd < S.V.R; rd++) out.push({ k: 'm' + rd, n: nomeRodadaMata(rd, S.V.R), f: j => j.fase === 'm' && j.rd === rd && !j.terceiro });
-  if (E.jogos.some(j => j.terceiro)) out.push({ k: 'm3', n: 'Disputa de 3º lugar', f: j => j.terceiro });
+  if (E.jogos.some(j => j.terceiro)) out.push({ k: 'm3', n: 'Disputa de 3Âº lugar', f: j => j.terceiro });
   return out;
 }
 function rodadaAtual(rs) {
@@ -12403,14 +12402,14 @@ function vTimes() {
   const ord = E.times.slice().sort((a, b) => a.n.localeCompare(b.n, 'pt-BR'));
   const cards = ord.map((t, i) => {
     const g = E.cfg.formato === 'grupos' ? grupoDe(t.id) : null;
-    const tags = `${t.cab ? `<span class="cx-tag">★ Cabeça</span>` : ''}${g ? `<span class="cx-tag g" style="--gc:${corGrupo(g.i)}">Grupo ${esc(g.id)}</span>` : ''}`;
-    const conteudo = `${escudo(t)}<b>${esc(t.n)}</b><small>${esc([t.sub, t.ser ? 'Série ' + t.ser : ''].filter(Boolean).join(' · ') || t.s)}</small>${tags ? `<div class="tags">${tags}</div>` : ''}`;
+    const tags = `${t.cab ? `<span class="cx-tag">â˜… CabeÃ§a</span>` : ''}${g ? `<span class="cx-tag g" style="--gc:${corGrupo(g.i)}">Grupo ${esc(g.id)}</span>` : ''}`;
+    const conteudo = `${escudo(t)}<b>${esc(t.n)}</b><small>${esc([t.sub, t.ser ? 'SÃ©rie ' + t.ser : ''].filter(Boolean).join(' Â· ') || t.s)}</small>${tags ? `<div class="tags">${tags}</div>` : ''}`;
     return S.admin
       ? `<button class="cx-card cx-hov cx-tcard" style="--i:${Math.min(i, 24)}" data-cx="editTime" data-id="${esc(t.id)}" aria-label="Editar ${esc(t.n)}">${conteudo}</button>`
       : `<div class="cx-card cx-hov cx-tcard" style="--i:${Math.min(i, 24)}">${conteudo}</div>`;
   }).join('');
   const add = S.admin && !temEstrutura(E) ? `<button class="cx-btn sm" data-cx="addTimes">${ico('plus')}Adicionar times</button>` : '';
-  const aviso = S.admin && temEstrutura(E) ? '<div class="cx-warn">' + ico('alert') + '<div>O sorteio já foi feito: dá para editar nome, cores e escudo de cada time, mas incluir ou tirar times exige refazer o sorteio (menu Mais → Refazer sorteio).</div></div>' : '';
+  const aviso = S.admin && temEstrutura(E) ? '<div class="cx-warn">' + ico('alert') + '<div>O sorteio jÃ¡ foi feito: dÃ¡ para editar nome, cores e escudo de cada time, mas incluir ou tirar times exige refazer o sorteio (menu Mais â†’ Refazer sorteio).</div></div>' : '';
   return `${aviso}<div class="cx-sec">${E.times.length} time${E.times.length > 1 ? 's' : ''}<span style="flex:none">${add}</span></div><div class="cx-tgrid">${cards}</div>`;
 }
 
@@ -12425,15 +12424,15 @@ function corpoDaAba() {
   }
 }
 function htmlSemCopa() {
-  return `<div class="cx-body">${S.erro ? vazio('alert', 'Não foi possível abrir a copa', S.erro, `<button class="cx-btn" data-cx="recarregar">${ico('refresh')}Tentar de novo</button>`)
-    : S.admin ? vazio('trophy', 'Nenhuma copa criada', 'Monte a primeira copa: escolha os times (do Brasileirão ou outros nomes), o formato e o tema.', `<button class="cx-btn pri" data-cx="novaCopa">${ico('plus')}Criar copa</button>${S.lista.length ? `<button class="cx-btn" data-cx="copas">${ico('layers')}Copas anteriores</button>` : ''}`)
+  return `<div class="cx-body">${S.erro ? vazio('alert', 'NÃ£o foi possÃ­vel abrir a copa', S.erro, `<button class="cx-btn" data-cx="recarregar">${ico('refresh')}Tentar de novo</button>`)
+    : S.admin ? vazio('trophy', 'Nenhuma copa criada', 'Monte a primeira copa: escolha os times (do BrasileirÃ£o ou outros nomes), o formato e o tema.', `<button class="cx-btn pri" data-cx="novaCopa">${ico('plus')}Criar copa</button>${S.lista.length ? `<button class="cx-btn" data-cx="copas">${ico('layers')}Copas anteriores</button>` : ''}`)
       : vazio('trophy', 'Nenhuma copa em andamento', 'Quando o administrador abrir uma nova copa ela aparece aqui, com placares ao vivo.', S.lista.length ? `<button class="cx-btn" data-cx="copas">${ico('layers')}Ver copas anteriores</button>` : '')}</div>`;
 }
 function render() {
   if (!S.raiz) return;
   const inner = $('.cx-inner', S.raiz);
   aplicarTemaAtual();
-  if (S.carregando) { inner.innerHTML = `<div class="cx-body"><div class="cx-empty"><div class="ic">${ico('trophy')}</div><p>Carregando a copa…</p></div></div>`; return; }
+  if (S.carregando) { inner.innerHTML = `<div class="cx-body"><div class="cx-empty"><div class="ic">${ico('trophy')}</div><p>Carregando a copaâ€¦</p></div></div>`; return; }
   if (!S.E) { inner.innerHTML = htmlSemCopa(); return; }
   const abas = abasDaCopa();
   if (!abas.find(a => a[0] === S.aba)) S.aba = abas[0][0];
@@ -12455,11 +12454,11 @@ function posicionarIndicador() {
   S.ix = ix; S.iw = iw;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   MODAIS — jogo, times, configuração, sorteio, copas, campeã
-   ═══════════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   MODAIS â€” jogo, times, configuraÃ§Ã£o, sorteio, copas, campeÃ£
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ---------- imagens (escudo próprio) ---------- */
+/* ---------- imagens (escudo prÃ³prio) ---------- */
 function comprimirImagem(file, max) {
   return new Promise((res, rej) => {
     const url = URL.createObjectURL(file), im = new Image();
@@ -12468,17 +12467,17 @@ function comprimirImagem(file, max) {
       const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
       cv.getContext('2d').drawImage(im, 0, 0, w, h);
       URL.revokeObjectURL(url);
-      cv.toBlob(b => (b ? res(b) : rej(new Error('Não foi possível converter a imagem.'))), 'image/webp', 0.86);
+      cv.toBlob(b => (b ? res(b) : rej(new Error('NÃ£o foi possÃ­vel converter a imagem.'))), 'image/webp', 0.86);
     };
-    im.onerror = () => { URL.revokeObjectURL(url); rej(new Error('Arquivo de imagem inválido.')); };
+    im.onerror = () => { URL.revokeObjectURL(url); rej(new Error('Arquivo de imagem invÃ¡lido.')); };
     im.src = url;
   });
 }
 async function enviarImagem(file, pasta) {
   if (!file) return '';
   if (!/^image\//.test(file.type)) throw new Error('Escolha um arquivo de imagem.');
-  if (file.size > 8 * 1024 * 1024) throw new Error('Imagem muito grande (máx. 8 MB).');
-  if (typeof sb === 'undefined' || !sb.storage) throw new Error('Envio de imagem indisponível aqui. Cole o endereço (https) da imagem.');
+  if (file.size > 8 * 1024 * 1024) throw new Error('Imagem muito grande (mÃ¡x. 8 MB).');
+  if (typeof sb === 'undefined' || !sb.storage) throw new Error('Envio de imagem indisponÃ­vel aqui. Cole o endereÃ§o (https) da imagem.');
   const blob = await comprimirImagem(file, 320);
   const path = `${pasta}/${uid()}-${Date.now()}.webp`;
   const { error } = await sb.storage.from('portal-uploads').upload(path, blob, { upsert: true, contentType: 'image/webp' });
@@ -12497,13 +12496,13 @@ async function subirParaCampo(idCampo, pasta, btn) {
   if (!f) return;
   const campo = document.getElementById(idCampo);
   const rot = btn ? btn.innerHTML : '';
-  if (btn) { btn.disabled = true; btn.textContent = 'Enviando…'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviandoâ€¦'; }
   try { campo.value = await enviarImagem(f, pasta); campo.dispatchEvent(new Event('input', { bubbles: true })); avisar('Imagem enviada.'); }
   catch (e) { avisar(e.message, 'err'); }
   finally { if (btn) { btn.disabled = false; btn.innerHTML = rot; } }
 }
 
-/* ═════════ JOGO ═════════ */
+/* â•â•â•â•â•â•â•â•â• JOGO â•â•â•â•â•â•â•â•â• */
 function abrirJogo(id, ids) {
   if (!jogoPorId(id)) return;
   S.jogoAberto = { id, ids: ids && ids.length ? ids : [id], bump: '' };
@@ -12528,11 +12527,11 @@ function htmlJogo() {
   const edita = S.admin && definido;
   const venc = vencedorDoJogo(j);
   const side = (l, lado) => `<div class="cx-side ${venc === lado ? 'w' : ''} ${l.time ? '' : 'tbd'}">${escudo(l.time)}<b>${esc(l.time ? l.time.n : l.rot)}</b>${l.time && l.time.sub ? `<small>${esc(l.time.sub)}</small>` : ''}</div>`;
-  const num = lado => (j.st === 'ag' ? '–' : (lado === 'a' ? j.ga : j.gb));
-  const adj = lado => (edita ? `<div class="cx-adj"><button data-cx="gol" data-l="${lado}" data-d="-1" aria-label="Menos um gol" ${j.st === 'ag' || !(lado === 'a' ? j.ga : j.gb) ? 'disabled' : ''}>−</button><button data-cx="gol" data-l="${lado}" data-d="1" aria-label="Mais um gol">+</button></div>` : '');
+  const num = lado => (j.st === 'ag' ? 'â€“' : (lado === 'a' ? j.ga : j.gb));
+  const adj = lado => (edita ? `<div class="cx-adj"><button data-cx="gol" data-l="${lado}" data-d="-1" aria-label="Menos um gol" ${j.st === 'ag' || !(lado === 'a' ? j.ga : j.gb) ? 'disabled' : ''}>âˆ’</button><button data-cx="gol" data-l="${lado}" data-d="1" aria-label="Mais um gol">+</button></div>` : '');
   const bump = l => (S.jogoAberto.bump === l ? 'bump' : '');
   const empateMata = j.fase === 'm' && j.st !== 'ag' && j.ga === j.gb;
-  const pen = empateMata ? `<div class="cx-pen"><span class="cx-lbl">Pênaltis</span><input class="cx-in" type="number" min="0" max="99" inputmode="numeric" data-cxi="pen" data-l="a" value="${isNum(j.pa) ? j.pa : ''}" ${edita ? '' : 'disabled'} aria-label="Pênaltis do primeiro time"><span style="color:var(--cx-mut)">×</span><input class="cx-in" type="number" min="0" max="99" inputmode="numeric" data-cxi="pen" data-l="b" value="${isNum(j.pb) ? j.pb : ''}" ${edita ? '' : 'disabled'} aria-label="Pênaltis do segundo time"></div>` : '';
+  const pen = empateMata ? `<div class="cx-pen"><span class="cx-lbl">PÃªnaltis</span><input class="cx-in" type="number" min="0" max="99" inputmode="numeric" data-cxi="pen" data-l="a" value="${isNum(j.pa) ? j.pa : ''}" ${edita ? '' : 'disabled'} aria-label="PÃªnaltis do primeiro time"><span style="color:var(--cx-mut)">Ã—</span><input class="cx-in" type="number" min="0" max="99" inputmode="numeric" data-cxi="pen" data-l="b" value="${isNum(j.pb) ? j.pb : ''}" ${edita ? '' : 'disabled'} aria-label="PÃªnaltis do segundo time"></div>` : '';
   const pill = `<span class="cx-pill ${j.st}">${j.st === 'vivo' ? 'Ao vivo' : j.st === 'fim' ? 'Encerrado' : 'Agendado'}</span>`;
   let acoes = '';
   if (edita) {
@@ -12541,18 +12540,18 @@ function htmlJogo() {
         : `<button class="cx-btn" data-cx="jogoSt" data-st="vivo">${ico('undo')}Reabrir</button><button class="cx-btn ghost" data-cx="jogoSt" data-st="ag">Zerar</button>`;
   }
   const info = edita
-    ? `<div class="cx-row" style="margin-top:14px"><div class="cx-f" style="margin:0"><label>Data e hora</label><input class="cx-in" type="datetime-local" data-cxi="jdt" value="${esc(j.dt || '')}"></div><div class="cx-f" style="margin:0"><label>Local</label><input class="cx-in" maxlength="60" data-cxi="jloc" value="${esc(j.loc || '')}" placeholder="Estádio, sala…"></div></div>`
-    : (j.dt || j.loc ? `<p class="cx-hint" style="text-align:center;margin:8px 0 0">${esc([dataCurta(j.dt), j.loc].filter(Boolean).join(' · '))}</p>` : '');
-  const aviso = S.admin && !definido ? `<div class="cx-warn">${ico('alert')}<div>${r && r.bye ? 'Este jogo é uma folga: o time avança direto.' : 'Aguardando a definição dos dois times. Assim que os jogos anteriores terminarem, o placar poderá ser lançado.'}</div></div>` : '';
+    ? `<div class="cx-row" style="margin-top:14px"><div class="cx-f" style="margin:0"><label>Data e hora</label><input class="cx-in" type="datetime-local" data-cxi="jdt" value="${esc(j.dt || '')}"></div><div class="cx-f" style="margin:0"><label>Local</label><input class="cx-in" maxlength="60" data-cxi="jloc" value="${esc(j.loc || '')}" placeholder="EstÃ¡dio, salaâ€¦"></div></div>`
+    : (j.dt || j.loc ? `<p class="cx-hint" style="text-align:center;margin:8px 0 0">${esc([dataCurta(j.dt), j.loc].filter(Boolean).join(' Â· '))}</p>` : '');
+  const aviso = S.admin && !definido ? `<div class="cx-warn">${ico('alert')}<div>${r && r.bye ? 'Este jogo Ã© uma folga: o time avanÃ§a direto.' : 'Aguardando a definiÃ§Ã£o dos dois times. Assim que os jogos anteriores terminarem, o placar poderÃ¡ ser lanÃ§ado.'}</div></div>` : '';
   const i = S.jogoAberto.ids.indexOf(j.id), tem = S.jogoAberto.ids.length > 1;
-  const nav = tem ? `<div class="cx-nav"><button class="cx-ib" data-cx="jogoNav" data-d="-1" aria-label="Jogo anterior" ${i <= 0 ? 'disabled style="opacity:.35"' : ''}>${ico('left')}</button><button class="cx-ib" data-cx="jogoNav" data-d="1" aria-label="Próximo jogo" ${i >= S.jogoAberto.ids.length - 1 ? 'disabled style="opacity:.35"' : ''}>${ico('right')}</button></div><span class="cx-hint">${i + 1}/${S.jogoAberto.ids.length}</span>` : '';
+  const nav = tem ? `<div class="cx-nav"><button class="cx-ib" data-cx="jogoNav" data-d="-1" aria-label="Jogo anterior" ${i <= 0 ? 'disabled style="opacity:.35"' : ''}>${ico('left')}</button><button class="cx-ib" data-cx="jogoNav" data-d="1" aria-label="PrÃ³ximo jogo" ${i >= S.jogoAberto.ids.length - 1 ? 'disabled style="opacity:.35"' : ''}>${ico('right')}</button></div><span class="cx-hint">${i + 1}/${S.jogoAberto.ids.length}</span>` : '';
   return `<div class="cx-modal" role="dialog" aria-modal="true" aria-label="Jogo">
-    <div class="cx-mh"><div style="flex:1;min-width:0"><small>${esc(nomeRodadaJogo(j))}</small><h3>${esc((L.a.time ? L.a.time.n : L.a.rot) + ' × ' + (L.b.time ? L.b.time.n : L.b.rot))}</h3></div>${pill}<button class="cx-ib" data-cx="fechar" aria-label="Fechar">${ico('x')}</button></div>
-    <div class="cx-mb">${aviso}<div class="cx-board">${side(L.a, 'a')}<div class="cx-score"><div><div class="n ${bump('a')}">${num('a')}</div>${adj('a')}</div><span class="x">×</span><div><div class="n ${bump('b')}">${num('b')}</div>${adj('b')}</div></div>${side(L.b, 'b')}</div>${pen}${acoes ? `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${acoes}</div>` : ''}${info}</div>
+    <div class="cx-mh"><div style="flex:1;min-width:0"><small>${esc(nomeRodadaJogo(j))}</small><h3>${esc((L.a.time ? L.a.time.n : L.a.rot) + ' Ã— ' + (L.b.time ? L.b.time.n : L.b.rot))}</h3></div>${pill}<button class="cx-ib" data-cx="fechar" aria-label="Fechar">${ico('x')}</button></div>
+    <div class="cx-mb">${aviso}<div class="cx-board">${side(L.a, 'a')}<div class="cx-score"><div><div class="n ${bump('a')}">${num('a')}</div>${adj('a')}</div><span class="x">Ã—</span><div><div class="n ${bump('b')}">${num('b')}</div>${adj('b')}</div></div>${side(L.b, 'b')}</div>${pen}${acoes ? `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${acoes}</div>` : ''}${info}</div>
     <div class="cx-mf">${nav}<span class="sp"></span><button class="cx-btn" data-cx="fechar">Fechar</button></div></div>`;
 }
 
-/* ═════════ TIMES ═════════ */
+/* â•â•â•â•â•â•â•â•â• TIMES â•â•â•â•â•â•â•â•â• */
 const CORES_BASE = ['#c8102e', '#0b6b3a', '#0033a0', '#161616', '#e4002b', '#0d80bf', '#f5c400', '#7a1f3d'];
 function htmlFormTime(t, idp) {
   t = t || { n: '', s: '', c: ['#d4a847', '#ffffff'], logo: '', sub: '', cab: false };
@@ -12561,9 +12560,9 @@ function htmlFormTime(t, idp) {
       <div class="cx-f"><label for="${idp}-s">Sigla</label><input class="cx-in" id="${idp}-s" maxlength="4" value="${esc(t.s || '')}" placeholder="Auto" data-cxi="tprev" data-p="${idp}" autocomplete="off" style="text-transform:uppercase"></div></div>
     <div class="cx-row"><div class="cx-f"><label>Cor principal</label><input class="cx-col" type="color" id="${idp}-c1" value="${esc(safeColor(t.c && t.c[0], '#d4a847'))}" data-cxi="tprev" data-p="${idp}" style="width:100%"></div>
       <div class="cx-f"><label>Cor do contorno</label><input class="cx-col" type="color" id="${idp}-c2" value="${esc(safeColor(t.c && t.c[1], '#ffffff'))}" data-cxi="tprev" data-p="${idp}" style="width:100%"></div></div>
-    <div class="cx-f"><label for="${idp}-sub">Legenda (opcional)</label><input class="cx-in" id="${idp}-sub" maxlength="40" value="${esc(t.sub || '')}" placeholder="Cidade, setor, apelido…" autocomplete="off"></div>
-    <div class="cx-f"><label for="${idp}-logo">Imagem do escudo (opcional)</label><div class="cx-photo"><input class="cx-in" id="${idp}-logo" value="${esc(t.logo || '')}" placeholder="https://… ou envie um arquivo" data-cxi="tprev" data-p="${idp}" autocomplete="off"><button class="cx-btn sm" type="button" data-cx="upload" data-alvo="${idp}-logo" data-pasta="copa-times">${ico('upload')}Enviar</button></div></div>
-    <button type="button" class="cx-tog ${t.cab ? 'on' : ''}" data-cx="togCab" id="${idp}-cab" style="background:none;border:0;color:inherit;font:inherit;text-align:left;width:100%"><span class="sw"></span><span><b>Cabeça de chave</b><span class="d">No sorteio, cabeças de chave ficam em grupos diferentes (ou nas primeiras posições da chave).</span></span></button>`;
+    <div class="cx-f"><label for="${idp}-sub">Legenda (opcional)</label><input class="cx-in" id="${idp}-sub" maxlength="40" value="${esc(t.sub || '')}" placeholder="Cidade, setor, apelidoâ€¦" autocomplete="off"></div>
+    <div class="cx-f"><label for="${idp}-logo">Imagem do escudo (opcional)</label><div class="cx-photo"><input class="cx-in" id="${idp}-logo" value="${esc(t.logo || '')}" placeholder="https://â€¦ ou envie um arquivo" data-cxi="tprev" data-p="${idp}" autocomplete="off"><button class="cx-btn sm" type="button" data-cx="upload" data-alvo="${idp}-logo" data-pasta="copa-times">${ico('upload')}Enviar</button></div></div>
+    <button type="button" class="cx-tog ${t.cab ? 'on' : ''}" data-cx="togCab" id="${idp}-cab" style="background:none;border:0;color:inherit;font:inherit;text-align:left;width:100%"><span class="sw"></span><span><b>CabeÃ§a de chave</b><span class="d">No sorteio, cabeÃ§as de chave ficam em grupos diferentes (ou nas primeiras posiÃ§Ãµes da chave).</span></span></button>`;
 }
 function lerFormTime(idp) {
   const v = id => { const e = document.getElementById(idp + '-' + id); return e ? e.value.trim() : ''; };
@@ -12577,10 +12576,10 @@ function atualizarPreviaTime(idp) {
   const pn = document.getElementById(idp + '-pn'); if (pn) pn.textContent = f.n || 'Nome do time';
 }
 
-// seletor: Brasileirão | lista de nomes | um time
+// seletor: BrasileirÃ£o | lista de nomes | um time
 function abrirPicker() {
   if (!S.admin) return;
-  if (temEstrutura(S.E)) return avisar('O sorteio já foi feito. Para incluir times, refaça o sorteio (menu Mais).', 'err');
+  if (temEstrutura(S.E)) return avisar('O sorteio jÃ¡ foi feito. Para incluir times, refaÃ§a o sorteio (menu Mais).', 'err');
   S.picker = { modo: 'br', sel: new Set(), busca: '', serie: 'todos' };
   abrirModal(htmlPicker(), { kind: 'picker' });
   renderCatalogo();
@@ -12588,15 +12587,15 @@ function abrirPicker() {
 const jaTem = nome => S.E.times.some(t => t.n.toLowerCase() === String(nome).toLowerCase());
 function htmlPicker() {
   const p = S.picker;
-  const seg = `<div class="cx-seg" style="margin-bottom:16px"><button class="${p.modo === 'br' ? 'on' : ''}" data-cx="pickModo" data-m="br">Brasileirão</button><button class="${p.modo === 'lista' ? 'on' : ''}" data-cx="pickModo" data-m="lista">Lista de nomes</button><button class="${p.modo === 'um' ? 'on' : ''}" data-cx="pickModo" data-m="um">Um time</button></div>`;
+  const seg = `<div class="cx-seg" style="margin-bottom:16px"><button class="${p.modo === 'br' ? 'on' : ''}" data-cx="pickModo" data-m="br">BrasileirÃ£o</button><button class="${p.modo === 'lista' ? 'on' : ''}" data-cx="pickModo" data-m="lista">Lista de nomes</button><button class="${p.modo === 'um' ? 'on' : ''}" data-cx="pickModo" data-m="um">Um time</button></div>`;
   let corpo;
   if (p.modo === 'br') {
-    corpo = `${seg}<div class="cx-row" style="align-items:flex-end"><div class="cx-f" style="margin:0;flex:2"><label for="cx-busca">Buscar</label><input class="cx-in" id="cx-busca" data-cxi="pickBusca" placeholder="Nome ou estado (ex.: SP)" value="${esc(p.busca)}" autocomplete="off"></div><div class="cx-chips" style="margin:0;flex:none">${[['todos', 'Todos'], ['A', 'Série A'], ['B', 'Série B']].map(([k, n]) => `<button class="cx-chip ${p.serie === k ? 'on' : ''}" data-cx="pickSerie" data-s="${k}">${n}</button>`).join('')}</div></div>
-      <div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap"><button class="cx-btn sm" data-cx="pickTodos">Selecionar os que aparecem</button><button class="cx-btn sm ghost" data-cx="pickLimpar">Limpar seleção</button><span class="cx-hint" id="cx-pick-n"></span></div>
-      <div class="cx-cat" id="cx-cat"></div><p class="cx-hint" style="margin-top:14px">Os escudos são desenhados com as cores do clube (sem usar marcas oficiais). Dá para editar cor, sigla e imagem depois de adicionar.</p>`;
+    corpo = `${seg}<div class="cx-row" style="align-items:flex-end"><div class="cx-f" style="margin:0;flex:2"><label for="cx-busca">Buscar</label><input class="cx-in" id="cx-busca" data-cxi="pickBusca" placeholder="Nome ou estado (ex.: SP)" value="${esc(p.busca)}" autocomplete="off"></div><div class="cx-chips" style="margin:0;flex:none">${[['todos', 'Todos'], ['A', 'SÃ©rie A'], ['B', 'SÃ©rie B']].map(([k, n]) => `<button class="cx-chip ${p.serie === k ? 'on' : ''}" data-cx="pickSerie" data-s="${k}">${n}</button>`).join('')}</div></div>
+      <div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap"><button class="cx-btn sm" data-cx="pickTodos">Selecionar os que aparecem</button><button class="cx-btn sm ghost" data-cx="pickLimpar">Limpar seleÃ§Ã£o</button><span class="cx-hint" id="cx-pick-n"></span></div>
+      <div class="cx-cat" id="cx-cat"></div><p class="cx-hint" style="margin-top:14px">Times do BrasileirÃ£o jÃ¡ vÃªm com o brasÃ£o oficial. DÃ¡ para trocar a imagem, cor e sigla depois de adicionar.</p>`;
   } else if (p.modo === 'lista') {
     corpo = `${seg}<div class="cx-f"><label for="cx-lista">Um nome por linha</label><textarea class="cx-in" id="cx-lista" data-cxi="pickLista" rows="9" placeholder="Ana Souza&#10;Carlos Lima; CAR&#10;Equipe Alfa; ALF; #0d80bf; #ffffff" spellcheck="false"></textarea></div>
-      <p class="cx-hint">Serve para pessoas, equipes ou qualquer outro nome. Opcional depois do nome, separado por <b>;</b>: sigla, cor principal e cor do contorno. Sem cor escolhida, cada nome ganha uma cor própria.</p><p class="cx-hint" id="cx-lista-n" style="margin-top:8px"></p>`;
+      <p class="cx-hint">Serve para pessoas, equipes ou qualquer outro nome. Opcional depois do nome, separado por <b>;</b>: sigla, cor principal e cor do contorno. Sem cor escolhida, cada nome ganha uma cor prÃ³pria.</p><p class="cx-hint" id="cx-lista-n" style="margin-top:8px"></p>`;
   } else {
     corpo = `${seg}${htmlFormTime(null, 'cx-p')}`;
   }
@@ -12616,8 +12615,8 @@ function renderCatalogo() {
   const p = S.picker, box = $('#cx-cat'); if (!box) { atualizarBotaoPicker(); return; }
   const lista = catalogoFiltrado();
   box.innerHTML = lista.map(({ c, i }) => {
-    const t = novoTime({ n: c.n, s: c.s, c1: c.c[0], c2: c.c[1] });
-    return `<button class="cx-pick ${jaTem(c.n) ? 'has' : (p.sel.has(i) ? 'on' : '')}" data-cx="pickCat" data-i="${i}">${escudo(t)}<span><b>${esc(c.n)}</b><small>${esc(c.uf)} · Série ${esc(c.ser)}</small></span></button>`;
+    const t = novoTime({ n: c.n, s: c.s, c1: c.c[0], c2: c.c[1], logo: c.l });
+    return `<button class="cx-pick ${jaTem(c.n) ? 'has' : (p.sel.has(i) ? 'on' : '')}" data-cx="pickCat" data-i="${i}">${escudo(t)}<span><b>${esc(c.n)}</b><small>${esc(c.uf)} Â· SÃ©rie ${esc(c.ser)}</small></span></button>`;
   }).join('') || '<p class="cx-hint">Nenhum clube encontrado. Use "Lista de nomes" ou "Um time" para digitar outro nome.</p>';
   atualizarBotaoPicker();
 }
@@ -12636,19 +12635,19 @@ function atualizarBotaoPicker() {
   const btn = $('#cx-pick-add'), cont = $('#cx-pick-n'), contL = $('#cx-lista-n');
   let n = 0;
   if (p.modo === 'br') n = p.sel.size;
-  else if (p.modo === 'lista') { const l = parseLista(($('#cx-lista') || {}).value); n = l.filter(x => !jaTem(x.n)).length; if (contL) contL.textContent = l.length ? `${n} nome(s) novo(s) para adicionar${l.length - n ? ` · ${l.length - n} já estão na copa` : ''}` : ''; }
+  else if (p.modo === 'lista') { const l = parseLista(($('#cx-lista') || {}).value); n = l.filter(x => !jaTem(x.n)).length; if (contL) contL.textContent = l.length ? `${n} nome(s) novo(s) para adicionar${l.length - n ? ` Â· ${l.length - n} jÃ¡ estÃ£o na copa` : ''}` : ''; }
   else n = 1;
   if (cont) cont.textContent = p.sel.size ? `${p.sel.size} selecionado(s)` : '';
   if (btn) { btn.disabled = n === 0; btn.innerHTML = `${ico('plus')}${p.modo === 'um' ? 'Adicionar time' : `Adicionar ${n || ''} time${n === 1 ? '' : 's'}`}`; }
 }
 async function confirmarPicker() {
   const p = S.picker; let novos = [];
-  if (p.modo === 'br') novos = [...p.sel].map(i => ({ n: CATALOGO[i].n, s: CATALOGO[i].s, c1: CATALOGO[i].c[0], c2: CATALOGO[i].c[1], ser: CATALOGO[i].ser, sub: CATALOGO[i].uf }));
+  if (p.modo === 'br') novos = [...p.sel].map(i => ({ n: CATALOGO[i].n, s: CATALOGO[i].s, c1: CATALOGO[i].c[0], c2: CATALOGO[i].c[1], ser: CATALOGO[i].ser, sub: CATALOGO[i].uf, logo: CATALOGO[i].l }));
   else if (p.modo === 'lista') novos = parseLista(($('#cx-lista') || {}).value);
   else { const f = lerFormTime('cx-p'); if (!f.n) return avisar('Digite o nome do time.', 'err'); novos = [f]; }
   novos = novos.filter(x => !jaTem(x.n));
   if (!novos.length) return avisar('Nada novo para adicionar.', 'err');
-  if (S.E.times.length + novos.length > 64) return avisar('O limite é de 64 times por copa.', 'err');
+  if (S.E.times.length + novos.length > 64) return avisar('O limite Ã© de 64 times por copa.', 'err');
   const r = await mutar(E => { novos.forEach(x => E.times.push(novoTime(x))); }, { rot: 'Adicionar times' });
   if (r && r.ok) {
     avisar(`${novos.length} time(s) adicionado(s).`);
@@ -12664,16 +12663,16 @@ function abrirEditTime(id) {
   const trava = temEstrutura(S.E);
   abrirModal(moldura({
     titulo: 'Editar time', sub: t.n, cls: '',
-    corpo: htmlFormTime(t, 'cx-e') + (trava ? `<div class="cx-hint">O sorteio já foi feito, então o time não pode ser excluído agora (refaça o sorteio pelo menu Mais).</div>` : ''),
+    corpo: htmlFormTime(t, 'cx-e') + (trava ? `<div class="cx-hint">O sorteio jÃ¡ foi feito, entÃ£o o time nÃ£o pode ser excluÃ­do agora (refaÃ§a o sorteio pelo menu Mais).</div>` : ''),
     rodape: `<button class="cx-btn bad ${trava ? 'off' : ''}" data-cx="delTime" data-id="${esc(id)}">${ico('trash')}Excluir</button><span class="sp"></span><button class="cx-btn ghost" data-cx="fechar">Cancelar</button><button class="cx-btn pri" data-cx="saveTime" data-id="${esc(id)}">Salvar</button>`,
   }), { kind: 'time' });
 }
 async function salvarTime(id) {
   const f = lerFormTime('cx-e'); if (!f.n) return avisar('O time precisa de um nome.', 'err');
-  if (S.E.times.some(t => t.id !== id && t.n.toLowerCase() === f.n.toLowerCase())) return avisar('Já existe um time com esse nome.', 'err');
+  if (S.E.times.some(t => t.id !== id && t.n.toLowerCase() === f.n.toLowerCase())) return avisar('JÃ¡ existe um time com esse nome.', 'err');
   const r = await mutar(E => {
-    const t = E.times.find(x => x.id === id); if (!t) return { ok: false, erro: 'Time não encontrado.' };
-    // preserva cotas/cartões: editar nome/cor não pode apagar o que já foi apurado pro time
+    const t = E.times.find(x => x.id === id); if (!t) return { ok: false, erro: 'Time nÃ£o encontrado.' };
+    // preserva cotas/cartÃµes: editar nome/cor nÃ£o pode apagar o que jÃ¡ foi apurado pro time
     const novo = novoTime({ id, n: f.n, s: f.s, c1: f.c1, c2: f.c2, logo: f.logo, sub: f.sub, cab: f.cab, ser: t.ser, cotas: t.cotas, camarelo: t.camarelo, cvermelho: t.cvermelho });
     Object.assign(t, novo);
   }, { rot: 'Editar time' });
@@ -12687,7 +12686,7 @@ async function excluirTime(id) {
   if (r && r.ok) fecharModal(S.modais.find(m => m.dataset.kind === 'time'));
 }
 
-/* ═════════ COTAS E CARTÕES (fase de grupos) ═════════ */
+/* â•â•â•â•â•â•â•â•â• COTAS E CARTÃ•ES (fase de grupos) â•â•â•â•â•â•â•â•â• */
 function abrirEditarCotas(timeId) {
   const t = timePorId(timeId); if (!t || !S.admin) return;
   S.cotasAlvo = timeId;
@@ -12699,31 +12698,31 @@ function htmlEditarCotas() {
   const podeMover = !E.gruposFechados && E.grupos && E.grupos.length > 1;
   const exp = expulso(t);
   const corpo = `<div class="cx-prev">${escudo(t)}<div style="min-width:0"><b style="font-size:15px">${esc(t.n)}</b>${grupoAtual ? `<div class="cx-hint">Grupo ${esc(grupoAtual.id)}</div>` : ''}</div></div>
-    ${exp ? `<div class="cx-warn bad">${ico('alert')}<div>Expulso — não entra na classificação, mesmo tendo mais cotas que os outros.</div></div>` : ''}
+    ${exp ? `<div class="cx-warn bad">${ico('alert')}<div>Expulso â€” nÃ£o entra na classificaÃ§Ã£o, mesmo tendo mais cotas que os outros.</div></div>` : ''}
     <div class="cx-f"><label for="cx-cot-n">Cotas</label><input class="cx-in" id="cx-cot-n" type="number" inputmode="numeric" min="0" step="1" value="${t.cotas}" data-cxi="cotasNum"></div>
-    <div class="cx-lbl" style="margin:14px 0 8px">Cartões</div>
+    <div class="cx-lbl" style="margin:14px 0 8px">CartÃµes</div>
     <div class="cx-row" style="align-items:flex-end;flex-wrap:wrap">
-      <div class="cx-f" style="margin:0;min-width:170px"><label>Amarelos <span class="cx-hint" style="font-weight:400">· cada um tira 1 cota, 3 expulsam</span></label>
-        <div class="cx-step2"><button type="button" data-cx="cotCartaoAm" data-d="-1" aria-label="Menos um amarelo">−</button><output>${t.camarelo}</output><button type="button" data-cx="cotCartaoAm" data-d="1" aria-label="Mais um amarelo">+</button></div>
+      <div class="cx-f" style="margin:0;min-width:170px"><label>Amarelos <span class="cx-hint" style="font-weight:400">Â· cada um tira 1 cota, 3 expulsam</span></label>
+        <div class="cx-step2"><button type="button" data-cx="cotCartaoAm" data-d="-1" aria-label="Menos um amarelo">âˆ’</button><output>${t.camarelo}</output><button type="button" data-cx="cotCartaoAm" data-d="1" aria-label="Mais um amarelo">+</button></div>
       </div>
-      <button type="button" class="cx-btn ${t.cvermelho ? 'bad' : ''}" data-cx="cotCartaoVerm">🟥 ${t.cvermelho ? 'Remover cartão vermelho' : 'Aplicar cartão vermelho'}</button>
+      <button type="button" class="cx-btn ${t.cvermelho ? 'bad' : ''}" data-cx="cotCartaoVerm">ðŸŸ¥ ${t.cvermelho ? 'Remover cartÃ£o vermelho' : 'Aplicar cartÃ£o vermelho'}</button>
     </div>
     ${podeMover ? `<div class="cx-f" style="margin-top:16px"><label for="cx-cot-grp">Mover para o grupo</label><select class="cx-sel" id="cx-cot-grp" data-cxi="cotasGrupo">${E.grupos.map(g => `<option value="${esc(g.id)}" ${grupoAtual && grupoAtual.id === g.id ? 'selected' : ''}>Grupo ${esc(g.id)}</option>`).join('')}</select></div>` : ''}`;
-  return moldura({ titulo: 'Cotas e cartões', sub: t.n, cls: 'sm', corpo, rodape: `<button class="cx-btn pri blk" data-cx="fechar">Pronto</button>` });
+  return moldura({ titulo: 'Cotas e cartÃµes', sub: t.n, cls: 'sm', corpo, rodape: `<button class="cx-btn pri blk" data-cx="fechar">Pronto</button>` });
 }
 function repintarEditarCotas() {
   const ovl = S.modais.find(m => m.dataset.kind === 'cotas'); if (!ovl || !S.cotasAlvo) return;
   ovl.innerHTML = htmlEditarCotas();
 }
 
-/* ═════════ FECHAR A FASE DE GRUPOS ═════════ */
+/* â•â•â•â•â•â•â•â•â• FECHAR A FASE DE GRUPOS â•â•â•â•â•â•â•â•â• */
 function abrirFecharGrupos() {
   if (!S.admin) return;
   const E = S.E, pontos = E.cfg.formato === 'pontos';
   if (pontos) {
     const t = tabelaGrupo(E, E.grupos[0].id), lider = t.find(r => !r.expulso);
     const nome = lider ? (timePorId(lider.id) || {}).n : null;
-    confirmar({ titulo: 'Encerrar temporada?', msg: nome ? `"${nome}" está na liderança e vira campeã. Dá pra reabrir depois, se precisar corrigir algo.` : 'Ainda não há um líder definido (empate ou só times expulsos).', ok: 'Encerrar', perigo: true })
+    confirmar({ titulo: 'Encerrar temporada?', msg: nome ? `"${nome}" estÃ¡ na lideranÃ§a e vira campeÃ£. DÃ¡ pra reabrir depois, se precisar corrigir algo.` : 'Ainda nÃ£o hÃ¡ um lÃ­der definido (empate ou sÃ³ times expulsos).', ok: 'Encerrar', perigo: true })
       .then(ok => { if (ok) mutar(E2 => fecharFaseDeGrupos(E2), { rot: 'Encerrar temporada', perguntar: false }); });
     return;
   }
@@ -12732,12 +12731,12 @@ function abrirFecharGrupos() {
 function htmlFecharGrupos() {
   const E = S.E;
   const porGrupo = E.grupos.map((g, gi) => ({ g, gi, fila: tabelaGrupo(E, g.id) }));
-  const corpo = `<p class="cx-hint" style="margin:0 0 14px">Isso trava as cotas e cartões de agora e sorteia o mata-mata com quem se classificou. Dá pra reabrir depois (menu Mais) se precisar corrigir algo, mas o mata-mata já sorteado é apagado.</p>
+  const corpo = `<p class="cx-hint" style="margin:0 0 14px">Isso trava as cotas e cartÃµes de agora e sorteia o mata-mata com quem se classificou. DÃ¡ pra reabrir depois (menu Mais) se precisar corrigir algo, mas o mata-mata jÃ¡ sorteado Ã© apagado.</p>
     <div class="cx-draw">${porGrupo.map(({ g, gi, fila }) => `<div class="cx-dg" style="--gc:${corGrupo(gi)}"><h5><span class="cx-gbadge">${esc(g.id)}</span>Grupo ${esc(g.id)}</h5><ul>${fila.map((r, i) => {
     const t = timePorId(r.id) || { n: '?', s: '?', c: ['#888', '#fff'] }, vai = !r.expulso && i < E.cfg.classificam;
-    return `<li style="--i:${gi * 4 + i};opacity:${r.expulso ? '.5' : '1'}">${escudo(t)}<span>${esc(t.n)}${r.expulso ? ' · expulso' : ''}</span><b style="color:${vai ? 'var(--cx-ok)' : 'var(--cx-mut)'};font-family:var(--cx-font-d);font-size:13px;flex:none">${r.cotas}</b></li>`;
+    return `<li style="--i:${gi * 4 + i};opacity:${r.expulso ? '.5' : '1'}">${escudo(t)}<span>${esc(t.n)}${r.expulso ? ' Â· expulso' : ''}</span><b style="color:${vai ? 'var(--cx-ok)' : 'var(--cx-mut)'};font-family:var(--cx-font-d);font-size:13px;flex:none">${r.cotas}</b></li>`;
   }).join('')}</ul></div>`).join('')}</div>
-    <p class="cx-hint" style="margin-top:12px"><span style="color:var(--cx-ok)">▍</span> vai pro mata-mata (classificam ${E.cfg.classificam} por grupo).</p>`;
+    <p class="cx-hint" style="margin-top:12px"><span style="color:var(--cx-ok)">â–</span> vai pro mata-mata (classificam ${E.cfg.classificam} por grupo).</p>`;
   return moldura({ titulo: 'Fechar fase de grupos', sub: 'Confira antes de sortear o mata-mata', corpo, cls: 'wide', rodape: `<button class="cx-btn ghost" data-cx="fechar">Cancelar</button><span class="sp"></span><button class="cx-btn pri" data-cx="fecharGruposOk">${ico('check')}Fechar e sortear mata-mata</button>` });
 }
 async function confirmarFecharGrupos() {
@@ -12745,11 +12744,11 @@ async function confirmarFecharGrupos() {
   if (r && r.ok) { fecharModal(S.modais.find(m => m.dataset.kind === 'fecharGrupos')); S.aba = 'mata'; S.animar = true; render(); avisar('Mata-mata sorteado!'); }
 }
 
-/* ═════════ CONFIGURAÇÃO ═════════ */
+/* â•â•â•â•â•â•â•â•â• CONFIGURAÃ‡ÃƒO â•â•â•â•â•â•â•â•â• */
 function abrirConfig() {
   if (!S.admin) return;
   const E = S.E;
-  S.cfgDraft = { titulo: E.titulo, subtitulo: E.subtitulo, logo: E.logo || '🏆', cfg: clone(E.cfg) };
+  S.cfgDraft = { titulo: E.titulo, subtitulo: E.subtitulo, logo: E.logo || 'ðŸ†', cfg: clone(E.cfg) };
   abrirModal(htmlConfig(), { kind: 'config', foco: false });
 }
 function estruturalMudou(d) {
@@ -12759,28 +12758,28 @@ function estruturalMudou(d) {
 function resumoCfg(d) {
   const c = d.cfg, T = S.E.times.length;
   if (!T) return 'Depois de adicionar os times, aqui aparece o resumo do formato.';
-  if (c.formato === 'pontos') return `${T} times, todos no mesmo grupo. Cotas e cartões definem quem lidera; você encerra a temporada quando quiser.`;
-  if (c.formato === 'mata') { const N = nextPow2(Math.max(T, 2)); return `${T} times em chave de ${N} vagas${N > T ? ` (${N - T} folga${N - T > 1 ? 's' : ''} para os cabeças de chave)` : ''}: ${nomeRodadaMata(0, log2(N))} até a final.`; }
+  if (c.formato === 'pontos') return `${T} times, todos no mesmo grupo. Cotas e cartÃµes definem quem lidera; vocÃª encerra a temporada quando quiser.`;
+  if (c.formato === 'mata') { const N = nextPow2(Math.max(T, 2)); return `${T} times em chave de ${N} vagas${N > T ? ` (${N - T} folga${N - T > 1 ? 's' : ''} para os cabeÃ§as de chave)` : ''}: ${nomeRodadaMata(0, log2(N))} atÃ© a final.`; }
   const q = c.nGrupos * c.classificam, N = nextPow2(Math.max(q, 2));
   const tam = Math.floor(T / c.nGrupos), extra = T % c.nGrupos;
-  return `${c.nGrupos} grupo${c.nGrupos > 1 ? 's' : ''} de ${tam}${extra ? ` ou ${tam + 1}` : ''} times, por cotas e cartões. Classificam ${c.classificam} por grupo (${q}) → ${nomeRodadaMata(0, log2(N))}${N > q ? ` (${N - q} folga${N - q > 1 ? 's' : ''})` : ''} quando você fechar a fase de grupos.`;
+  return `${c.nGrupos} grupo${c.nGrupos > 1 ? 's' : ''} de ${tam}${extra ? ` ou ${tam + 1}` : ''} times, por cotas e cartÃµes. Classificam ${c.classificam} por grupo (${q}) â†’ ${nomeRodadaMata(0, log2(N))}${N > q ? ` (${N - q} folga${N - q > 1 ? 's' : ''})` : ''} quando vocÃª fechar a fase de grupos.`;
 }
 function htmlConfig() {
   const d = S.cfgDraft, c = d.cfg, T = S.E.times.length;
   const fmt = (k, n, desc) => `<button class="cx-opt ${c.formato === k ? 'on' : ''}" data-cx="cfgFormato" data-f="${k}"><span class="dot"></span><div><b>${n}</b><span>${desc}</span></div></button>`;
-  const stepper = (k, min, max) => `<div class="cx-step2"><button data-cx="cfgStep" data-k="${k}" data-d="-1" aria-label="Diminuir">−</button><output>${c[k]}</output><button data-cx="cfgStep" data-k="${k}" data-d="1" aria-label="Aumentar">+</button></div>`;
+  const stepper = (k, min, max) => `<div class="cx-step2"><button data-cx="cfgStep" data-k="${k}" data-d="-1" aria-label="Diminuir">âˆ’</button><output>${c[k]}</output><button data-cx="cfgStep" data-k="${k}" data-d="1" aria-label="Aumentar">+</button></div>`;
   const tog = (k, nome, desc) => `<button type="button" class="cx-tog ${c[k] === true || c[k] === 2 ? 'on' : ''}" data-cx="cfgTog" data-k="${k}" style="background:none;border:0;color:inherit;font:inherit;text-align:left;width:100%"><span class="sw"></span><span><b>${nome}</b><span class="d">${desc}</span></span></button>`;
   const estr = estruturalMudou(d) && temEstrutura(S.E);
   const erros = T ? validarCfg({ ...S.E, cfg: c }) : [];
   const corpo = `<div class="cx-f"><label for="cx-c-titulo">Nome da copa</label><input class="cx-in" id="cx-c-titulo" maxlength="60" value="${esc(d.titulo)}" data-cxi="cfgTexto" data-k="titulo"></div>
-    <div class="cx-row"><div class="cx-f"><label for="cx-c-sub">Subtítulo</label><input class="cx-in" id="cx-c-sub" maxlength="60" value="${esc(d.subtitulo)}" data-cxi="cfgTexto" data-k="subtitulo"></div>
-    <div class="cx-f"><label for="cx-c-logo">Ícone (emoji ou imagem)</label><div class="cx-photo"><input class="cx-in" id="cx-c-logo" maxlength="300" value="${esc(d.logo)}" data-cxi="cfgTexto" data-k="logo" placeholder="🏆"><button class="cx-btn sm" type="button" data-cx="upload" data-alvo="cx-c-logo" data-pasta="copa-logos">${ico('upload')}</button></div></div></div>
-    <div class="cx-lbl" style="margin-bottom:8px">Formato</div><div class="cx-opts">${fmt('grupos', 'Fase de grupos + mata-mata', 'Estilo Copa do Mundo: grupos, depois eliminatórias até a final.')}${fmt('mata', 'Mata-mata direto', 'Chave eliminatória desde o começo (com folga se o número de times não for potência de 2).')}${fmt('pontos', 'Pontos corridos', 'Estilo Brasileirão: todos contra todos, o líder é o campeão.')}</div>
+    <div class="cx-row"><div class="cx-f"><label for="cx-c-sub">SubtÃ­tulo</label><input class="cx-in" id="cx-c-sub" maxlength="60" value="${esc(d.subtitulo)}" data-cxi="cfgTexto" data-k="subtitulo"></div>
+    <div class="cx-f"><label for="cx-c-logo">Ãcone (emoji ou imagem)</label><div class="cx-photo"><input class="cx-in" id="cx-c-logo" maxlength="300" value="${esc(d.logo)}" data-cxi="cfgTexto" data-k="logo" placeholder="ðŸ†"><button class="cx-btn sm" type="button" data-cx="upload" data-alvo="cx-c-logo" data-pasta="copa-logos">${ico('upload')}</button></div></div></div>
+    <div class="cx-lbl" style="margin-bottom:8px">Formato</div><div class="cx-opts">${fmt('grupos', 'Fase de grupos + mata-mata', 'Estilo Copa do Mundo: grupos, depois eliminatÃ³rias atÃ© a final.')}${fmt('mata', 'Mata-mata direto', 'Chave eliminatÃ³ria desde o comeÃ§o (com folga se o nÃºmero de times nÃ£o for potÃªncia de 2).')}${fmt('pontos', 'Pontos corridos', 'Estilo BrasileirÃ£o: todos contra todos, o lÃ­der Ã© o campeÃ£o.')}</div>
     ${c.formato === 'grupos' ? `<div class="cx-row"><div class="cx-f"><label>Quantidade de grupos</label>${stepper('nGrupos')}</div><div class="cx-f"><label>Classificam por grupo</label>${stepper('classificam')}</div></div>` : ''}
-    ${c.formato !== 'pontos' ? tog('terceiro', 'Disputa de 3º lugar', 'Os perdedores das semifinais jogam entre si.') : ''}
+    ${c.formato !== 'pontos' ? tog('terceiro', 'Disputa de 3Âº lugar', 'Os perdedores das semifinais jogam entre si.') : ''}
     <div class="cx-prev" style="margin-bottom:0"><div class="cx-hint" style="color:var(--cx-text)" id="cx-cfg-res">${esc(resumoCfg(d))}</div></div>
     ${erros.length ? `<div class="cx-warn" style="margin-top:14px">${ico('alert')}<div>${esc(erros[0])}</div></div>` : ''}
-    ${estr ? `<div class="cx-warn bad" style="margin-top:14px">${ico('alert')}<div>Mudar o formato ou os grupos <b>refaz o sorteio</b> (volta pra fase de times/cotas). Os times continuam na copa, com as cotas e cartões que já tiverem.</div></div>` : ''}`;
+    ${estr ? `<div class="cx-warn bad" style="margin-top:14px">${ico('alert')}<div>Mudar o formato ou os grupos <b>refaz o sorteio</b> (volta pra fase de times/cotas). Os times continuam na copa, com as cotas e cartÃµes que jÃ¡ tiverem.</div></div>` : ''}`;
   return moldura({ titulo: 'Configurar copa', sub: 'Formato e regras', corpo, rodape: `<button class="cx-btn ghost" data-cx="fechar">Cancelar</button><span class="sp"></span><button class="cx-btn pri" data-cx="cfgSalvar">Salvar</button>`, cls: '' });
 }
 function repintarConfig() {
@@ -12795,20 +12794,20 @@ async function salvarConfig() {
   const estr = estruturalMudou(d) && temEstrutura(E0);
   if (estr) {
     const tem = E0.jogos.some(temResultado);
-    if (!await confirmar({ titulo: 'Refazer o sorteio?', msg: tem ? 'O sorteio será desfeito e todos os jogos e resultados serão apagados.' : 'O sorteio será desfeito e você precisará sortear de novo.', ok: 'Refazer', perigo: true })) return;
+    if (!await confirmar({ titulo: 'Refazer o sorteio?', msg: tem ? 'O sorteio serÃ¡ desfeito e todos os jogos e resultados serÃ£o apagados.' : 'O sorteio serÃ¡ desfeito e vocÃª precisarÃ¡ sortear de novo.', ok: 'Refazer', perigo: true })) return;
   }
   const r = await mutar(E => {
-    E.titulo = titulo; E.subtitulo = d.subtitulo.trim(); E.logo = d.logo.trim() || '🏆';
+    E.titulo = titulo; E.subtitulo = d.subtitulo.trim(); E.logo = d.logo.trim() || 'ðŸ†';
     const terceiroAntes = E.cfg.terceiro;
     E.cfg = clone(d.cfg);
     if (E.cfg.formato === 'pontos') E.cfg.nGrupos = 1;
     if (estr) reiniciarSorteio(E);
     else if (temEstrutura(E) && terceiroAntes !== E.cfg.terceiro) alternarTerceiro(E, E.cfg.terceiro);
-  }, { rot: 'Configuração', perguntar: false });
+  }, { rot: 'ConfiguraÃ§Ã£o', perguntar: false });
   if (r && r.ok) { fecharModal(S.modais.find(m => m.dataset.kind === 'config')); S.aba = abasDaCopa().find(a => a[0] === S.aba) ? S.aba : abasDaCopa()[0][0]; render(); }
 }
 
-/* ═════════ SORTEIO ═════════ */
+/* â•â•â•â•â•â•â•â•â• SORTEIO â•â•â•â•â•â•â•â•â• */
 function abrirSorteio() {
   if (!S.admin) return;
   const E = S.E, f = E.cfg.formato;
@@ -12820,7 +12819,7 @@ function abrirSorteio() {
     abrirModal(htmlSorteio(), { kind: 'sorteio', foco: false });
   };
   if (temEstrutura(E) && E.jogos.some(temResultado)) {
-    confirmar({ titulo: 'Refazer o sorteio?', msg: 'Todos os jogos e resultados atuais serão apagados.', ok: 'Refazer', perigo: true }).then(ok => { if (ok) rodar(); });
+    confirmar({ titulo: 'Refazer o sorteio?', msg: 'Todos os jogos e resultados atuais serÃ£o apagados.', ok: 'Refazer', perigo: true }).then(ok => { if (ok) rodar(); });
   } else rodar();
 }
 function htmlSorteio() {
@@ -12828,11 +12827,11 @@ function htmlSorteio() {
   let corpo, sub;
   if (s.tipo === 'g') {
     sub = `${E.cfg.nGrupos} grupos`;
-    corpo = `<p class="cx-hint" style="margin:0 0 14px">Cabeças de chave (★) ficam em grupos diferentes. Se quiser trocar alguém de grupo, use o seletor ao lado do nome.</p><div class="cx-draw">${s.grupos.map((g, gi) => `<div class="cx-dg" style="--gc:${corGrupo(gi)}"><h5><span class="cx-gbadge">${esc(g.id)}</span>Grupo ${esc(g.id)}<span class="cx-hint" style="margin-left:auto">${g.ids.length}</span></h5><ul>${g.ids.map((id, i) => { const t = timePorId(id); return `<li style="--i:${gi * 4 + i}">${escudo(t)}<span>${t.cab ? '★ ' : ''}${esc(t.n)}</span><select aria-label="Mover ${esc(t.n)} de grupo" data-cxi="sortMove" data-id="${esc(id)}">${s.grupos.map(x => `<option ${x.id === g.id ? 'selected' : ''}>${esc(x.id)}</option>`).join('')}</select></li>`; }).join('')}</ul></div>`).join('')}</div>`;
+    corpo = `<p class="cx-hint" style="margin:0 0 14px">CabeÃ§as de chave (â˜…) ficam em grupos diferentes. Se quiser trocar alguÃ©m de grupo, use o seletor ao lado do nome.</p><div class="cx-draw">${s.grupos.map((g, gi) => `<div class="cx-dg" style="--gc:${corGrupo(gi)}"><h5><span class="cx-gbadge">${esc(g.id)}</span>Grupo ${esc(g.id)}<span class="cx-hint" style="margin-left:auto">${g.ids.length}</span></h5><ul>${g.ids.map((id, i) => { const t = timePorId(id); return `<li style="--i:${gi * 4 + i}">${escudo(t)}<span>${t.cab ? 'â˜… ' : ''}${esc(t.n)}</span><select aria-label="Mover ${esc(t.n)} de grupo" data-cxi="sortMove" data-id="${esc(id)}">${s.grupos.map(x => `<option ${x.id === g.id ? 'selected' : ''}>${esc(x.id)}</option>`).join('')}</select></li>`; }).join('')}</ul></div>`).join('')}</div>`;
   } else {
     const T = s.seeds.length, N = nextPow2(Math.max(T, 2));
     sub = 'Chaveamento';
-    corpo = `<p class="cx-hint" style="margin:0 0 14px">A ordem abaixo é a posição na chave (1 = cabeça de chave). ${N > T ? `Com ${T} times numa chave de ${N}, os ${N - T} primeiros ganham folga na 1ª rodada.` : ''} Use as setas para ajustar.</p><ol class="cx-seeds">${s.seeds.map((id, i) => { const t = timePorId(id); return `<li style="--i:${i}"><span class="n">${i + 1}</span>${escudo(t)}<span class="t">${t.cab ? '★ ' : ''}${esc(t.n)}</span>${i < N - T ? '<span class="cx-tag">Folga</span>' : ''}<button class="cx-ib" data-cx="seedMove" data-i="${i}" data-d="-1" ${i === 0 ? 'disabled style="opacity:.3"' : ''} aria-label="Subir">${ico('up')}</button><button class="cx-ib" data-cx="seedMove" data-i="${i}" data-d="1" ${i === s.seeds.length - 1 ? 'disabled style="opacity:.3"' : ''} aria-label="Descer">${ico('down')}</button></li>`; }).join('')}</ol>`;
+    corpo = `<p class="cx-hint" style="margin:0 0 14px">A ordem abaixo Ã© a posiÃ§Ã£o na chave (1 = cabeÃ§a de chave). ${N > T ? `Com ${T} times numa chave de ${N}, os ${N - T} primeiros ganham folga na 1Âª rodada.` : ''} Use as setas para ajustar.</p><ol class="cx-seeds">${s.seeds.map((id, i) => { const t = timePorId(id); return `<li style="--i:${i}"><span class="n">${i + 1}</span>${escudo(t)}<span class="t">${t.cab ? 'â˜… ' : ''}${esc(t.n)}</span>${i < N - T ? '<span class="cx-tag">Folga</span>' : ''}<button class="cx-ib" data-cx="seedMove" data-i="${i}" data-d="-1" ${i === 0 ? 'disabled style="opacity:.3"' : ''} aria-label="Subir">${ico('up')}</button><button class="cx-ib" data-cx="seedMove" data-i="${i}" data-d="1" ${i === s.seeds.length - 1 ? 'disabled style="opacity:.3"' : ''} aria-label="Descer">${ico('down')}</button></li>`; }).join('')}</ol>`;
   }
   return moldura({ titulo: 'Sorteio', sub, corpo, cls: 'wide', rodape: `<button class="cx-btn ghost" data-cx="fechar">Cancelar</button><button class="cx-btn" data-cx="sorteioDeNovo">${ico('shuffle')}Sortear de novo</button><span class="sp"></span><button class="cx-btn pri" data-cx="sorteioOk">${ico('check')}Confirmar</button>` });
 }
@@ -12852,7 +12851,7 @@ async function iniciarPontos() {
   if (r && r.ok) { S.aba = 'grupos'; S.animar = true; render(); }
 }
 
-/* ═════════ TEMA ═════════ */
+/* â•â•â•â•â•â•â•â•â• TEMA â•â•â•â•â•â•â•â•â• */
 function abrirTema() {
   if (!S.admin) return;
   fecharTema();
@@ -12862,23 +12861,23 @@ function abrirTema() {
 function fecharTema() { const d = $('.cx-drawer', S.camada); if (d) d.remove(); }
 function htmlTema() {
   const T = resolverTema(S.E.tema), c = coresEfetivas(T);
-  const nomes = { bg: 'Fundo', surf: 'Cartões', text: 'Texto', accent: 'Destaque', accent2: 'Destaque 2' };
+  const nomes = { bg: 'Fundo', surf: 'CartÃµes', text: 'Texto', accent: 'Destaque', accent2: 'Destaque 2' };
   const presets = Object.entries(PRESETS).map(([k, p]) => {
     const cor = p.follow ? coresDoPortal() : p;
     return `<button class="cx-preset ${T.preset === k ? 'on' : ''}" data-cx="temaPreset" data-k="${k}"><div class="sw"><i style="background:${cor.bg}"></i><i style="background:${cor.surf}"></i><i style="background:${cor.accent}"></i><i style="background:${cor.accent2}"></i></div><span>${esc(p.n)}</span></button>`;
   }).join('');
-  const cores = T.preset === 'portal' ? '<p class="cx-hint">Este tema usa as cores do próprio Portal (claro/escuro). Para escolher cores livres, selecione outro tema ou mexa em uma cor abaixo.</p>' : '';
+  const cores = T.preset === 'portal' ? '<p class="cx-hint">Este tema usa as cores do prÃ³prio Portal (claro/escuro). Para escolher cores livres, selecione outro tema ou mexa em uma cor abaixo.</p>' : '';
   const seg = (k, opts, atual) => `<div class="cx-seg">${Object.entries(opts).map(([v, n]) => `<button class="${atual === v ? 'on' : ''}" data-cx="temaSeg" data-k="${k}" data-v="${v}">${typeof n === 'string' ? n : n.n}</button>`).join('')}</div>`;
   return `<div class="cx-mh"><div style="flex:1"><small>Personalizar</small><h3>Tema da copa</h3></div><button class="cx-ib" data-cx="temaFechar" aria-label="Fechar">${ico('x')}</button></div>
     <div class="cx-mb"><div class="cx-lbl" style="margin-bottom:8px">Modelos</div><div class="cx-presets">${presets}</div>
     <div class="cx-lbl" style="margin:18px 0 10px">Cores</div>${cores}<div class="cx-colors">${CORES_CHAVES.map(k => `<div class="cx-cf"><div style="flex:none"><label>${nomes[k]}</label><input class="cx-col" type="color" data-cxi="temaCor" data-k="${k}" value="${esc(c[k])}"></div><input class="cx-in" data-cxi="temaHex" data-k="${k}" value="${esc(c[k])}" maxlength="7" aria-label="${nomes[k]} em hexadecimal" style="margin-top:18px"></div>`).join('')}</div>
     <div class="cx-f" style="margin-top:18px"><label>Fundo</label>${seg('fundo', FUNDOS, T.fundo)}</div>
     <div class="cx-f"><label>Fonte</label>${seg('fonte', FONTES, T.fonte)}</div>
-    <div class="cx-f"><label>Cantos arredondados · <span id="cx-v-radius">${T.radius}px</span></label><input class="cx-range" type="range" min="0" max="24" step="1" value="${T.radius}" data-cxi="temaRange" data-k="radius"></div>
-    <div class="cx-f"><label>Brilho dos efeitos · <span id="cx-v-glow">${T.glow}%</span></label><input class="cx-range" type="range" min="0" max="140" step="5" value="${T.glow}" data-cxi="temaRange" data-k="glow"></div>
-    <button type="button" class="cx-tog ${T.fx ? 'on' : ''}" data-cx="temaFx" style="background:none;border:0;color:inherit;font:inherit;text-align:left;width:100%"><span class="sw"></span><span><b>Animações</b><span class="d">Transições, brilho e confete. Desligue se preferir tudo parado.</span></span></button>
-    <button class="cx-btn blk" style="margin-top:14px" data-cx="temaPadrao">${ico('undo')}Restaurar padrão</button></div>
-    <div class="cx-mf"><span class="cx-hint" style="flex:1">As mudanças são salvas sozinhas e todo mundo vê o mesmo tema.</span><button class="cx-btn pri" data-cx="temaFechar">Pronto</button></div>`;
+    <div class="cx-f"><label>Cantos arredondados Â· <span id="cx-v-radius">${T.radius}px</span></label><input class="cx-range" type="range" min="0" max="24" step="1" value="${T.radius}" data-cxi="temaRange" data-k="radius"></div>
+    <div class="cx-f"><label>Brilho dos efeitos Â· <span id="cx-v-glow">${T.glow}%</span></label><input class="cx-range" type="range" min="0" max="140" step="5" value="${T.glow}" data-cxi="temaRange" data-k="glow"></div>
+    <button type="button" class="cx-tog ${T.fx ? 'on' : ''}" data-cx="temaFx" style="background:none;border:0;color:inherit;font:inherit;text-align:left;width:100%"><span class="sw"></span><span><b>AnimaÃ§Ãµes</b><span class="d">TransiÃ§Ãµes, brilho e confete. Desligue se preferir tudo parado.</span></span></button>
+    <button class="cx-btn blk" style="margin-top:14px" data-cx="temaPadrao">${ico('undo')}Restaurar padrÃ£o</button></div>
+    <div class="cx-mf"><span class="cx-hint" style="flex:1">As mudanÃ§as sÃ£o salvas sozinhas e todo mundo vÃª o mesmo tema.</span><button class="cx-btn pri" data-cx="temaFechar">Pronto</button></div>`;
 }
 function repintarTema() { const d = $('.cx-drawer', S.camada); if (!d) return; const mb = $('.cx-mb', d), y = mb ? mb.scrollTop : 0; d.innerHTML = htmlTema(); const nb = $('.cx-mb', d); if (nb) nb.scrollTop = y; }
 // muda o tema sem redesenhar a tela toda (arrastar cor/controle deslizante precisa ser fluido)
@@ -12889,9 +12888,9 @@ function alterarTema(fn, redesenhar) {
   });
 }
 
-/* ═════════ COPAS, MENU, CAMPEÃ ═════════ */
+/* â•â•â•â•â•â•â•â•â• COPAS, MENU, CAMPEÃƒ â•â•â•â•â•â•â•â•â• */
 function abrirCopas() {
-  const item = c => `<div class="cx-copa ${c.id === S.id ? 'on' : ''}"><div class="i"><b>${esc(c.titulo)}</b><small>${c.ativo ? 'Vigente' : 'Arquivada'} · atualizada ${esc(dataCurta(c.atualizado_em) || '—')}</small></div>${c.id === S.id ? '<span class="cx-tag">Aberta</span>' : `<button class="cx-btn sm" data-cx="abrirCopa" data-id="${esc(c.id)}">Abrir</button>`}${S.admin && !c.ativo ? `<button class="cx-btn sm ghost" data-cx="tornarAtiva" data-id="${esc(c.id)}">Tornar vigente</button>` : ''}${S.admin ? `<button class="cx-ib" data-cx="excluirCopa" data-id="${esc(c.id)}" aria-label="Excluir" title="Excluir">${ico('trash')}</button>` : ''}</div>`;
+  const item = c => `<div class="cx-copa ${c.id === S.id ? 'on' : ''}"><div class="i"><b>${esc(c.titulo)}</b><small>${c.ativo ? 'Vigente' : 'Arquivada'} Â· atualizada ${esc(dataCurta(c.atualizado_em) || 'â€”')}</small></div>${c.id === S.id ? '<span class="cx-tag">Aberta</span>' : `<button class="cx-btn sm" data-cx="abrirCopa" data-id="${esc(c.id)}">Abrir</button>`}${S.admin && !c.ativo ? `<button class="cx-btn sm ghost" data-cx="tornarAtiva" data-id="${esc(c.id)}">Tornar vigente</button>` : ''}${S.admin ? `<button class="cx-ib" data-cx="excluirCopa" data-id="${esc(c.id)}" aria-label="Excluir" title="Excluir">${ico('trash')}</button>` : ''}</div>`;
   abrirModal(moldura({ titulo: 'Copas', sub: 'Vigente e anteriores', corpo: `<div class="cx-copas">${S.lista.map(item).join('') || '<p class="cx-hint">Nenhuma copa criada.</p>'}</div>`, rodape: `<button class="cx-btn ghost" data-cx="fechar">Fechar</button>${S.admin ? `<span class="sp"></span><button class="cx-btn pri" data-cx="novaCopa">${ico('plus')}Nova copa</button>` : ''}` }), { kind: 'copas', foco: false });
 }
 function abrirMais() {
@@ -12899,14 +12898,14 @@ function abrirMais() {
   const it = (a, i, t, d, cls) => `<button class="${cls || ''}" data-cx="${a}">${ico(i)}<span>${t}${d ? `<small>${d}</small>` : ''}</span></button>`;
   const itens = [
     it('copas', 'layers', 'Copas', 'Abrir outra copa ou criar uma nova'),
-    !S.meta.ativo ? it('tornarAtivaAtual', 'star', 'Tornar esta a copa vigente', 'É a que aparece para todo mundo') : '',
-    V.campeao ? it('historico', 'book', 'Registrar campeã no histórico', 'Adiciona em "Campeões por edição"') : '',
-    E.gruposFechados ? it('reabrirGrupos', 'undo', f === 'pontos' ? 'Reabrir temporada' : 'Reabrir fase de grupos', f === 'pontos' ? 'Tira a campeã, volta a aceitar cotas/cartões' : 'Apaga o mata-mata sorteado; cotas e grupos continuam') : '',
-    E.jogos.length ? it('zerar', 'refresh', 'Zerar resultados do mata-mata', 'Mantém o chaveamento, limpa os placares') : '',
+    !S.meta.ativo ? it('tornarAtivaAtual', 'star', 'Tornar esta a copa vigente', 'Ã‰ a que aparece para todo mundo') : '',
+    V.campeao ? it('historico', 'book', 'Registrar campeÃ£ no histÃ³rico', 'Adiciona em "CampeÃµes por ediÃ§Ã£o"') : '',
+    E.gruposFechados ? it('reabrirGrupos', 'undo', f === 'pontos' ? 'Reabrir temporada' : 'Reabrir fase de grupos', f === 'pontos' ? 'Tira a campeÃ£, volta a aceitar cotas/cartÃµes' : 'Apaga o mata-mata sorteado; cotas e grupos continuam') : '',
+    E.jogos.length ? it('zerar', 'refresh', 'Zerar resultados do mata-mata', 'MantÃ©m o chaveamento, limpa os placares') : '',
     temEstrutura(E) ? it('resetSorteio', 'shuffle', f === 'pontos' ? 'Reiniciar temporada' : 'Refazer sorteio', 'Apaga tudo isso e volta pra fase de times') : '',
-    it('excluirAtual', 'trash', 'Excluir esta copa', 'Não dá para desfazer', 'bad'),
+    it('excluirAtual', 'trash', 'Excluir esta copa', 'NÃ£o dÃ¡ para desfazer', 'bad'),
   ].filter(Boolean).join('');
-  abrirModal(moldura({ titulo: 'Mais opções', cls: 'sm', corpo: `<div class="cx-menu">${itens}</div>` }), { kind: 'mais', foco: false });
+  abrirModal(moldura({ titulo: 'Mais opÃ§Ãµes', cls: 'sm', corpo: `<div class="cx-menu">${itens}</div>` }), { kind: 'mais', foco: false });
 }
 function modalCampea() {
   const t = S.V && S.V.campeao && timePorId(S.V.campeao);
@@ -12914,23 +12913,23 @@ function modalCampea() {
   const cores = ['#f0c75a', '#ffffff', c0(), c1_()], conf = Array.from({ length: 70 }, () => `<i style="--x:${Math.random() * 100}%;--c:${cores[Math.floor(Math.random() * cores.length)]};--t:${(2.6 + Math.random() * 2.4).toFixed(2)}s;--d:${(Math.random() * 3).toFixed(2)}s;--r:${Math.round(180 + Math.random() * 540)}deg"></i>`).join('');
   function c0() { return safeColor(t.c[0], '#d4a847'); }
   function c1_() { return safeColor(t.c[1], '#ffffff'); }
-  abrirModal(`<div class="cx-modal sm"><div class="cx-win"><div class="cx-conf">${conf}</div>${escudo(t)}<small>${S.E.cfg.formato === 'pontos' ? 'Campeã do campeonato' : 'Campeã da copa'}</small><h3>${esc(t.n)}</h3><p>${esc(S.E.titulo)}</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;position:relative"><button class="cx-btn" data-cx="fechar">Fechar</button>${S.admin ? `<button class="cx-btn pri" data-cx="historico">${ico('book')}Registrar no histórico</button>` : ''}</div></div></div>`, { kind: 'campea', foco: false });
+  abrirModal(`<div class="cx-modal sm"><div class="cx-win"><div class="cx-conf">${conf}</div>${escudo(t)}<small>${S.E.cfg.formato === 'pontos' ? 'CampeÃ£ do campeonato' : 'CampeÃ£ da copa'}</small><h3>${esc(t.n)}</h3><p>${esc(S.E.titulo)}</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;position:relative"><button class="cx-btn" data-cx="fechar">Fechar</button>${S.admin ? `<button class="cx-btn pri" data-cx="historico">${ico('book')}Registrar no histÃ³rico</button>` : ''}</div></div></div>`, { kind: 'campea', foco: false });
 }
 async function registrarHistorico() {
   const t = S.V.campeao && timePorId(S.V.campeao); if (!t) return;
-  if (typeof sb === 'undefined') return avisar('Indisponível neste ambiente.', 'err');
+  if (typeof sb === 'undefined') return avisar('IndisponÃ­vel neste ambiente.', 'err');
   const ano = (String(S.E.subtitulo).match(/(20\d{2})/) || [])[1] ? +String(S.E.subtitulo).match(/(20\d{2})/)[1] : new Date().getFullYear();
-  if (typeof allCopaEdicoes !== 'undefined' && allCopaEdicoes.some(e => (e.tipo || 'copa') === 'copa' && e.ano === ano && e.equipe_campea === t.n && e.titulo === S.E.titulo)) return avisar('Esta campeã já está no histórico.', 'err');
-  if (!await confirmar({ titulo: 'Registrar no histórico', msg: `Adicionar "${t.n}" em "Campeões por edição" (${ano})?`, ok: 'Registrar' })) return;
+  if (typeof allCopaEdicoes !== 'undefined' && allCopaEdicoes.some(e => (e.tipo || 'copa') === 'copa' && e.ano === ano && e.equipe_campea === t.n && e.titulo === S.E.titulo)) return avisar('Esta campeÃ£ jÃ¡ estÃ¡ no histÃ³rico.', 'err');
+  if (!await confirmar({ titulo: 'Registrar no histÃ³rico', msg: `Adicionar "${t.n}" em "CampeÃµes por ediÃ§Ã£o" (${ano})?`, ok: 'Registrar' })) return;
   const { error } = await sb.from('portal_copa_edicoes').insert({ ano, titulo: S.E.titulo, equipe_campea: t.n, tipo: 'copa', ordem: 0, descricao: S.E.subtitulo || null });
-  if (error) return avisar('Não foi possível registrar: ' + error.message, 'err');
-  avisar('Campeã registrada no histórico.');
-  try { const r = await sb.from('portal_copa_edicoes').select('*').order('ano', { ascending: false }); if (r.data && typeof allCopaEdicoes !== 'undefined') { allCopaEdicoes.length = 0; r.data.forEach(x => allCopaEdicoes.push(x)); } if (typeof renderCopaTimeline === 'function') renderCopaTimeline(); } catch (e) { /* atualizar a lista é opcional */ }
+  if (error) return avisar('NÃ£o foi possÃ­vel registrar: ' + error.message, 'err');
+  avisar('CampeÃ£ registrada no histÃ³rico.');
+  try { const r = await sb.from('portal_copa_edicoes').select('*').order('ano', { ascending: false }); if (r.data && typeof allCopaEdicoes !== 'undefined') { allCopaEdicoes.length = 0; r.data.forEach(x => allCopaEdicoes.push(x)); } if (typeof renderCopaTimeline === 'function') renderCopaTimeline(); } catch (e) { /* atualizar a lista Ã© opcional */ }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   AÇÕES, EVENTOS, TEMPO REAL E ENTRADA (montar)
-   ═══════════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   AÃ‡Ã•ES, EVENTOS, TEMPO REAL E ENTRADA (montar)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const jogoAtual = () => (S.jogoAberto ? jogoPorId(S.jogoAberto.id) : null);
 const ehAdminAgora = () => (typeof isAdmin === 'function' ? !!isAdmin() : !!window.__cxAdmin);
 
@@ -12968,7 +12967,7 @@ const ACOES = {
     if (j.st === 'ag') { patch.st = 'vivo'; if (l === 'a') patch.gb = 0; else patch.ga = 0; }
     S.jogoAberto.bump = d > 0 ? l : ''; S.pulse.add(id);
     const r = await mutar(E => definirJogo(E, id, patch), { coal: 'placar:' + id, rot: 'Placar' });
-    if (r && r.reaberto) avisar('Jogo reaberto: informe os pênaltis para encerrar de novo.');
+    if (r && r.reaberto) avisar('Jogo reaberto: informe os pÃªnaltis para encerrar de novo.');
   },
   async jogoSt(el) {
     const id = S.jogoAberto.id, st = el.dataset.st;
@@ -12993,7 +12992,7 @@ const ACOES = {
   delTime(el) { excluirTime(el.dataset.id); },
   upload(el) { subirParaCampo(el.dataset.alvo, el.dataset.pasta, el); },
 
-  /* configuração */
+  /* configuraÃ§Ã£o */
   cfgFormato(el) {
     const d = S.cfgDraft, f = el.dataset.f, T = S.E.times.length;
     d.cfg.formato = f;
@@ -13019,21 +13018,21 @@ const ACOES = {
     [a[i], a[j]] = [a[j], a[i]]; repintarSorteio();
   },
 
-  /* fase de grupos: cotas, cartões, mover de grupo, fechar/reabrir */
+  /* fase de grupos: cotas, cartÃµes, mover de grupo, fechar/reabrir */
   editCotas(el) { abrirEditarCotas(el.dataset.id); },
   cotCartaoAm(el) {
     const id = S.cotasAlvo; if (!id) return;
-    mutar(E => ajustarCartaoAmarelo(E, id, +el.dataset.d), { rot: 'Cartão amarelo', coal: 'am:' + id, perguntar: false }).then(() => repintarEditarCotas());
+    mutar(E => ajustarCartaoAmarelo(E, id, +el.dataset.d), { rot: 'CartÃ£o amarelo', coal: 'am:' + id, perguntar: false }).then(() => repintarEditarCotas());
   },
   cotCartaoVerm() {
     const id = S.cotasAlvo; if (!id) return;
-    mutar(E => alternarCartaoVermelho(E, id), { rot: 'Cartão vermelho', perguntar: false }).then(() => repintarEditarCotas());
+    mutar(E => alternarCartaoVermelho(E, id), { rot: 'CartÃ£o vermelho', perguntar: false }).then(() => repintarEditarCotas());
   },
   fecharGrupos: () => abrirFecharGrupos(),
   fecharGruposOk: () => confirmarFecharGrupos(),
   reabrirGrupos() {
     fecharModal(S.modais.find(m => m.dataset.kind === 'mais'));
-    confirmar({ titulo: S.E.cfg.formato === 'pontos' ? 'Reabrir temporada?' : 'Reabrir fase de grupos?', msg: S.E.cfg.formato === 'pontos' ? 'Volta a aceitar ajustes de cotas/cartões sem campeã definida. Você encerra de novo quando quiser.' : 'O mata-mata já sorteado é apagado. Cotas, cartões e os grupos continuam como estão.', ok: 'Reabrir', perigo: true })
+    confirmar({ titulo: S.E.cfg.formato === 'pontos' ? 'Reabrir temporada?' : 'Reabrir fase de grupos?', msg: S.E.cfg.formato === 'pontos' ? 'Volta a aceitar ajustes de cotas/cartÃµes sem campeÃ£ definida. VocÃª encerra de novo quando quiser.' : 'O mata-mata jÃ¡ sorteado Ã© apagado. Cotas, cartÃµes e os grupos continuam como estÃ£o.', ok: 'Reabrir', perigo: true })
       .then(ok => { if (ok) mutar(E => reabrirFaseDeGrupos(E), { rot: 'Reabrir fase de grupos', perguntar: false }); });
   },
 
@@ -13059,7 +13058,7 @@ const ACOES = {
   },
   async resetSorteio() {
     fecharModal(S.modais.find(m => m.dataset.kind === 'mais'));
-    if (!await confirmar({ titulo: S.E.cfg.formato === 'pontos' ? 'Reiniciar campeonato' : 'Refazer sorteio', msg: 'O sorteio e todos os jogos e resultados serão apagados. Os times continuam na copa.', ok: 'Apagar e refazer', perigo: true })) return;
+    if (!await confirmar({ titulo: S.E.cfg.formato === 'pontos' ? 'Reiniciar campeonato' : 'Refazer sorteio', msg: 'O sorteio e todos os jogos e resultados serÃ£o apagados. Os times continuam na copa.', ok: 'Apagar e refazer', perigo: true })) return;
     const r = await mutar(E => reiniciarSorteio(E), { rot: 'Refazer sorteio', perguntar: false });
     if (r && r.ok) { S.aba = 'times'; S.animar = true; render(); }
   },
@@ -13077,7 +13076,7 @@ async function atualizarLista() {
     const aberto = S.modais.find(x => x.dataset.kind === 'copas');
     if (aberto) { fecharModal(aberto); abrirCopas(); }
     if (S.raiz) render();
-  } catch (e) { /* lista é secundária */ }
+  } catch (e) { /* lista Ã© secundÃ¡ria */ }
 }
 async function tornarAtiva(id) {
   try { await storeAtual().definirAtivo(id); await atualizarLista(); avisar('Copa vigente atualizada: todo mundo passa a ver esta.'); }
@@ -13085,17 +13084,17 @@ async function tornarAtiva(id) {
 }
 async function excluirCopa(id) {
   const c = S.lista.find(x => x.id === id);
-  if (!await confirmar({ titulo: 'Excluir copa', msg: `Excluir "${c ? c.titulo : 'esta copa'}" com todos os times, jogos e resultados? Não dá para desfazer.`, ok: 'Excluir', perigo: true })) return;
+  if (!await confirmar({ titulo: 'Excluir copa', msg: `Excluir "${c ? c.titulo : 'esta copa'}" com todos os times, jogos e resultados? NÃ£o dÃ¡ para desfazer.`, ok: 'Excluir', perigo: true })) return;
   try {
     await storeAtual().excluir(id);
     fecharModal(S.modais.find(m => m.dataset.kind === 'copas'));
     if (id === S.id) await montar(); else await atualizarLista();
-    avisar('Copa excluída.');
+    avisar('Copa excluÃ­da.');
   } catch (e) { avisar(e.message, 'err'); }
 }
 function abrirNovaCopa() {
   fecharModal(S.modais.find(m => m.dataset.kind === 'copas'));
-  const ovl = abrirModal(moldura({ titulo: 'Nova copa', cls: 'sm', corpo: `<div class="cx-f"><label for="cx-nc">Nome da copa</label><input class="cx-in" id="cx-nc" maxlength="60" value="Copa GR ${new Date().getFullYear()}" autocomplete="off"></div><p class="cx-hint">Você escolhe times, formato e tema logo em seguida. A copa só aparece para os colaboradores quando for a vigente${S.lista.some(c => c.ativo) ? ' (hoje já existe uma vigente: a nova fica como rascunho até você trocar)' : ''}.</p>`, rodape: `<button class="cx-btn ghost" data-cx="fechar">Cancelar</button><button class="cx-btn pri" data-cx="criarCopa">Criar</button>` }), { kind: 'nova' });
+  const ovl = abrirModal(moldura({ titulo: 'Nova copa', cls: 'sm', corpo: `<div class="cx-f"><label for="cx-nc">Nome da copa</label><input class="cx-in" id="cx-nc" maxlength="60" value="Copa GR ${new Date().getFullYear()}" autocomplete="off"></div><p class="cx-hint">VocÃª escolhe times, formato e tema logo em seguida. A copa sÃ³ aparece para os colaboradores quando for a vigente${S.lista.some(c => c.ativo) ? ' (hoje jÃ¡ existe uma vigente: a nova fica como rascunho atÃ© vocÃª trocar)' : ''}.</p>`, rodape: `<button class="cx-btn ghost" data-cx="fechar">Cancelar</button><button class="cx-btn pri" data-cx="criarCopa">Criar</button>` }), { kind: 'nova' });
   ovl.addEventListener('keydown', e => { if (e.key === 'Enter') ACOES.criarCopa(); });
 }
 ACOES.criarCopa = async function () {
@@ -13109,7 +13108,7 @@ ACOES.criarCopa = async function () {
   } catch (e) { avisar(e.message, 'err'); }
 };
 
-/* ---------- entradas de formulário ---------- */
+/* ---------- entradas de formulÃ¡rio ---------- */
 const EIN = { // evento "input" (a cada tecla / arraste)
   pickBusca(el) { S.picker.busca = el.value; renderCatalogo(); },
   pickLista() { atualizarBotaoPicker(); },
@@ -13136,7 +13135,7 @@ const ECH = { // evento "change" (ao confirmar)
   pen(el) {
     const id = S.jogoAberto && S.jogoAberto.id; if (!id) return;
     const l = el.dataset.l, v = el.value === '' ? null : +el.value;
-    mutar(E => definirJogo(E, id, l === 'a' ? { pa: v } : { pb: v }), { rot: 'Pênaltis', coal: 'pen:' + id });
+    mutar(E => definirJogo(E, id, l === 'a' ? { pa: v } : { pb: v }), { rot: 'PÃªnaltis', coal: 'pen:' + id });
   },
   jdt(el) { const id = S.jogoAberto.id; mutar(E => definirJogo(E, id, { dt: el.value }), { rot: 'Data do jogo', perguntar: false }); },
   jloc(el) { const id = S.jogoAberto.id; mutar(E => definirJogo(E, id, { loc: el.value }), { rot: 'Local do jogo', perguntar: false }); },
@@ -13178,7 +13177,7 @@ function ligarEventos() {
       const b = $(`[data-cx="jogoNav"][data-d="${e.key === 'ArrowLeft' ? -1 : 1}"]`, S.camada); if (b && !b.disabled) b.click();
     }
   });
-  // brilho que acompanha o mouse nos cartões
+  // brilho que acompanha o mouse nos cartÃµes
   document.addEventListener('pointermove', e => {
     if (!S.raiz || S.raiz.dataset.fx !== '1') return;
     const c = e.target.closest && e.target.closest('.cx-hov'); if (!c || !S.raiz.contains(c)) return;
@@ -13204,14 +13203,14 @@ function aplicarRemoto(row) {
 function assinar() {
   storeAtual().assinar((ev, novo, antigo) => {
     if (!S.raiz) return;
-    if (ev === 'DELETE') { if (antigo && antigo.id === S.id) { avisar('Esta copa foi excluída por outra pessoa.', 'err'); montar(); } else atualizarLista(); return; }
+    if (ev === 'DELETE') { if (antigo && antigo.id === S.id) { avisar('Esta copa foi excluÃ­da por outra pessoa.', 'err'); montar(); } else atualizarLista(); return; }
     if (!novo || novo.id !== S.id) {
-      // outra copa mudou; se virou a vigente e sou só espectador, troca para ela
+      // outra copa mudou; se virou a vigente e sou sÃ³ espectador, troca para ela
       if (novo && novo.ativo && !S.admin) montar(); else atualizarLista();
       return;
     }
     if (novo.estado === undefined) { recarregarDoServidor(false); return; }
-    if (novo.rev <= S.rev) return; // eco da minha própria gravação
+    if (novo.rev <= S.rev) return; // eco da minha prÃ³pria gravaÃ§Ã£o
     if (S.salvando || S.salvo === 'sujo') { S.remotoPendente = novo; return; }
     aplicarRemoto(novo);
   });
@@ -13233,7 +13232,7 @@ function garantirDom() {
 }
 async function abrirCopa(id) {
   const row = await storeAtual().abrir(id);
-  if (!row) throw new Error('Copa não encontrada.');
+  if (!row) throw new Error('Copa nÃ£o encontrada.');
   S.id = row.id; S.rev = row.rev; S.meta = { id: row.id, titulo: row.titulo, ativo: row.ativo };
   S.E = migrar(row.estado); S.undo = []; S.salvo = 'ok'; S.coalKey = '';
   recomputar(); S.campeaoVisto = S.V.campeao || null; S.aba = abaPadrao(); S.rodadaSel = null; S.animar = true; S.abertos = {};
@@ -13251,18 +13250,18 @@ async function montar() {
 }
 function sair() {
   clearTimeout(S.tSalvar);
-  if (S.admin && S.salvo === 'sujo') salvarAgora(); // não perde a última alteração ao trocar de aba
-  try { storeAtual().desassinar(); } catch (e) { /* já solto */ }
+  if (S.admin && S.salvo === 'sujo') salvarAgora(); // nÃ£o perde a Ãºltima alteraÃ§Ã£o ao trocar de aba
+  try { storeAtual().desassinar(); } catch (e) { /* jÃ¡ solto */ }
   if (S.camada) fecharTodosModais();
 }
 window.addEventListener('beforeunload', () => { if (S.admin && (S.salvo === 'sujo' || S.salvando)) { try { salvarAgora(); } catch (e) { /* sem chance de esperar */ } } });
 
 window.CX = {
   abrir: montar, sair,
-  // ganchos usados só nos testes
+  // ganchos usados sÃ³ nos testes
   _S: S, _acoes: ACOES, _abrirCopa: abrirCopa, _montar: montar, _render: render, _salvarAgora: salvarAgora,
   _engine: { computarView, definirJogo, sanear, tabelaGrupo, aplicarSorteioGrupos, aplicarSeeds, aplicarPontosCorridos, novoEstado, novoTime, validarCfg, sortearGrupos, sortearSeeds, clone,
     CATALOGO, definirCotas, ajustarCartaoAmarelo, alternarCartaoVermelho, moverTimeDeGrupo, fecharFaseDeGrupos, reabrirFaseDeGrupos, classificadosPorGrupo, expulso, cotasLiquidas, reiniciarSorteio },
 };
-})();
-</script>
+
+})();</script>
