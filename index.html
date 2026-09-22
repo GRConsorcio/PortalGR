@@ -1573,6 +1573,10 @@ tr.exp .cx-rk{background:color-mix(in srgb,var(--cx-bad) 16%,transparent);color:
 .cx-cart{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--cx-mut)}
 .cx-cart.am{color:var(--cx-warn)}
 .cx-cart.verm{color:var(--cx-bad)}
+.cx-editcol{width:30px;padding-right:12px!important}
+.cx-editcol svg{width:14px;height:14px;color:var(--cx-mut);transition:color .15s}
+.cx-tbl tr.clic:hover .cx-editcol svg,.cx-tbl tr.clic:focus-visible .cx-editcol svg{color:var(--cx-accent2)}
+.cx-hint svg{width:13px;height:13px;vertical-align:-2px;color:var(--cx-mut2)}
 .cx-tm{display:flex;align-items:center;gap:9px;min-width:0}
 .cx-tm .cx-crest{width:22px;height:25px}
 .cx-tm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
@@ -12285,18 +12289,19 @@ function htmlCartoes(r) {
 }
 function htmlTabelaGrupo(g, gi) {
   const E = S.E, V = S.V, pontos = E.cfg.formato === 'pontos', tab = V.tabelas[g.id] || [], k = pontos ? 0 : E.cfg.classificam;
-  const cor = corGrupo(gi), podeEditar = S.admin && !E.gruposFechados;
+  const cor = corGrupo(gi);
   const linhas = tab.map((r, i) => {
     const t = timePorId(r.id) || { n: '?', s: '?', c: ['#888', '#fff'] };
     const cls = r.expulso ? 'exp' : i < k ? 'q' : '';
     const conteudo = `<td><span class="cx-rk">${r.expulso ? '×' : i + 1}</span></td><td class="nm"><div class="cx-tm">${escudo(t)}<span>${esc(t.n)}</span>${r.expulso ? '<small class="cx-exptag">EXPULSO</small>' : ''}</div></td><td><b>${r.cotas}</b></td><td>${htmlCartoes(r)}</td>`;
+    // ícone sempre visível (não só no hover) pra ficar óbvio que dá pra tocar/clicar, inclusive no celular
     return S.admin
-      ? `<tr class="${cls} clic" data-cx="editCotas" data-id="${esc(r.id)}" tabindex="0" role="button" aria-label="Editar cotas e cartões de ${esc(t.n)}">${conteudo}</tr>`
+      ? `<tr class="${cls} clic" data-cx="editCotas" data-id="${esc(r.id)}" tabindex="0" role="button" aria-label="Editar cotas e cartões de ${esc(t.n)}">${conteudo}<td class="cx-editcol">${ico('edit')}</td></tr>`
       : `<tr class="${cls}">${conteudo}</tr>`;
   }).join('');
   return `<article class="cx-card cx-hov cx-gcard" style="--gc:${cor};--i:${gi}">
       <div class="cx-ghead"><span class="cx-gbadge">${pontos ? '★' : esc(g.id)}</span><b>${pontos ? 'Tabela do campeonato' : 'Grupo ' + esc(g.id)}</b><span class="pr">${tab.length} time${tab.length !== 1 ? 's' : ''}</span></div>
-      <table class="cx-tbl"><thead><tr><th>#</th><th>Time</th><th>Cotas</th><th>Cartões</th></tr></thead><tbody>${linhas}</tbody></table>
+      <table class="cx-tbl"><thead><tr><th>#</th><th>Time</th><th>Cotas</th><th>Cartões</th>${S.admin ? '<th></th>' : ''}</tr></thead><tbody>${linhas}</tbody></table>
     </article>`;
 }
 function vGrupos() {
@@ -12304,10 +12309,11 @@ function vGrupos() {
   if (!E.grupos || !E.grupos.length) return vazioSemEstrutura();
   const pontos = E.cfg.formato === 'pontos';
   const info = pontos ? '' : `<div class="cx-sec">${E.grupos.length} grupo${E.grupos.length > 1 ? 's' : ''} · classificam ${E.cfg.classificam} por grupo</div>`;
+  const comIcone = S.admin && !(!pontos && E.gruposFechados); // só quando o lápis de editar realmente aparece nas linhas
   const dica = S.admin
-    ? (pontos ? 'Clique num time pra ajustar cotas e cartões.' : (E.gruposFechados ? 'A fase de grupos está fechada: cotas e cartões continuam editáveis pra registro, mas não mudam mais o mata-mata já sorteado.' : 'Clique num time pra ajustar cotas, cartões, ou mover pra outro grupo.'))
+    ? (pontos ? 'Toque no lápis pra ajustar cotas e cartões de um time.' : (E.gruposFechados ? 'A fase de grupos está fechada: cotas e cartões continuam editáveis pra registro, mas não mudam mais o mata-mata já sorteado.' : 'Toque no lápis pra ajustar cotas, cartões, ou mover o time pra outro grupo.'))
     : (pontos ? 'Quem está na frente em cotas lidera.' : 'Faixa verde = posição que classifica para o mata-mata.');
-  return `${info}<div class="cx-ggrid" style="${pontos ? 'grid-template-columns:minmax(0,760px)' : ''}">${E.grupos.map((g, i) => htmlTabelaGrupo(g, i)).join('')}</div><p class="cx-hint" style="margin-top:14px">${esc(dica)}</p>`;
+  return `${info}<div class="cx-ggrid" style="${pontos ? 'grid-template-columns:minmax(0,760px)' : ''}">${E.grupos.map((g, i) => htmlTabelaGrupo(g, i)).join('')}</div><p class="cx-hint" style="margin-top:14px">${comIcone ? ico('edit') + ' ' : ''}${esc(dica)}</p>`;
 }
 
 /* ---------- mata-mata ---------- */
