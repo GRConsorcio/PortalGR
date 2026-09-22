@@ -11742,7 +11742,28 @@ const PRESETS = {
   areia: { n: 'Areia', bg: '#f6efe4', surf: '#fffaf1', text: '#2a2118', accent: '#b45309', accent2: '#d97706' },
   portal: { n: 'Igual ao portal', follow: true },
 };
-const FUNDOS = { grid: 'Grade', dots: 'Pontos', aurora: 'Aurora', none: 'Liso' };
+const FUNDOS = { grid: 'Grade', dots: 'Pontos', aurora: 'Aurora', bandeiras: 'Bandeirinhas', none: 'Liso' };
+// varal de bandeirinhas (decoração, não escudo) nas cores dos times da própria copa — uma fileira fina no topo, estilo festa
+function fundoBandeirasSvg(times, corLinha) {
+  const paleta = (times || []).map(t => [safeColor(t.c && t.c[0], '#888'), safeColor(t.c && t.c[1], '#ccc')]);
+  const cores = paleta.length ? paleta : [['#d4a847', '#0d0d12'], ['#38bdf8', '#0d0d12'], ['#22c55e', '#0d0d12'], ['#ef4444', '#0d0d12'], ['#c084fc', '#0d0d12'], ['#f0c75a', '#0d0d12']];
+  const w = 46, h = 40, totalW = cores.length * w;
+  const pecas = cores.map((c, i) => {
+    const x = i * w + w / 2, dy = i % 2 === 0 ? 0 : 5, rot = i % 2 === 0 ? -4 : 4;
+    return `<g transform="translate(${x},${7 + dy}) rotate(${rot})">
+      <path d="M-11,0 L11,0 L0,20 Z" fill="${c[0]}"/><path d="M0,0 L11,0 L0,20 Z" fill="${c[1]}"/>
+      <path d="M-11,0 L11,0 L0,20 Z" fill="none" stroke="#000" stroke-opacity=".18" stroke-width="1"/>
+    </g>`;
+  }).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalW} ${h}" width="${totalW}" height="${h}">
+    <line x1="0" y1="5" x2="${totalW}" y2="5" stroke="${corLinha}" stroke-width="1.5" stroke-opacity=".45"/>${pecas}</svg>`;
+}
+let fundoBandeirasCache = { key: '', url: '' };
+function fundoBandeirasUrl(times, corLinha) {
+  const key = corLinha + '|' + (times || []).map(t => t.c && t.c.join(',')).join(';');
+  if (fundoBandeirasCache.key !== key) fundoBandeirasCache = { key, url: 'data:image/svg+xml,' + encodeURIComponent(fundoBandeirasSvg(times, corLinha)) };
+  return fundoBandeirasCache.url;
+}
 const FONTES = {
   portal: { n: 'Esportiva', f: "'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif", d: "'Barlow Condensed','DM Sans',system-ui,sans-serif" },
   sistema: { n: 'Sistema', f: "system-ui,-apple-system,'Segoe UI',sans-serif", d: "system-ui,-apple-system,'Segoe UI',sans-serif" },
@@ -11779,7 +11800,7 @@ function coresDoPortal() {
 }
 function coresEfetivas(T) { return T.preset === 'portal' ? coresDoPortal() : T.cores; }
 
-function aplicarTema(tema, els) {
+function aplicarTema(tema, els, times) {
   const T = resolverTema(tema), c = coresEfetivas(T);
   const claro = luminancia(c.bg) > 0.5;
   const f = FONTES[T.fonte];
@@ -11793,6 +11814,11 @@ function aplicarTema(tema, els) {
     s.setProperty('--cx-glow', String(T.glow / 100));
     s.setProperty('--cx-font', f.f); s.setProperty('--cx-font-d', f.d);
     el.dataset.bg = T.fundo; el.dataset.fx = T.fx && !reduz ? '1' : '0'; el.dataset.light = claro ? '1' : '0';
+    const bgfx = el.querySelector && el.querySelector('.cx-bgfx');
+    if (bgfx) {
+      if (T.fundo === 'bandeiras') { bgfx.style.backgroundImage = `url("${fundoBandeirasUrl(times, c.accent)}")`; bgfx.style.backgroundSize = 'auto 76px'; bgfx.style.backgroundPosition = 'top center'; bgfx.style.backgroundRepeat = 'repeat-x'; }
+      else { bgfx.style.backgroundImage = ''; bgfx.style.backgroundSize = ''; bgfx.style.backgroundPosition = ''; bgfx.style.backgroundRepeat = ''; }
+    }
     // no claro, o verde/vermelho/amarelo de status precisam ser mais fechados para ter contraste
     s.setProperty('--cx-ok', claro ? '#0f9d6b' : '#34d399');
     s.setProperty('--cx-bad', claro ? '#d13b3b' : '#f87171');
@@ -12160,7 +12186,7 @@ function verCampeao() {
 
 /* ---------- estilo/tema ---------- */
 function aplicarTemaAtual() {
-  const T = aplicarTema(S.E ? S.E.tema : TEMA_PADRAO, [S.raiz, S.camada]);
+  const T = aplicarTema(S.E ? S.E.tema : TEMA_PADRAO, [S.raiz, S.camada], S.E ? S.E.times : []);
   return T;
 }
 
