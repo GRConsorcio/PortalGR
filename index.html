@@ -13221,6 +13221,7 @@ function garantirDom() {
   if (!S.raiz) {
     S.raiz = document.getElementById('cx-root');
     if (!S.raiz) return false;
+    S.raiz.classList.add('cx-root');
     if (!$('.cx-inner', S.raiz)) S.raiz.innerHTML = '<div class="cx-bgfx"></div><div class="cx-inner"></div>';
   }
   if (!S.camada || !document.body.contains(S.camada)) {
