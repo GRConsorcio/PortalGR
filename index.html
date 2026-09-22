@@ -13294,9 +13294,48 @@ async function abrirCopa(id) {
   S.E = migrar(row.estado); S.undo = []; S.salvo = 'ok'; S.coalKey = '';
   recomputar(); S.campeaoVisto = S.V.campeao || null; S.aba = abaPadrao(); S.rodadaSel = null; S.animar = true; S.abertos = {};
 }
+/* ---------- não deixar a tela dormir (útil pra deixar rodando numa TV) ----------
+   tenta a Wake Lock API primeiro; onde não existir (navegador de TV mais antigo), cai pro truque
+   clássico de um vídeo "vivo" tocando escondido — aqui gerado via canvas.captureStream(), sem
+   depender de nenhum arquivo de vídeo embutido */
+let wakeLock = null, wakeVideo = null, wakeTimer = null;
+async function telaLigadaPedir() {
+  try {
+    if (navigator.wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); return; }
+  } catch (e) { /* segue pro fallback */ }
+  if (wakeVideo) return;
+  try {
+    const cv = document.createElement('canvas'); cv.width = 2; cv.height = 2;
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    const desenhar = () => { t = 1 - t; ctx.fillStyle = t ? '#000000' : '#010101'; ctx.fillRect(0, 0, 2, 2); };
+    desenhar();
+    const stream = cv.captureStream ? cv.captureStream(1) : null;
+    if (!stream) return;
+    const v = document.createElement('video');
+    v.muted = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.setAttribute('aria-hidden', 'true');
+    v.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;left:-9999px';
+    v.srcObject = stream;
+    document.body.appendChild(v);
+    await v.play().catch(() => {});
+    wakeVideo = v; wakeTimer = setInterval(desenhar, 1000);
+  } catch (e) { /* nada a fazer, segue sem trava */ }
+}
+function telaLigadaSoltar() {
+  try { wakeLock && wakeLock.release(); } catch (e) { /* já solta */ }
+  wakeLock = null;
+  clearInterval(wakeTimer); wakeTimer = null;
+  if (wakeVideo) {
+    try { const st = wakeVideo.srcObject; if (st) st.getTracks().forEach(tr => tr.stop()); wakeVideo.pause(); wakeVideo.remove(); } catch (e) { /* ignora */ }
+    wakeVideo = null;
+  }
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.raiz && document.body.contains(S.raiz)) telaLigadaPedir(); });
+
 async function montar() {
   if (!garantirDom()) return;
   S.admin = ehAdminAgora();
+  telaLigadaPedir();
   S.carregando = true; S.erro = ''; render();
   try {
     S.lista = await storeAtual().listar();
@@ -13307,6 +13346,7 @@ async function montar() {
 }
 function sair() {
   apresentarDesligar();
+  telaLigadaSoltar();
   clearTimeout(S.tSalvar);
   if (S.admin && S.salvo === 'sujo') salvarAgora(); // não perde a última alteração ao trocar de aba
   try { storeAtual().desassinar(); } catch (e) { /* já solto */ }
