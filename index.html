@@ -1573,6 +1573,8 @@ tr.exp .cx-rk{background:color-mix(in srgb,var(--cx-bad) 16%,transparent);color:
 .cx-cart{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--cx-mut)}
 .cx-cart.am{color:var(--cx-warn)}
 .cx-cart.verm{color:var(--cx-bad)}
+.cx-neg{color:var(--cx-bad)}
+.cx-sub{display:block;font-size:9.5px;font-weight:600;color:var(--cx-mut);line-height:1.1}
 .cx-editcol{width:30px;padding-right:12px!important}
 .cx-editcol svg{width:14px;height:14px;color:var(--cx-mut);transition:color .15s}
 .cx-tbl tr.clic:hover .cx-editcol svg,.cx-tbl tr.clic:focus-visible .cx-editcol svg{color:var(--cx-accent2)}
@@ -11383,8 +11385,9 @@ function novoTime(p) {
 }
 // cartão vermelho OU 3+ amarelos = fora da classificação, mesmo tendo mais cotas que os outros
 const expulso = t => !!(t && (t.cvermelho || (t.camarelo || 0) >= 3));
-// cada cartão amarelo tira 1 cota na hora de ranquear (nunca fica negativo)
-const cotasLiquidas = t => Math.max(0, (t && t.cotas || 0) - (t && t.camarelo || 0));
+// cada cartão amarelo tira 1 cota na hora de ranquear. Com o saldo zerado ele continua descontando e passa a
+// negativo (0 cotas + 1 amarelo = -1, + 2 amarelos = -2 ...), então o amarelo sempre pesa, mesmo pra quem não vendeu.
+const cotasLiquidas = t => (t && t.cotas || 0) - (t && t.camarelo || 0);
 
 /* ---------- validação da configuração ---------- */
 function tamanhoMinGrupo(nTimes, nG) { return Math.floor(nTimes / Math.max(1, nG)); }
@@ -12314,13 +12317,19 @@ function htmlCartoes(r) {
   if (r.camarelo > 0) return `<span class="cx-cart am" title="${r.camarelo} cartão(ões) amarelo(s) — tira ${r.camarelo} cota(s)">🟨×${r.camarelo}</span>`;
   return `<span class="cx-cart">—</span>`;
 }
+// coluna Cotas = saldo líquido (cotas − amarelos); pode ficar negativo (vermelho). Com amarelo, mostra a conta embaixo.
+function htmlSaldo(r) {
+  const neg = r.net < 0, sinal = neg ? '−' + Math.abs(r.net) : String(r.net);
+  const conta = r.camarelo > 0 ? `<span class="cx-sub" title="${r.cotas} cota(s) − ${r.camarelo} amarelo(s)">${r.cotas} − ${r.camarelo}🟨</span>` : '';
+  return `<b class="${neg ? 'cx-neg' : ''}">${sinal}</b>${conta}`;
+}
 function htmlTabelaGrupo(g, gi) {
   const E = S.E, V = S.V, pontos = E.cfg.formato === 'pontos', tab = V.tabelas[g.id] || [], k = pontos ? 0 : E.cfg.classificam;
   const cor = corGrupo(gi);
   const linhas = tab.map((r, i) => {
     const t = timePorId(r.id) || { n: '?', s: '?', c: ['#888', '#fff'] };
     const cls = r.expulso ? 'exp' : i < k ? 'q' : '';
-    const conteudo = `<td><span class="cx-rk">${r.expulso ? '×' : i + 1}</span></td><td class="nm"><div class="cx-tm">${escudo(t)}<span>${esc(t.n)}</span>${r.expulso ? '<small class="cx-exptag">EXPULSO</small>' : ''}</div></td><td><b>${r.cotas}</b></td><td>${htmlCartoes(r)}</td>`;
+    const conteudo = `<td><span class="cx-rk">${r.expulso ? '×' : i + 1}</span></td><td class="nm"><div class="cx-tm">${escudo(t)}<span>${esc(t.n)}</span>${r.expulso ? '<small class="cx-exptag">EXPULSO</small>' : ''}</div></td><td>${htmlSaldo(r)}</td><td>${htmlCartoes(r)}</td>`;
     // ícone sempre visível (não só no hover) pra ficar óbvio que dá pra tocar/clicar, inclusive no celular
     return S.admin
       ? `<tr class="${cls} clic" data-cx="editCotas" data-id="${esc(r.id)}" tabindex="0" role="button" aria-label="Editar cotas e cartões de ${esc(t.n)}">${conteudo}<td class="cx-editcol">${ico('edit')}</td></tr>`
@@ -12737,9 +12746,10 @@ function htmlEditarCotas() {
   const corpo = `<div class="cx-prev">${escudo(t)}<div style="min-width:0"><b style="font-size:15px">${esc(t.n)}</b>${grupoAtual ? `<div class="cx-hint">Grupo ${esc(grupoAtual.id)}</div>` : ''}</div></div>
     ${exp ? `<div class="cx-warn bad">${ico('alert')}<div>Expulso — não entra na classificação, mesmo tendo mais cotas que os outros.</div></div>` : ''}
     <div class="cx-f"><label for="cx-cot-n">Cotas</label><input class="cx-in" id="cx-cot-n" type="number" inputmode="numeric" min="0" step="1" value="${t.cotas}" data-cxi="cotasNum"></div>
+    <div class="cx-hint" style="margin:-4px 0 8px">Saldo na tabela: <b class="${cotasLiquidas(t) < 0 ? 'cx-neg' : ''}">${cotasLiquidas(t) < 0 ? '−' + Math.abs(cotasLiquidas(t)) : cotasLiquidas(t)}</b> (cotas − amarelos)</div>
     <div class="cx-lbl" style="margin:14px 0 8px">Cartões</div>
     <div class="cx-row" style="align-items:flex-end;flex-wrap:wrap">
-      <div class="cx-f" style="margin:0;min-width:170px"><label>Amarelos <span class="cx-hint" style="font-weight:400">· cada um tira 1 cota, 3 expulsam</span></label>
+      <div class="cx-f" style="margin:0;min-width:170px"><label>Amarelos <span class="cx-hint" style="font-weight:400">· cada um tira 1 cota (zerado, vira −1, −2…), 3 expulsam</span></label>
         <div class="cx-step2"><button type="button" data-cx="cotCartaoAm" data-d="-1" aria-label="Menos um amarelo">−</button><output>${t.camarelo}</output><button type="button" data-cx="cotCartaoAm" data-d="1" aria-label="Mais um amarelo">+</button></div>
       </div>
       <button type="button" class="cx-btn ${t.cvermelho ? 'bad' : ''}" data-cx="cotCartaoVerm">🟥 ${t.cvermelho ? 'Remover cartão vermelho' : 'Aplicar cartão vermelho'}</button>
