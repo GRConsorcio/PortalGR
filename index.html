@@ -1314,6 +1314,21 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .pf-secao h4{font-family:var(--font-d);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
 .pf-secao p{font-size:13px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
 .pf-chips{display:flex;flex-wrap:wrap;gap:6px}
+/* Pontos e cursos no perfil (visível a todos) */
+.pf-conq{margin-bottom:16px}
+.pf-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.pf-stats>div{background:var(--surface2,rgba(255,255,255,.04));border:1px solid var(--border,rgba(255,255,255,.1));border-radius:10px;padding:12px;text-align:center}
+.pf-stats b{display:block;font-family:var(--font-d);font-size:22px;color:var(--gold2);line-height:1.1}
+.pf-stats span{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2)}
+.pf-pts-tab{width:100%;border-collapse:collapse;font-size:13px}
+.pf-pts-tab td{padding:7px 4px;border-bottom:1px solid var(--border,rgba(255,255,255,.08))}
+.pf-pts-tab td:last-child{text-align:right;font-weight:700;white-space:nowrap}
+.pf-pts-tab tr.tot td{border-top:2px solid var(--gold);border-bottom:0;font-weight:800;color:var(--gold2)}
+.pf-pts-neg{color:#f87171}
+.pf-lista{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.pf-lista>div{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:var(--surface2,rgba(255,255,255,.04));border-radius:8px}
+.pf-lista small{color:var(--muted2);white-space:nowrap}
+@media(max-width:600px){.pf-stats{grid-template-columns:repeat(2,1fr)}}
 .pf-chips span{font-size:12px;padding:3px 11px;border-radius:999px;background:color-mix(in srgb,var(--gold) 12%,var(--s3));border:1px solid var(--gold-line);color:var(--gold2)}
 .pf-secao a{color:var(--gold2)}
 @media(max-width:640px){.pf-hero{flex-direction:column;text-align:center}.pf-meta,.pf-hero-acoes{justify-content:center}.pf-toolbar>select{width:100%}}
@@ -2549,6 +2564,7 @@ input[type=color].cx-col{width:44px;height:38px;padding:2px;border:1px solid var
 
       <div id="perfil-view-meu">
         <div class="pf-hero" id="pf-hero"></div>
+        <div id="pf-conq-meu"></div>
         <div class="grid-2">
           <div class="panel">
             <div class="panel-head"><div class="panel-title">Informações básicas</div></div>
@@ -7136,7 +7152,7 @@ function perfilSwitchTab(tab){
   el('perfil-view-meu').style.display=tab==='meu'?'':'none';
   el('perfil-view-equipe').style.display=tab==='equipe'?'':'none';
   el('perfil-view-outro').style.display=tab==='outro'?'':'none';
-  if(tab==='meu'){ if(!_pfSujo) renderPerfilMeu(); } else if(tab==='equipe') renderPerfilEquipe(); else _renderPerfilOutro();
+  if(tab==='meu'){ if(!_pfSujo) renderPerfilMeu(); _pfCarregarConquistas('pf-conq-meu',CU.id); } else if(tab==='equipe') renderPerfilEquipe(); else _renderPerfilOutro();
 }
 function _perfilVoltar(){
   if(_perfilOrigem && _perfilOrigem!=='perfil' && _perfilOrigem!=='equipe') nav(_perfilOrigem);
@@ -7323,9 +7339,59 @@ function _renderPerfilOutro(){
   if(p.linkedin && /^https?:\/\//i.test(p.linkedin)) contato.push(`<a href="${_escAttr(p.linkedin)}" target="_blank" rel="noopener noreferrer">LinkedIn</a>`);
   if(contato.length) secoes.push(['Contato',`<p>${contato.join(' · ')}</p>`]);
   wrap.innerHTML=voltar+`<div class="pf-hero">${_perfilHeroHtml(p,false)}</div>
+    <div id="pf-conq-outro"></div>
     <div class="panel"><div class="pf-body">${secoes.length
       ? secoes.map(([t,h])=>`<div class="pf-secao"><h4>${t}</h4>${h}</div>`).join('')
       : '<div class="empty" style="padding:24px"><div class="empty-text">Esse colaborador ainda não preencheu o perfil</div></div>'}</div></div>`;
+  _pfCarregarConquistas('pf-conq-outro',_perfilOutroId);
+}
+
+/* ── Pontos e cursos no perfil (visível a todos os logados) ──
+   Vem da função portal_conquistas (SECURITY DEFINER): mostra de onde cada ponto veio (vendas, metas, certificados)
+   e separa "outros lançamentos e ajustes" (pontos que não vêm das regras automáticas), pra dar pra conferir a conta. */
+const _PF_REGRA={cota_vendida:'Cota vendida',cota_100k:'Cota acima de R$ 100 mil',meta_mensal:'Meta mensal batida',meta_superada_50:'Meta superada em 50%'};
+async function _pfCarregarConquistas(id,uid){
+  const box=el(id); if(!box||!uid) return;
+  box.innerHTML='<div class="panel pf-conq"><div class="pf-body"><div class="empty" style="padding:18px"><div class="empty-text">Carregando pontos e cursos…</div></div></div></div>';
+  let c=null;
+  try{ const{data,error}=await sb.rpc('portal_conquistas',{p_user_id:uid}); if(error) throw error; c=data; }
+  catch(e){ box.innerHTML='<div class="panel pf-conq"><div class="pf-body"><div class="empty" style="padding:18px"><div class="empty-text">Não foi possível carregar os pontos agora</div></div></div></div>'; return; }
+  if(!c||c.erro){ box.innerHTML=''; return; }
+  const n=v=>(v||0).toLocaleString('pt-BR');
+  const cls=v=>v<0?' class="pf-pts-neg"':'';
+  const dt=s=>{ const d=s?new Date(s):null; return d&&!isNaN(d)?d.toLocaleDateString('pt-BR'):''; };
+  const linhas=[
+    ['Cotas vendidas'+(c.vendas?` (${c.vendas} venda${c.vendas>1?'s':''})`:''),c.pts_cotas],
+    ['Cotas acima de R$ 100 mil',c.pts_100k],
+    ['Metas mensais',c.pts_metas],
+    [`Certificados Academy (${c.n_cursos} × ${c.cert_pts_cada})`,c.pts_cursos],
+    ['Outros lançamentos e ajustes',c.ajuste]
+  ].filter(([,v])=>v);
+  const certs=c.certificados||[], outros=c.outros_concluidos||[], hist=c.historico||[];
+  const nivel=c.nivel?String(c.nivel).replace(/_/g,' ').replace(/^./,x=>x.toUpperCase()):'—';
+  box.innerHTML=`<div class="panel pf-conq"><div class="panel-head"><div class="panel-title">🏆 Pontos e cursos</div></div><div class="pf-body">
+    <div class="pf-stats">
+      <div><b${cls(c.pontos)}>${n(c.pontos)}</b><span>pontos GR</span></div>
+      <div><b style="font-size:16px;padding-top:4px">${_escHtml(nivel)}</b><span>nível</span></div>
+      <div><b>${n(certs.length+outros.length)}</b><span>cursos concluídos</span></div>
+      <div><b>${n(c.vendas)}</b><span>vendas com pontos</span></div>
+    </div>
+    <div class="pf-secao"><h4>De onde vêm os pontos</h4>
+      <table class="pf-pts-tab"><tbody>
+        ${linhas.length?linhas.map(([t,v])=>`<tr><td>${_escHtml(t)}</td><td${cls(v)}>${v>0?'+':''}${n(v)}</td></tr>`).join(''):'<tr><td colspan="2" style="color:var(--muted2)">Ainda sem pontos</td></tr>'}
+        <tr class="tot"><td>Total</td><td${cls(c.pontos)}>${n(c.pontos)}</td></tr>
+      </tbody></table>
+    </div>
+    <div class="pf-secao"><h4>Cursos concluídos</h4>
+      ${(certs.length||outros.length)?`<div class="pf-lista">
+        ${certs.map(x=>`<div><span>🎓 ${_escHtml(x.titulo||'Curso')}${x.nota!=null?` · nota ${x.nota}%`:''}</span><small>${dt(x.emitido_em)}</small></div>`).join('')}
+        ${outros.map(x=>`<div><span>✔ ${_escHtml(x.titulo||'Curso')}</span><small>sem certificado</small></div>`).join('')}
+      </div>`:'<p style="color:var(--muted2)">Nenhum curso concluído ainda.</p>'}
+    </div>
+    ${hist.length?`<div class="pf-secao"><h4>Últimas movimentações de pontos</h4><div class="pf-lista">
+      ${hist.slice(0,10).map(h=>`<div><span>${_escHtml(_PF_REGRA[h.regra]||h.regra)}${h.mes?' · '+_escHtml(h.mes):''}</span><small><b${cls(h.pts)}>${h.pts>0?'+':''}${h.pts}</b> · ${dt(h.em)}</small></div>`).join('')}
+    </div></div>`:''}
+  </div></div>`;
 }
 async function iniciarConversaComPerfil(uid){
   nav('comunidade');
@@ -9845,6 +9911,11 @@ async function renderAdmUsuarios(){
     const {data} = await sb.from('portal_users').select('*').order('nome');
     _admAllUsers = data||[];
   }
+  // resumo de cursos concluídos por pessoa (mesma função do perfil; atualiza a cada 60s)
+  if(!window._admConqAt||Date.now()-window._admConqAt>60000){
+    try{ const{data:cq}=await sb.rpc('portal_conquistas_resumo'); window._admConq=Object.fromEntries((cq||[]).map(r=>[r.user_id,r])); window._admConqAt=Date.now(); }
+    catch(e){ window._admConq=window._admConq||{}; }
+  }
   // PARTIÇÃO DE EQUIPES: admin/coordenador veem todo mundo; supervisor só
   // vê quem está na mesma equipe dele (CUP.equipe); vendedor nem chega
   // aqui (essa página é coord-only, vendedor não tem o nav-item).
@@ -9858,10 +9929,11 @@ async function renderAdmUsuarios(){
         <div class="su-av" style="width:28px;height:28px;font-size:12px;flex-shrink:0;background:var(--gold);color:#07070C;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800">${(u.nome||'?')[0].toUpperCase()}</div>
         <div class="adm-row-main">
           <div class="adm-row-title">${u.nome||'Sem nome'}</div>
-          <div class="adm-row-sub">${u.email||'sem e-mail registrado'} · ${u.equipe||'sem equipe'} · Admissão: ${fmtDate(u.data_admissao)} · ${u.pontos||0} pts</div>
+          <div class="adm-row-sub">${u.email||'sem e-mail registrado'} · ${u.equipe||'sem equipe'} · Admissão: ${fmtDate(u.data_admissao)} · ${u.pontos||0} pts · ${(window._admConq&&window._admConq[u.user_id]?window._admConq[u.user_id].cursos:0)} cursos</div>
         </div>
         <span class="tag" style="color:${cargoColor[(u.cargo||'vendedor').toLowerCase()]||'var(--muted2)'};border:1px solid currentColor;background:transparent">${(u.cargo||'Vendedor').toUpperCase()}</span>
         <div class="adm-actions">
+          ${u.user_id?`<button class="btn-outline" style="padding:4px 10px;font-size:10.5px" onclick="abrirPerfil('${u.user_id}')" title="Abre o perfil com pontos e cursos concluídos">🏆 Pontos e cursos</button>`:''}
           ${u.email?`<button class="btn-outline" style="padding:4px 10px;font-size:10.5px" onclick="resetUserPassword('${u.email}')" title="Envia e-mail de redefinição de senha (depende do e-mail chegar)">🔑 E-mail</button>`:''}
           ${u.user_id?`<button class="btn-outline" style="padding:4px 10px;font-size:10.5px" onclick="openAdminSetPasswordModal('${u.user_id}','${(u.nome||'').replace(/'/g,"&#39;")}')" title="Define a senha na hora, sem depender de e-mail">🔒 Definir senha</button>`:''}
           ${u.user_id?`<button class="btn-outline" style="padding:4px 10px;font-size:10.5px" onclick="abrirClasseOverrideModal('${u.user_id}','${(u.nome||'').replace(/'/g,"&#39;")}')" title="Força uma classe manual, sobrescrevendo o cálculo automático por cotas/volume">🏅 Classe</button>`:''}
