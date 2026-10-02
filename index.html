@@ -1278,9 +1278,9 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
    JS (_rankAplicar) seta --rk-1 (tom escuro), --rk-2 (brilho) e --rk-3 (base) no elemento; --rk-txt é o tom
    usado em TEXTO e muda por tema: no escuro usa a base clara, no claro usa o tom escuro (senão prata/ouro
    somem no fundo branco). Sem emblema/imagem — só cor, anel e tinta. */
-.pf-av,.pf-rank,.pf-card,.ve-tr-rank,.sidebar-user{--rk-txt:var(--rk-3)}
+.pf-av,.pf-rank,.pf-card,.ve-tr-rank,.sidebar{--rk-txt:var(--rk-3)}
 :root[data-theme="light"] .pf-av,:root[data-theme="light"] .pf-rank,:root[data-theme="light"] .pf-card,
-:root[data-theme="light"] .ve-tr-rank,:root[data-theme="light"] .sidebar-user{--rk-txt:var(--rk-1)}
+:root[data-theme="light"] .ve-tr-rank,:root[data-theme="light"] .sidebar{--rk-txt:var(--rk-1)}
 /* Perfil: anel metálico em volta da foto, separado por um vão da cor do painel */
 .pf-av.pf-av-rank{isolation:isolate;box-shadow:0 0 0 4px var(--s2)}
 .pf-av.pf-av-rank::before{content:"";position:absolute;inset:-10px;border-radius:50%;z-index:-1;
@@ -1317,10 +1317,24 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .pf-card.rk-on .pf-card-nome{color:var(--rk-txt)}
 .pf-card-cl{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--rk-txt)}
 /* Menu lateral: quem está logado */
-.sidebar-user.rk-on .su-av{box-shadow:0 0 0 2px var(--s1),0 0 0 4px var(--rk-3)}
-.sidebar-user.rk-on .su-name{color:var(--rk-txt)}
+.sidebar.rk-on .su-av{box-shadow:0 0 0 2px var(--s1),0 0 0 4px var(--rk-3)}
+.sidebar.rk-on .su-name{color:var(--rk-txt)}
 .su-rk{display:none;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--rk-txt);margin-top:1px}
-.sidebar-user.rk-on .su-rk{display:block}
+.sidebar.rk-on .su-rk{display:block}
+/* Menu lateral inteiro na paleta da classe: filete no topo, títulos de seção, item ativo, emblema do nível e selos */
+.nav-sect{display:flex;align-items:center;gap:8px;font-size:9.5px;font-weight:700;letter-spacing:2.6px;color:var(--gold2)}
+.nav-sect::before{content:"";width:14px;height:2px;border-radius:2px;background:currentColor;opacity:.7;flex-shrink:0}
+html.sidebar-mini .nav-sect::before{display:none}
+.sidebar.rk-on::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;z-index:1;background:linear-gradient(90deg,var(--rk-1),var(--rk-2),var(--rk-3),var(--rk-2),var(--rk-1));box-shadow:0 0 14px var(--rk-glow)}
+.sidebar.rk-on{border-right-color:color-mix(in srgb,var(--rk-3) 40%,var(--border))}
+.sidebar.rk-on .logo-wrap,.sidebar.rk-on .sidebar-level{border-bottom-color:color-mix(in srgb,var(--rk-3) 35%,var(--border))}
+.sidebar.rk-on .nav-sect{color:var(--rk-txt)}
+.sidebar.rk-on .nav-item:hover{color:var(--rk-txt);background:color-mix(in srgb,var(--rk-3) 8%,transparent)}
+.sidebar.rk-on .nav-item.on{color:var(--rk-txt);border-left-color:var(--rk-3);background:linear-gradient(90deg,color-mix(in srgb,var(--rk-3) 18%,transparent),color-mix(in srgb,var(--rk-3) 4%,transparent))}
+.sidebar.rk-on .nav-badge{background:var(--rk-3);color:#08080D}
+.sidebar.rk-on .sidebar-level:hover{background:color-mix(in srgb,var(--rk-3) 9%,transparent)}
+.sidebar.rk-on .logo-text{color:var(--rk-txt)}
+.sidebar.rk-on .su-av-badge{background:var(--rk-3)}
 .pf-av-edit{position:absolute;bottom:-2px;right:-2px;width:28px;height:28px;border-radius:50%;background:var(--s1);color:var(--gold2);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .pf-info{flex:1;min-width:0}
 .pf-nome{font-family:var(--font-d);font-size:28px;font-weight:800;letter-spacing:.5px;line-height:1.1;overflow-wrap:anywhere}
@@ -7379,13 +7393,20 @@ async function _rankAplicarCards(){
 }
 // Menu lateral: anel no avatar, nome e classe de quem está logado
 async function _rankAplicarSidebar(){
-  const box=document.querySelector('.sidebar-user'), nome=(typeof CUP!=='undefined'&&CUP?.nome)||el('su-name')?.textContent;
-  if(!box||!nome) return;
-  let ant; try{ ant=await _rankResumoMes(_mesAnteriorKey()); }catch(e){ return; }
-  const lv=_rankLvDe(ant,nome), r=el('su-rk');
-  box.classList.toggle('rk-on',!!lv&&!_rankSem(lv));
+  const box=document.querySelector('.sidebar'), nome=(typeof CUP!=='undefined'&&CUP?.nome)||el('su-name')?.textContent;
+  if(!box) return;
+  // Classe do menu: a definida manualmente pelo admin (mesmo override do cartão "Seu nível") ou, na falta,
+  // a conquistada no mês passado pelo vendedor no CRM — igual ao resto das cores de ranking.
+  let lv=null;
+  if(_classeOverride) lv=LEVELS.find(l=>l.id===_classeOverride.classe_id)||null;
+  if(!lv && nome){
+    let ant; try{ ant=await _rankResumoMes(_mesAnteriorKey()); }catch(e){ ant=null; }
+    if(ant) lv=_rankLvDe(ant,nome);
+  }
+  const r=el('su-rk'), cor=!!lv&&!_rankSem(lv);
+  box.classList.toggle('rk-on',cor);
   if(r){ r.textContent=lv?_rankNomeClasse(lv):''; r.classList.toggle('sem',!!lv&&_rankSem(lv)); r.style.display=lv?'block':''; }
-  if(lv&&!_rankSem(lv)) _rankVars(box,lv);
+  if(cor) _rankVars(box,lv);
 }
 
 /* ── meu perfil (formulário) ── */
