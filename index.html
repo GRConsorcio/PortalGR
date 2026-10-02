@@ -1274,44 +1274,49 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .pf-hero{display:flex;align-items:center;gap:22px;padding:22px 24px;margin-bottom:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--gold) 10%,var(--s2)),var(--s2));border:1px solid var(--border);border-radius:var(--radius-card);box-shadow:var(--shadow-card)}
 .pf-av{position:relative;width:92px;height:92px;flex-shrink:0;border-radius:50%;background:var(--gold);color:#08080D;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:36px;box-shadow:0 0 0 3px var(--s2),0 0 0 5px var(--gold-dim)}
 .pf-av>img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-/* Borda da classe conquistada no mês passado (cor vem de LEVELS[].color via --rk-cor, setada em _perfilAplicarRank) */
-/* Moldura metálica: anel em conic-gradient (3 tons por classe: --rk-1 sombra, --rk-2 brilho, --rk-3 base)
-   separado do avatar por um vão da cor do painel; emblema da classe encaixado no canto inferior esquerdo. */
+/* ═══ COR DA CLASSE (ranking do mês passado) ═══
+   JS (_rankAplicar) seta --rk-1 (tom escuro), --rk-2 (brilho) e --rk-3 (base) no elemento; --rk-txt é o tom
+   usado em TEXTO e muda por tema: no escuro usa a base clara, no claro usa o tom escuro (senão prata/ouro
+   somem no fundo branco). Sem emblema/imagem — só cor, anel e tinta. */
+.pf-av,.pf-rank,.pf-card,.ve-tr-rank,.sidebar-user{--rk-txt:var(--rk-3)}
+:root[data-theme="light"] .pf-av,:root[data-theme="light"] .pf-rank,:root[data-theme="light"] .pf-card,
+:root[data-theme="light"] .ve-tr-rank,:root[data-theme="light"] .sidebar-user{--rk-txt:var(--rk-1)}
+/* Perfil: anel metálico em volta da foto, separado por um vão da cor do painel */
 .pf-av.pf-av-rank{isolation:isolate;box-shadow:0 0 0 4px var(--s2)}
 .pf-av.pf-av-rank::before{content:"";position:absolute;inset:-10px;border-radius:50%;z-index:-1;
   background:conic-gradient(from 0deg,var(--rk-1),var(--rk-2) 18%,var(--rk-3) 36%,var(--rk-1) 50%,var(--rk-2) 68%,var(--rk-3) 84%,var(--rk-1));
   -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px));
           mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px));
-  filter:drop-shadow(0 0 7px var(--rk-glow))}
+  filter:drop-shadow(0 0 6px var(--rk-glow))}
 .pf-av.pf-av-rank.pf-rk-anim::before{animation:pf-rk-giro 9s linear infinite}
 @keyframes pf-rk-giro{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.pf-av.pf-av-rank.pf-rk-anim::before{animation:none}}
-.pf-av-rkbadge{position:absolute;left:-14px;bottom:-12px;width:42px;height:42px;border-radius:50%;padding:4px;box-sizing:border-box;
-  background:radial-gradient(circle at 35% 30%,var(--s3,#1b1b26),var(--s1,#0d0d14));border:2px solid var(--rk-3);
-  box-shadow:0 0 0 3px var(--s2),0 3px 10px rgba(0,0,0,.5),0 0 12px var(--rk-glow);display:flex;align-items:center;justify-content:center}
-.pf-av-rkbadge img{width:100%;height:100%;object-fit:contain}
-/* Vendas da Equipe: linha do vendedor com a cor/emblema da classe do mês passado */
-.ve-tr-rank td:first-child{box-shadow:inset 4px 0 0 var(--rk-3)}
-.ve-tr-rank{background:linear-gradient(90deg,color-mix(in srgb,var(--rk-3) 10%,transparent),transparent 45%)}
-.ve-rank{display:inline-flex;align-items:center;gap:10px}
-.ve-rank-ico{width:34px;height:34px;flex-shrink:0;border-radius:50%;padding:3px;box-sizing:border-box;border:1.5px solid var(--rk-3);box-shadow:0 0 10px -2px var(--rk-glow);background:radial-gradient(circle at 35% 30%,var(--s3,#1b1b26),var(--s1,#0d0d14))}
-.ve-rank-ico img{width:100%;height:100%;object-fit:contain}
-.ve-rank-txt{display:flex;flex-direction:column;line-height:1.2}
-.ve-rank-nome{font-weight:700;background:linear-gradient(100deg,var(--rk-3),var(--rk-2),var(--rk-3));-webkit-background-clip:text;background-clip:text;color:transparent}
-.ve-rank-cl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--rk-3);font-weight:700}
 .pf-rank{margin-top:10px;display:flex;flex-direction:column;gap:6px}
 .pf-rank:empty{display:none}
-.pf-rank-pill{display:inline-flex;align-items:center;gap:10px;align-self:flex-start;padding:4px 16px 4px 5px;border-radius:999px;position:relative;
-  background:linear-gradient(var(--s2),var(--s2)) padding-box,linear-gradient(120deg,var(--rk-1),var(--rk-2),var(--rk-3)) border-box;border:1.5px solid transparent;
-  box-shadow:0 0 14px -4px var(--rk-glow)}
-.pf-rank-pill .rk-ico{width:34px;height:34px;flex-shrink:0;border-radius:50%;padding:3px;box-sizing:border-box;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--rk-3) 35%,transparent),transparent 70%)}
-.pf-rank-pill .rk-ico img{width:100%;height:100%;object-fit:contain}
-.pf-rank-pill .rk-txt{display:flex;flex-direction:column;line-height:1.15}
-.pf-rank-pill .rk-lbl{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);font-weight:600}
-.pf-rank-pill .rk-nome{font-family:var(--font-d);font-size:16px;font-weight:800;letter-spacing:.04em;background:linear-gradient(100deg,var(--rk-3),var(--rk-2),var(--rk-3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.pf-rank-pill{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;padding:5px 14px 5px 11px;border-radius:999px;
+  border:1.5px solid var(--rk-3);background:color-mix(in srgb,var(--rk-3) 14%,transparent);font-size:12px;line-height:1.2}
+.pf-rank-pill::before{content:"";width:9px;height:9px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--rk-2),var(--rk-3));box-shadow:0 0 0 2px color-mix(in srgb,var(--rk-3) 30%,transparent)}
+.pf-rank-pill .rk-lbl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);font-weight:600}
+.pf-rank-pill .rk-nome{font-family:var(--font-d);font-size:14px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--rk-txt)}
 .pf-rank-status{font-size:12px;color:var(--muted2)}
 .pf-rank-status.risco{color:var(--red)}
 .pf-rank-status.ok{color:var(--green,#4CAF50)}
+/* Vendas da Equipe: barra lateral + tinta suave na linha, nome e classe na cor da classe */
+.ve-tr-rank td:first-child{box-shadow:inset 4px 0 0 var(--rk-3)}
+.ve-tr-rank{background:linear-gradient(90deg,color-mix(in srgb,var(--rk-3) 11%,transparent),transparent 45%)}
+.ve-rank{display:inline-flex;flex-direction:column;line-height:1.2}
+.ve-rank-nome{font-weight:700;color:var(--rk-txt)}
+.ve-rank-cl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--rk-txt);font-weight:700;opacity:.85}
+/* Lista de colaboradores (cards) */
+.pf-card.rk-on{border-color:var(--rk-3);box-shadow:inset 0 3px 0 var(--rk-3)}
+.pf-card.rk-on .pf-card-av{box-shadow:0 0 0 2px var(--s2),0 0 0 4px var(--rk-3)}
+.pf-card.rk-on .pf-card-nome{color:var(--rk-txt)}
+.pf-card-cl{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--rk-txt)}
+/* Menu lateral: quem está logado */
+.sidebar-user.rk-on .su-av{box-shadow:0 0 0 2px var(--s1),0 0 0 4px var(--rk-3)}
+.sidebar-user.rk-on .su-name{color:var(--rk-txt)}
+.su-rk{display:none;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--rk-txt);margin-top:1px}
+.sidebar-user.rk-on .su-rk{display:block}
 .pf-av-edit{position:absolute;bottom:-2px;right:-2px;width:28px;height:28px;border-radius:50%;background:var(--s1);color:var(--gold2);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .pf-info{flex:1;min-width:0}
 .pf-nome{font-family:var(--font-d);font-size:28px;font-weight:800;letter-spacing:.5px;line-height:1.1;overflow-wrap:anywhere}
@@ -2243,6 +2248,7 @@ input[type=color].cx-col{width:44px;height:38px;padding:2px;border:1px solid var
     <div style="cursor:pointer;min-width:0" onclick="abrirMeuPerfil()" title="Ver meu perfil">
       <div class="su-name" id="su-name">–</div>
       <div class="su-role" id="su-role">Vendedor</div>
+      <div class="su-rk" id="su-rk"></div>
     </div>
     <button class="su-logout" onclick="openChangePasswordModal()" title="Trocar minha senha" style="margin-right:2px">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="6" width="8" height="6" rx="1"/><path d="M4.5 6V4a2.5 2.5 0 015 0v2"/></svg>
@@ -3570,6 +3576,7 @@ async function initApp(user){
   await fetchCrmResumo(CUP?.email||CU.email);
   await fetchQualidadeResumo(CUP?.email||CU.email);
   renderSidebar();
+  _rankAplicarSidebar();
   renderNav();
   renderDashboard();
   renderNiveis();
@@ -3760,7 +3767,7 @@ async function renderAdmVendasEquipe(){
       const pal=lv?_rankPaleta(lv):null;
       const trStyle=pal?`--rk-1:${pal[0]};--rk-2:${pal[1]};--rk-3:${pal[2]};--rk-glow:color-mix(in srgb,${pal[2]} 70%,transparent)`:'';
       const nomeHtml=lv
-        ?`<span class="ve-rank"><span class="ve-rank-ico" title="${_escAttr(lv.name)} em ${_mesAnteriorKey()}">${nivelBadgeSVG(lv.id,lv.color,lv.name)}</span><span class="ve-rank-txt"><span class="ve-rank-nome">${_escHtml(v.nome||'–')}</span><span class="ve-rank-cl">${_escHtml(lv.name)}</span></span></span>`
+        ?`<span class="ve-rank"><span class="ve-rank-nome">${_escHtml(v.nome||'–')}</span><span class="ve-rank-cl" title="Classe em ${_mesAnteriorKey()}">${_escHtml(lv.name)}</span></span>`
         :_escHtml(v.nome||'–');
       return `<tr class="${lv?'ve-tr-rank':''}" style="${trStyle}">
       <td style="font-weight:600">${nomeHtml}</td>
@@ -7276,16 +7283,27 @@ function _rankAcharVendedor(lista,nome){
   const cand=lista.filter(v=>{ const vt=_rankNormNome(v.nome).split(' '); return vt.length>=2 && vt[0]===t[0] && vt[vt.length-1]===t[t.length-1]; });
   return cand.length===1?cand[0]:null; // ambíguo = não arrisca mostrar classe de outra pessoa
 }
-// Paleta metálica por classe [sombra, brilho, base]; nível criado pela Administração
-// (id fora da lista) deriva os tons da cor dele.
+// Paleta por classe [tom escuro, brilho, base]; nível criado pela Administração (id fora da
+// lista) deriva os tons da cor dele. O tom escuro precisa ter contraste no tema claro (vira --rk-txt lá).
 function _rankPaleta(lv){
   const PAL={
-    bronze:['#7a3f16','#f0b27a','#c8762a'], prata:['#7d808c','#ffffff','#b9bdc9'],
-    ouro:['#9a6f12','#fff0a8','#d9ad3c'], diamante:['#1f8fc4','#f0fcff','#6fd0f7'],
+    bronze:['#7a3f16','#f0b27a','#c8762a'], prata:['#666977','#ffffff','#b9bdc9'],
+    ouro:['#8a6210','#fff0a8','#d9ad3c'], diamante:['#14698f','#f0fcff','#6fd0f7'],
     elite:['#7d140d','#ff8a6b','#e2483b']
   };
   const c=lv.color;
   return PAL[lv.id]||[`color-mix(in srgb,${c} 55%,#000)`,`color-mix(in srgb,${c} 45%,#fff)`,c];
+}
+function _rankVars(n,lv){
+  const pal=_rankPaleta(lv);
+  n.style.setProperty('--rk-1',pal[0]); n.style.setProperty('--rk-2',pal[1]); n.style.setProperty('--rk-3',pal[2]);
+  n.style.setProperty('--rk-glow',`color-mix(in srgb,${pal[2]} 70%,transparent)`);
+}
+// Classe conquistada no mês passado por esse nome (null = sem classe ou sem vendedor correspondente no CRM)
+function _rankLvDe(ant,nome){
+  const v=_rankAcharVendedor(ant,nome); if(!v) return null;
+  const lv=getLevelForStats(v.cotas_mes||0,parseFloat(v.volume_mes)||0);
+  return lv.id==='nao_classificado'?null:lv;
 }
 async function _perfilAplicarRank(){
   const boxes=[...document.querySelectorAll('.pf-rank[data-rank-uid]')];
@@ -7295,30 +7313,16 @@ async function _perfilAplicarRank(){
   catch(e){ console.warn('[perfil rank] sem dados do CRM:',e.message); return; }
   boxes.forEach(box=>{
     const uid=box.dataset.rankUid, nome=box.dataset.rankNome;
-    const va=_rankAcharVendedor(ant,nome);
-    const lvAnt=va?getLevelForStats(va.cotas_mes||0,parseFloat(va.volume_mes)||0):null;
+    const lvAnt=_rankLvDe(ant,nome);
     const av=document.querySelector(`.pf-av[data-rank-uid="${uid}"]`);
-    if(!lvAnt || lvAnt.id==='nao_classificado'){
-      box.innerHTML='';
-      if(av){ av.classList.remove('pf-av-rank','pf-rk-anim'); av.querySelector('.pf-av-rkbadge')?.remove(); }
-      return;
-    }
-    const c=lvAnt.color;
-    const pal=_rankPaleta(lvAnt);
-    [box,av].forEach(n=>{ if(!n) return;
-      n.style.setProperty('--rk-1',pal[0]); n.style.setProperty('--rk-2',pal[1]); n.style.setProperty('--rk-3',pal[2]);
-      n.style.setProperty('--rk-glow',`color-mix(in srgb,${pal[2]} 70%,transparent)`); });
+    if(!lvAnt){ box.innerHTML=''; if(av) av.classList.remove('pf-av-rank','pf-rk-anim'); return; }
+    [box,av].forEach(n=>{ if(n) _rankVars(n,lvAnt); });
     if(av){
       av.classList.add('pf-av-rank');
       av.classList.toggle('pf-rk-anim',['ouro','diamante','elite'].includes(lvAnt.id));
-      if(!av.querySelector('.pf-av-rkbadge')){
-        const b=document.createElement('span'); b.className='pf-av-rkbadge'; b.title=lvAnt.name;
-        av.appendChild(b);
-      }
-      av.querySelector('.pf-av-rkbadge').innerHTML=nivelBadgeSVG(lvAnt.id,c,lvAnt.name);
     }
     const mesNome=MESES_PT[parseInt(_mesAnteriorKey().slice(5),10)-1];
-    let html=`<span class="pf-rank-pill"><span class="rk-ico">${nivelBadgeSVG(lvAnt.id,c,lvAnt.name)}</span><span class="rk-txt"><span class="rk-lbl">Ranking de ${mesNome}</span><span class="rk-nome">${_escHtml(lvAnt.name)}</span></span></span>`;
+    let html=`<span class="pf-rank-pill"><span class="rk-lbl">Ranking de ${mesNome}</span><span class="rk-nome">${_escHtml(lvAnt.name)}</span></span>`;
     const vt=_rankAcharVendedor(atu,nome);
     if(vt){
       const cotas=vt.cotas_mes||0, vol=parseFloat(vt.volume_mes)||0;
@@ -7334,6 +7338,32 @@ async function _perfilAplicarRank(){
     }
     box.innerHTML=html;
   });
+}
+// Cards da lista de colaboradores (aba Colaboradores do Meu Perfil)
+async function _rankAplicarCards(){
+  const cards=[...document.querySelectorAll('.pf-card[data-rank-nome]')];
+  if(!cards.length) return;
+  let ant; try{ ant=await _rankResumoMes(_mesAnteriorKey()); }catch(e){ return; }
+  cards.forEach(c=>{
+    const lv=_rankLvDe(ant,c.dataset.rankNome);
+    c.classList.toggle('rk-on',!!lv);
+    c.querySelector('.pf-card-cl')?.remove();
+    if(!lv) return;
+    _rankVars(c,lv);
+    const cl=document.createElement('div'); cl.className='pf-card-cl'; cl.textContent=lv.name;
+    c.querySelector('.pf-card-nome')?.insertAdjacentElement('afterend',cl);
+  });
+}
+// Menu lateral: anel no avatar, nome e classe de quem está logado
+async function _rankAplicarSidebar(){
+  const box=document.querySelector('.sidebar-user'), nome=(typeof CUP!=='undefined'&&CUP?.nome)||el('su-name')?.textContent;
+  if(!box||!nome) return;
+  let ant; try{ ant=await _rankResumoMes(_mesAnteriorKey()); }catch(e){ return; }
+  const lv=_rankLvDe(ant,nome);
+  box.classList.toggle('rk-on',!!lv);
+  if(!lv){ const r=el('su-rk'); if(r) r.textContent=''; return; }
+  _rankVars(box,lv);
+  const r=el('su-rk'); if(r) r.textContent=lv.name;
 }
 
 /* ── meu perfil (formulário) ── */
@@ -7429,7 +7459,7 @@ function _aoMudarMinhaFoto(url){
 function _perfilCardHtml(p){
   const nome=p.nome||'Colaborador';
   const tags=(p.habilidades||[]).slice(0,3), mais=(p.habilidades||[]).length-tags.length;
-  return `<div class="pf-card" onclick="abrirPerfil('${p.user_id}')">
+  return `<div class="pf-card" data-rank-nome="${_escAttr(nome)}" onclick="abrirPerfil('${p.user_id}')">
     <div class="pf-card-av">${p.foto_url?`<img src="${_escAttr(p.foto_url)}" alt="">`:_escHtml(nome.charAt(0).toUpperCase())}</div>
     <div class="pf-card-nome">${_escHtml(nome)}${p.user_id===CU.id?' <span style="color:var(--gold2);font-weight:400">(você)</span>':''}</div>
     <div class="pf-card-sub">${_escHtml([p.cargo,p.equipe].filter(Boolean).join(' · ')||'—')}</div>
@@ -7450,6 +7480,7 @@ function renderPerfilEquipe(){
   });
   el('pf-count').textContent=`${lista.length} colaborador${lista.length!==1?'es':''}`;
   el('pf-grid').innerHTML=lista.length?lista.map(_perfilCardHtml).join(''):'<div class="empty" style="grid-column:1/-1"><div class="empty-text">Ninguém encontrado</div></div>';
+  _rankAplicarCards();
 }
 
 /* ── perfil de outra pessoa (somente leitura) ── */
