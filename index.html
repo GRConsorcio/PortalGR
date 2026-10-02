@@ -1275,11 +1275,31 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .pf-av{position:relative;width:92px;height:92px;flex-shrink:0;border-radius:50%;background:var(--gold);color:#08080D;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:36px;box-shadow:0 0 0 3px var(--s2),0 0 0 5px var(--gold-dim)}
 .pf-av>img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 /* Borda da classe conquistada no mês passado (cor vem de LEVELS[].color via --rk-cor, setada em _perfilAplicarRank) */
-.pf-av.pf-av-rank{box-shadow:0 0 0 3px var(--s2),0 0 0 6px var(--rk-cor),0 0 18px 2px var(--rk-cor)}
-.pf-rank{margin-top:8px;display:flex;flex-direction:column;gap:5px}
+/* Moldura metálica: anel em conic-gradient (3 tons por classe: --rk-1 sombra, --rk-2 brilho, --rk-3 base)
+   separado do avatar por um vão da cor do painel; emblema da classe encaixado no canto inferior esquerdo. */
+.pf-av.pf-av-rank{isolation:isolate;box-shadow:0 0 0 4px var(--s2)}
+.pf-av.pf-av-rank::before{content:"";position:absolute;inset:-10px;border-radius:50%;z-index:-1;
+  background:conic-gradient(from 0deg,var(--rk-1),var(--rk-2) 18%,var(--rk-3) 36%,var(--rk-1) 50%,var(--rk-2) 68%,var(--rk-3) 84%,var(--rk-1));
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px));
+          mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px));
+  filter:drop-shadow(0 0 7px var(--rk-glow))}
+.pf-av.pf-av-rank.pf-rk-anim::before{animation:pf-rk-giro 9s linear infinite}
+@keyframes pf-rk-giro{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.pf-av.pf-av-rank.pf-rk-anim::before{animation:none}}
+.pf-av-rkbadge{position:absolute;left:-14px;bottom:-12px;width:42px;height:42px;border-radius:50%;padding:4px;box-sizing:border-box;
+  background:radial-gradient(circle at 35% 30%,var(--s3,#1b1b26),var(--s1,#0d0d14));border:2px solid var(--rk-3);
+  box-shadow:0 0 0 3px var(--s2),0 3px 10px rgba(0,0,0,.5),0 0 12px var(--rk-glow);display:flex;align-items:center;justify-content:center}
+.pf-av-rkbadge img{width:100%;height:100%;object-fit:contain}
+.pf-rank{margin-top:10px;display:flex;flex-direction:column;gap:6px}
 .pf-rank:empty{display:none}
-.pf-rank-pill{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--rk-cor);color:var(--rk-cor);background:color-mix(in srgb,var(--rk-cor) 12%,transparent)}
-.pf-rank-pill img{width:18px;height:18px;object-fit:contain}
+.pf-rank-pill{display:inline-flex;align-items:center;gap:10px;align-self:flex-start;padding:4px 16px 4px 5px;border-radius:999px;position:relative;
+  background:linear-gradient(var(--s2),var(--s2)) padding-box,linear-gradient(120deg,var(--rk-1),var(--rk-2),var(--rk-3)) border-box;border:1.5px solid transparent;
+  box-shadow:0 0 14px -4px var(--rk-glow)}
+.pf-rank-pill .rk-ico{width:34px;height:34px;flex-shrink:0;border-radius:50%;padding:3px;box-sizing:border-box;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--rk-3) 35%,transparent),transparent 70%)}
+.pf-rank-pill .rk-ico img{width:100%;height:100%;object-fit:contain}
+.pf-rank-pill .rk-txt{display:flex;flex-direction:column;line-height:1.15}
+.pf-rank-pill .rk-lbl{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);font-weight:600}
+.pf-rank-pill .rk-nome{font-family:var(--font-d);font-size:16px;font-weight:800;letter-spacing:.04em;background:linear-gradient(100deg,var(--rk-3),var(--rk-2),var(--rk-3));-webkit-background-clip:text;background-clip:text;color:transparent}
 .pf-rank-status{font-size:12px;color:var(--muted2)}
 .pf-rank-status.risco{color:var(--red)}
 .pf-rank-status.ok{color:var(--green,#4CAF50)}
@@ -7244,11 +7264,33 @@ async function _perfilAplicarRank(){
     const va=_rankAcharVendedor(ant,nome);
     const lvAnt=va?getLevelForStats(va.cotas_mes||0,parseFloat(va.volume_mes)||0):null;
     const av=document.querySelector(`.pf-av[data-rank-uid="${uid}"]`);
-    if(!lvAnt || lvAnt.id==='nao_classificado'){ box.innerHTML=''; if(av) av.classList.remove('pf-av-rank'); return; }
-    box.style.setProperty('--rk-cor',lvAnt.color);
-    if(av){ av.style.setProperty('--rk-cor',lvAnt.color); av.classList.add('pf-av-rank'); }
+    if(!lvAnt || lvAnt.id==='nao_classificado'){
+      box.innerHTML='';
+      if(av){ av.classList.remove('pf-av-rank','pf-rk-anim'); av.querySelector('.pf-av-rkbadge')?.remove(); }
+      return;
+    }
+    // Paleta metálica por classe; nível criado pela Administração (id fora da lista) deriva tons da cor dele.
+    const PAL={
+      bronze:['#7a3f16','#f0b27a','#c8762a'], prata:['#7d808c','#ffffff','#b9bdc9'],
+      ouro:['#9a6f12','#fff0a8','#d9ad3c'], diamante:['#1f8fc4','#f0fcff','#6fd0f7'],
+      elite:['#7d140d','#ff8a6b','#e2483b']
+    };
+    const c=lvAnt.color;
+    const pal=PAL[lvAnt.id]||[`color-mix(in srgb,${c} 55%,#000)`,`color-mix(in srgb,${c} 45%,#fff)`,c];
+    [box,av].forEach(n=>{ if(!n) return;
+      n.style.setProperty('--rk-1',pal[0]); n.style.setProperty('--rk-2',pal[1]); n.style.setProperty('--rk-3',pal[2]);
+      n.style.setProperty('--rk-glow',`color-mix(in srgb,${pal[2]} 70%,transparent)`); });
+    if(av){
+      av.classList.add('pf-av-rank');
+      av.classList.toggle('pf-rk-anim',['ouro','diamante','elite'].includes(lvAnt.id));
+      if(!av.querySelector('.pf-av-rkbadge')){
+        const b=document.createElement('span'); b.className='pf-av-rkbadge'; b.title=lvAnt.name;
+        av.appendChild(b);
+      }
+      av.querySelector('.pf-av-rkbadge').innerHTML=nivelBadgeSVG(lvAnt.id,c,lvAnt.name);
+    }
     const mesNome=MESES_PT[parseInt(_mesAnteriorKey().slice(5),10)-1];
-    let html=`<span class="pf-rank-pill">${nivelBadgeSVG(lvAnt.id,lvAnt.color,lvAnt.name)} Ranking de ${mesNome}: ${_escHtml(lvAnt.name)}</span>`;
+    let html=`<span class="pf-rank-pill"><span class="rk-ico">${nivelBadgeSVG(lvAnt.id,c,lvAnt.name)}</span><span class="rk-txt"><span class="rk-lbl">Ranking de ${mesNome}</span><span class="rk-nome">${_escHtml(lvAnt.name)}</span></span></span>`;
     const vt=_rankAcharVendedor(atu,nome);
     if(vt){
       const cotas=vt.cotas_mes||0, vol=parseFloat(vt.volume_mes)||0;
