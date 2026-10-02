@@ -1298,6 +1298,10 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .pf-rank-pill::before{content:"";width:9px;height:9px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--rk-2),var(--rk-3));box-shadow:0 0 0 2px color-mix(in srgb,var(--rk-3) 30%,transparent)}
 .pf-rank-pill .rk-lbl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);font-weight:600}
 .pf-rank-pill .rk-nome{font-family:var(--font-d);font-size:14px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--rk-txt)}
+.pf-rank-pill.sem{border-color:var(--border2);background:var(--s3)}
+.pf-rank-pill.sem::before{background:var(--muted2);box-shadow:none}
+.pf-rank-pill.sem .rk-nome{color:var(--muted2)}
+.pf-card-cl.sem,.su-rk.sem,.ve-rank-cl.sem{color:var(--muted2)}
 .pf-rank-status{font-size:12px;color:var(--muted2)}
 .pf-rank-status.risco{color:var(--red)}
 .pf-rank-status.ok{color:var(--green,#4CAF50)}
@@ -3760,16 +3764,17 @@ async function renderAdmVendasEquipe(){
     let classePorNome={};
     try{
       const ant=await _rankResumoMes(_mesAnteriorKey());
-      ant.forEach(a=>{ const lv=getLevelForStats(a.cotas_mes||0,parseFloat(a.volume_mes)||0); if(lv.id!=='nao_classificado') classePorNome[a.nome]=lv; });
+      ant.forEach(a=>{ const lv=getLevelForStats(a.cotas_mes||0,parseFloat(a.volume_mes)||0); classePorNome[a.nome]=lv; });
     }catch(e){ console.warn('[renderAdmVendasEquipe] sem classe do mês passado:',e.message); }
     bodyEl.innerHTML=vendedores.map(v=>{
       const lv=classePorNome[v.nome];
-      const pal=lv?_rankPaleta(lv):null;
+      const sem=lv&&_rankSem(lv); // "Sem ranking" fica na cor base: sem barra/tinta, só o rótulo discreto
+      const pal=lv&&!sem?_rankPaleta(lv):null;
       const trStyle=pal?`--rk-1:${pal[0]};--rk-2:${pal[1]};--rk-3:${pal[2]};--rk-glow:color-mix(in srgb,${pal[2]} 70%,transparent)`:'';
       const nomeHtml=lv
-        ?`<span class="ve-rank"><span class="ve-rank-nome">${_escHtml(v.nome||'–')}</span><span class="ve-rank-cl" title="Classe em ${_mesAnteriorKey()}">${_escHtml(lv.name)}</span></span>`
+        ?`<span class="ve-rank"><span class="ve-rank-nome">${_escHtml(v.nome||'–')}</span><span class="ve-rank-cl${sem?' sem':''}" title="Classe em ${_mesAnteriorKey()}">${_escHtml(_rankNomeClasse(lv))}</span></span>`
         :_escHtml(v.nome||'–');
-      return `<tr class="${lv?'ve-tr-rank':''}" style="${trStyle}">
+      return `<tr class="${pal?'ve-tr-rank':''}" style="${trStyle}">
       <td style="font-weight:600">${nomeHtml}</td>
       <td style="color:var(--muted2)">${v.equipe||'–'}</td>
       <td style="font-family:var(--font-d);font-weight:700;color:var(--gold2)">${v.cotas_mes||0}</td>
@@ -7299,12 +7304,15 @@ function _rankVars(n,lv){
   n.style.setProperty('--rk-1',pal[0]); n.style.setProperty('--rk-2',pal[1]); n.style.setProperty('--rk-3',pal[2]);
   n.style.setProperty('--rk-glow',`color-mix(in srgb,${pal[2]} 70%,transparent)`);
 }
-// Classe conquistada no mês passado por esse nome (null = sem classe ou sem vendedor correspondente no CRM)
+// Classe conquistada no mês passado por esse nome (null = sem vendedor correspondente no CRM, ex: quem não vende).
+// Quem vende mas não chegou no mínimo do Bronze (8 cotas ou R$ 350 mil) volta como "Não Classificado".
 function _rankLvDe(ant,nome){
   const v=_rankAcharVendedor(ant,nome); if(!v) return null;
-  const lv=getLevelForStats(v.cotas_mes||0,parseFloat(v.volume_mes)||0);
-  return lv.id==='nao_classificado'?null:lv;
+  return getLevelForStats(v.cotas_mes||0,parseFloat(v.volume_mes)||0);
 }
+// "Sem ranking" fica com a cor base do app (sem anel, faixa ou tinta) — só ganham cor as classes de Bronze pra cima.
+function _rankSem(lv){ return lv.id==='nao_classificado'; }
+function _rankNomeClasse(lv){ return _rankSem(lv)?'Sem ranking':lv.name; }
 async function _perfilAplicarRank(){
   const boxes=[...document.querySelectorAll('.pf-rank[data-rank-uid]')];
   if(!boxes.length) return;
@@ -7315,25 +7323,40 @@ async function _perfilAplicarRank(){
     const uid=box.dataset.rankUid, nome=box.dataset.rankNome;
     const lvAnt=_rankLvDe(ant,nome);
     const av=document.querySelector(`.pf-av[data-rank-uid="${uid}"]`);
-    if(!lvAnt){ box.innerHTML=''; if(av) av.classList.remove('pf-av-rank','pf-rk-anim'); return; }
-    [box,av].forEach(n=>{ if(n) _rankVars(n,lvAnt); });
-    if(av){
-      av.classList.add('pf-av-rank');
-      av.classList.toggle('pf-rk-anim',['ouro','diamante','elite'].includes(lvAnt.id));
+    if(av) av.classList.remove('pf-av-rank','pf-rk-anim');
+    if(!lvAnt){ box.innerHTML=''; return; }
+    const sem=_rankSem(lvAnt);
+    if(!sem){
+      [box,av].forEach(n=>{ if(n) _rankVars(n,lvAnt); });
+      if(av){
+        av.classList.add('pf-av-rank');
+        av.classList.toggle('pf-rk-anim',['ouro','diamante','elite'].includes(lvAnt.id));
+      }
     }
     const mesNome=MESES_PT[parseInt(_mesAnteriorKey().slice(5),10)-1];
-    let html=`<span class="pf-rank-pill"><span class="rk-lbl">Ranking de ${mesNome}</span><span class="rk-nome">${_escHtml(lvAnt.name)}</span></span>`;
+    let html=`<span class="pf-rank-pill${sem?' sem':''}"><span class="rk-lbl">Ranking de ${mesNome}</span><span class="rk-nome">${_escHtml(_rankNomeClasse(lvAnt))}</span></span>`;
     const vt=_rankAcharVendedor(atu,nome);
     if(vt){
       const cotas=vt.cotas_mes||0, vol=parseFloat(vt.volume_mes)||0;
       const lvAtu=getLevelForStats(cotas,vol);
-      if((lvAtu.ordem||0)>=(lvAnt.ordem||0)){
+      // Meta a bater neste mês: manter a classe do mês passado; quem estava sem ranking mira o próximo nível (Bronze).
+      const alvo=sem
+        ?[...LEVELS].filter(l=>l.id!=='nao_classificado').sort((a,b)=>(a.ordem||0)-(b.ordem||0))[0]
+        :lvAnt;
+      const faltaTxt=()=>{
+        const f=[];
+        if(alvo.minCotas) f.push(Math.max(0,alvo.minCotas-cotas)+' cota(s)');
+        if(alvo.minVolume) f.push(fmtBRL(Math.max(0,alvo.minVolume-vol)));
+        return f.join(' ou ');
+      };
+      if(sem){
+        html+=(lvAtu.ordem||0)>0
+          ?`<span class="pf-rank-status ok">Este mês: ${_escHtml(lvAtu.name)} — já saiu do "Sem ranking" ✓</span>`
+          :(alvo?`<span class="pf-rank-status">Este mês: faltam ${faltaTxt()} para chegar ao ${_escHtml(alvo.name)}</span>`:'');
+      } else if((lvAtu.ordem||0)>=(lvAnt.ordem||0)){
         html+=`<span class="pf-rank-status ok">Este mês: ${_escHtml(lvAtu.name)} — classe mantida ✓</span>`;
       } else {
-        const falta=[];
-        if(lvAnt.minCotas) falta.push(Math.max(0,lvAnt.minCotas-cotas)+' cota(s)');
-        if(lvAnt.minVolume) falta.push(fmtBRL(Math.max(0,lvAnt.minVolume-vol)));
-        html+=`<span class="pf-rank-status risco">Este mês: ${_escHtml(lvAtu.name)} — faltam ${falta.join(' ou ')} para manter ${_escHtml(lvAnt.name)}; se não bater, desce no próximo mês</span>`;
+        html+=`<span class="pf-rank-status risco">Este mês: ${_escHtml(_rankNomeClasse(lvAtu))} — faltam ${faltaTxt()} para manter ${_escHtml(lvAnt.name)}; se não bater, desce no próximo mês</span>`;
       }
     }
     box.innerHTML=html;
@@ -7346,11 +7369,11 @@ async function _rankAplicarCards(){
   let ant; try{ ant=await _rankResumoMes(_mesAnteriorKey()); }catch(e){ return; }
   cards.forEach(c=>{
     const lv=_rankLvDe(ant,c.dataset.rankNome);
-    c.classList.toggle('rk-on',!!lv);
+    c.classList.toggle('rk-on',!!lv&&!_rankSem(lv));
     c.querySelector('.pf-card-cl')?.remove();
     if(!lv) return;
-    _rankVars(c,lv);
-    const cl=document.createElement('div'); cl.className='pf-card-cl'; cl.textContent=lv.name;
+    if(!_rankSem(lv)) _rankVars(c,lv);
+    const cl=document.createElement('div'); cl.className='pf-card-cl'+(_rankSem(lv)?' sem':''); cl.textContent=_rankNomeClasse(lv);
     c.querySelector('.pf-card-nome')?.insertAdjacentElement('afterend',cl);
   });
 }
@@ -7359,11 +7382,10 @@ async function _rankAplicarSidebar(){
   const box=document.querySelector('.sidebar-user'), nome=(typeof CUP!=='undefined'&&CUP?.nome)||el('su-name')?.textContent;
   if(!box||!nome) return;
   let ant; try{ ant=await _rankResumoMes(_mesAnteriorKey()); }catch(e){ return; }
-  const lv=_rankLvDe(ant,nome);
-  box.classList.toggle('rk-on',!!lv);
-  if(!lv){ const r=el('su-rk'); if(r) r.textContent=''; return; }
-  _rankVars(box,lv);
-  const r=el('su-rk'); if(r) r.textContent=lv.name;
+  const lv=_rankLvDe(ant,nome), r=el('su-rk');
+  box.classList.toggle('rk-on',!!lv&&!_rankSem(lv));
+  if(r){ r.textContent=lv?_rankNomeClasse(lv):''; r.classList.toggle('sem',!!lv&&_rankSem(lv)); r.style.display=lv?'block':''; }
+  if(lv&&!_rankSem(lv)) _rankVars(box,lv);
 }
 
 /* ── meu perfil (formulário) ── */
