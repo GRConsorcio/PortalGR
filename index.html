@@ -1274,6 +1274,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .pf-hero{display:flex;align-items:center;gap:22px;padding:22px 24px;margin-bottom:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--gold) 10%,var(--s2)),var(--s2));border:1px solid var(--border);border-radius:var(--radius-card);box-shadow:var(--shadow-card)}
 .pf-av{position:relative;width:92px;height:92px;flex-shrink:0;border-radius:50%;background:var(--gold);color:#08080D;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:36px;box-shadow:0 0 0 3px var(--s2),0 0 0 5px var(--gold-dim)}
 .pf-av>img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+/* Borda da classe conquistada no mês passado (cor vem de LEVELS[].color via --rk-cor, setada em _perfilAplicarRank) */
+.pf-av.pf-av-rank{box-shadow:0 0 0 3px var(--s2),0 0 0 6px var(--rk-cor),0 0 18px 2px var(--rk-cor)}
+.pf-rank{margin-top:8px;display:flex;flex-direction:column;gap:5px}
+.pf-rank:empty{display:none}
+.pf-rank-pill{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--rk-cor);color:var(--rk-cor);background:color-mix(in srgb,var(--rk-cor) 12%,transparent)}
+.pf-rank-pill img{width:18px;height:18px;object-fit:contain}
+.pf-rank-status{font-size:12px;color:var(--muted2)}
+.pf-rank-status.risco{color:var(--red)}
+.pf-rank-status.ok{color:var(--green,#4CAF50)}
 .pf-av-edit{position:absolute;bottom:-2px;right:-2px;width:28px;height:28px;border-radius:50%;background:var(--s1);color:var(--gold2);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .pf-info{flex:1;min-width:0}
 .pf-nome{font-family:var(--font-d);font-size:28px;font-weight:800;letter-spacing:.5px;line-height:1.1;overflow-wrap:anywhere}
@@ -7184,17 +7193,78 @@ function _perfilHeroHtml(p,souEu){
   if(p.data_admissao){ const t=_tempoDeCasa(p.data_admissao); pills.push(`<span class="pf-pill">🏢 Na GR desde ${_mesAnoExtenso(p.data_admissao)}${t?' · '+t:''}</span>`); }
   if(p.aniv_dia && p.aniv_mes) pills.push(`<span class="pf-pill ${anivHoje?'dest':''}">🎂 ${anivHoje?'Aniversário hoje!':p.aniv_dia+' de '+MESES_PT[p.aniv_mes-1]}</span>`);
   if(p.cidade) pills.push(`<span class="pf-pill">📍 ${_escHtml(p.cidade)}</span>`);
-  return `<div class="pf-av">${p.foto_url?`<img src="${_escAttr(p.foto_url)}" alt="">`:_escHtml(nome.charAt(0).toUpperCase())}
+  return `<div class="pf-av" data-rank-uid="${_escAttr(p.user_id)}">${p.foto_url?`<img src="${_escAttr(p.foto_url)}" alt="">`:_escHtml(nome.charAt(0).toUpperCase())}
       ${souEu?`<button type="button" class="pf-av-edit" onclick="openPerfilFotoModal()" title="Trocar minha foto" aria-label="Trocar minha foto"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 5h2l1-2h6l1 2h2v8H2z"/><circle cx="8" cy="9" r="2.2"/></svg></button>`:''}
     </div>
     <div class="pf-info">
       <div class="pf-nome">${_escHtml(nome)}</div>
       <div class="pf-sub">${_escHtml([p.cargo,p.equipe].filter(Boolean).join(' · ')||'—')}</div>
       ${pills.length?`<div class="pf-meta">${pills.join('')}</div>`:''}
+      <div class="pf-rank" data-rank-uid="${_escAttr(p.user_id)}" data-rank-nome="${_escAttr(nome)}"></div>
       ${souEu?'':`<div class="pf-hero-acoes"><button class="btn-primary" onclick="iniciarConversaComPerfil('${p.user_id}')">💬 Enviar mensagem</button></div>`}
     </div>`;
 }
-function _perfilRenderHero(p,souEu){ const h=el('pf-hero'); if(h) h.innerHTML=_perfilHeroHtml(p,souEu); }
+function _perfilRenderHero(p,souEu){ const h=el('pf-hero'); if(h){ h.innerHTML=_perfilHeroHtml(p,souEu); _perfilAplicarRank(); } }
+
+/* ═══ CLASSE DO MÊS PASSADO NO PERFIL ═══
+   A classe (Bronze/Prata/Ouro/...) conquistada no mês anterior vira a borda do
+   avatar e uma etiqueta no perfil. Ela vale durante o mês corrente; quando o mês
+   vira, a "classe do mês passado" passa a ser a que a pessoa de fato bateu — então
+   quem não repetiu o resultado é rebaixado sozinho, sem ninguém mexer. Enquanto o
+   mês não fecha, a tela mostra quanto falta pra manter. Casa o colaborador com o
+   vendedor do CRM pelo NOME (o resumo da equipe não traz e-mail, só agregado). */
+const _rankMesCache={}; // 'AAAA-MM' | 'atual' -> {t:timestamp, vendedores:[...]}
+function _mesAnteriorKey(){
+  const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-1);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+async function _rankResumoMes(chave){
+  const c=_rankMesCache[chave];
+  if(c && Date.now()-c.t<5*60*1000) return c.vendedores;
+  const data=await fetchCrmResumoEquipe(chave==='atual'?undefined:chave);
+  _rankMesCache[chave]={t:Date.now(),vendedores:data.vendedores||[]};
+  return _rankMesCache[chave].vendedores;
+}
+function _rankNormNome(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim(); }
+function _rankAcharVendedor(lista,nome){
+  const n=_rankNormNome(nome); if(!n) return null;
+  const exato=lista.find(v=>_rankNormNome(v.nome)===n); if(exato) return exato;
+  const t=n.split(' '); if(t.length<2) return null;
+  const cand=lista.filter(v=>{ const vt=_rankNormNome(v.nome).split(' '); return vt.length>=2 && vt[0]===t[0] && vt[vt.length-1]===t[t.length-1]; });
+  return cand.length===1?cand[0]:null; // ambíguo = não arrisca mostrar classe de outra pessoa
+}
+async function _perfilAplicarRank(){
+  const boxes=[...document.querySelectorAll('.pf-rank[data-rank-uid]')];
+  if(!boxes.length) return;
+  let ant,atu;
+  try{ [ant,atu]=await Promise.all([_rankResumoMes(_mesAnteriorKey()),_rankResumoMes('atual')]); }
+  catch(e){ console.warn('[perfil rank] sem dados do CRM:',e.message); return; }
+  boxes.forEach(box=>{
+    const uid=box.dataset.rankUid, nome=box.dataset.rankNome;
+    const va=_rankAcharVendedor(ant,nome);
+    const lvAnt=va?getLevelForStats(va.cotas_mes||0,parseFloat(va.volume_mes)||0):null;
+    const av=document.querySelector(`.pf-av[data-rank-uid="${uid}"]`);
+    if(!lvAnt || lvAnt.id==='nao_classificado'){ box.innerHTML=''; if(av) av.classList.remove('pf-av-rank'); return; }
+    box.style.setProperty('--rk-cor',lvAnt.color);
+    if(av){ av.style.setProperty('--rk-cor',lvAnt.color); av.classList.add('pf-av-rank'); }
+    const mesNome=MESES_PT[parseInt(_mesAnteriorKey().slice(5),10)-1];
+    let html=`<span class="pf-rank-pill">${nivelBadgeSVG(lvAnt.id,lvAnt.color,lvAnt.name)} Ranking de ${mesNome}: ${_escHtml(lvAnt.name)}</span>`;
+    const vt=_rankAcharVendedor(atu,nome);
+    if(vt){
+      const cotas=vt.cotas_mes||0, vol=parseFloat(vt.volume_mes)||0;
+      const lvAtu=getLevelForStats(cotas,vol);
+      if((lvAtu.ordem||0)>=(lvAnt.ordem||0)){
+        html+=`<span class="pf-rank-status ok">Este mês: ${_escHtml(lvAtu.name)} — classe mantida ✓</span>`;
+      } else {
+        const falta=[];
+        if(lvAnt.minCotas) falta.push(Math.max(0,lvAnt.minCotas-cotas)+' cota(s)');
+        if(lvAnt.minVolume) falta.push(fmtBRL(Math.max(0,lvAnt.minVolume-vol)));
+        html+=`<span class="pf-rank-status risco">Este mês: ${_escHtml(lvAtu.name)} — faltam ${falta.join(' ou ')} para manter ${_escHtml(lvAnt.name)}; se não bater, desce no próximo mês</span>`;
+      }
+    }
+    box.innerHTML=html;
+  });
+}
 
 /* ── meu perfil (formulário) ── */
 function renderPerfilMeu(){
@@ -7338,12 +7408,14 @@ function _renderPerfilOutro(){
   // só vira link se for http(s) — o servidor também valida, mas nunca confiar num href vindo de dado
   if(p.linkedin && /^https?:\/\//i.test(p.linkedin)) contato.push(`<a href="${_escAttr(p.linkedin)}" target="_blank" rel="noopener noreferrer">LinkedIn</a>`);
   if(contato.length) secoes.push(['Contato',`<p>${contato.join(' · ')}</p>`]);
+  // (o _perfilAplicarRank() logo depois do innerHTML preenche a borda/etiqueta da classe do mês passado)
   wrap.innerHTML=voltar+`<div class="pf-hero">${_perfilHeroHtml(p,false)}</div>
     <div id="pf-conq-outro"></div>
     <div class="panel"><div class="pf-body">${secoes.length
       ? secoes.map(([t,h])=>`<div class="pf-secao"><h4>${t}</h4>${h}</div>`).join('')
       : '<div class="empty" style="padding:24px"><div class="empty-text">Esse colaborador ainda não preencheu o perfil</div></div>'}</div></div>`;
   _pfCarregarConquistas('pf-conq-outro',_perfilOutroId);
+  _perfilAplicarRank();
 }
 
 /* ── Pontos e cursos no perfil (visível a todos os logados) ──
