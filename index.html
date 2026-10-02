@@ -3619,24 +3619,25 @@ async function initApp(user){
    dado de cliente/lead pro Portal, chama uma função agregada no banco do
    CRM que devolve só contagens/somas por vendedor (nunca nome, telefone,
    CPF ou qualquer coisa do cliente) e casa pelo e-mail. */
-const CRM_SUPA_URL='https://prquggwhjcvenzuziaox.supabase.co';
-// BUGFIX: chave anon legada do CRM foi revogada quando o CRM migrou pra
-// publishable key (mesma troca do commit "URGENTE" no repo do CRM) — só que
-// essa cópia mora aqui no Portal e ninguém atualizou junto, então toda
-// requisição direta pro CRM (resumo de vendas, ranking, qualidade, nome do
-// vendedor) vinha voltando 401 e caindo pro fallback zerado/"sem equipe".
-const CRM_ANON_KEY='sb_publishable_YcjSMFQoaBa5mHUtqrPCPQ_2SZmJ5aF';
-const CRM_RESUMO_SECRET='pgr_resumo_a71f9c3e5b8d2467a0f1c9e3b6d8f452a17c9e04';
-const CRM_NOME_SECRET='pgr_nome_3b8f1a9c7e2d5601a4c8f2e9b7d3a650f1c8e9a2';
+// SEGURANÇA (2026-10-02): as RPCs de resumo do CRM eram chamadas direto daqui, com "segredos
+// compartilhados" escritos neste HTML público — qualquer um lia o código-fonte e puxava vendas por
+// vendedor. Agora tudo passa pela Edge Function `crm-proxy` (verify_jwt): o navegador manda o
+// token da sessão do Portal, o servidor confere quem é e só ele guarda os segredos. O e-mail do
+// vendedor vem do token no servidor — não é mais enviado daqui.
+async function _crmProxy(acao,extra){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session?.access_token) throw new Error('Sessão expirada');
+  const resp=await fetch(SUPA_URL+'/functions/v1/crm-proxy',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
+    body:JSON.stringify({acao,...(extra||{})})
+  });
+  return await resp.json();
+}
 async function fetchCrmResumo(email){
   if(!email){ _crmResumo=null; return; }
   try{
-    const resp=await fetch(CRM_SUPA_URL+'/rest/v1/rpc/portal_resumo_vendedor',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','apikey':CRM_ANON_KEY,'Authorization':'Bearer '+CRM_ANON_KEY},
-      body:JSON.stringify({p_email:email,p_secret:CRM_RESUMO_SECRET})
-    });
-    const data=await resp.json();
+    const data=await _crmProxy('resumo_vendedor');
     _crmResumo=(data&&!data.error)?data:null;
   }catch(e){
     console.warn('[fetchCrmResumo] erro:',e.message);
@@ -3646,40 +3647,23 @@ async function fetchCrmResumo(email){
 
 // ═══ VENDAS DA EQUIPE (CRM) ═══
 // Mesmo padrão de portal_resumo_vendedor, mas devolve cotas/volume de TODOS
-// os vendedores de uma vez (função própria no CRM, com seu próprio segredo)
-// — pra tela de Gestão → Vendas da Equipe. Continua só agregado por
-// vendedor: nunca nome, telefone ou qualquer dado de cliente/lead.
-const CRM_RESUMO_EQUIPE_SECRET='pgr_equipe_9f3a7c1e6b4d8025f9c3a1e7b5d90462c8f1a3e6';
+// os vendedores de uma vez — pra tela de Gestão → Vendas da Equipe. Continua só
+// agregado por vendedor: nunca telefone ou qualquer dado de cliente/lead.
 async function fetchCrmResumoEquipe(pMes){
-  const body={p_secret:CRM_RESUMO_EQUIPE_SECRET};
-  if(pMes) body.p_mes=pMes;
-  const resp=await fetch(CRM_SUPA_URL+'/rest/v1/rpc/portal_resumo_todos_vendedores',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','apikey':CRM_ANON_KEY,'Authorization':'Bearer '+CRM_ANON_KEY},
-    body:JSON.stringify(body)
-  });
-  const data=await resp.json();
+  const data=await _crmProxy('resumo_equipe',pMes?{mes:pMes}:{});
   if(!data||data.error) throw new Error(data?.error||'Falha ao buscar dados do CRM');
   return data;
 }
 
 /* ═══ RESUMO DE INADIMPLÊNCIA (App Qualidade) ═══
-   Mesmo padrão de segredo compartilhado usado pro CRM acima — o app
-   Qualidade vive no mesmo projeto Supabase do CRM (schema "qualidade"), com
-   funções próprias que casam o vendedor pelo e-mail (via crm_users) e nunca
-   expõem nome/telefone de cliente, só contagens agregadas de parcela. */
-const QUALIDADE_RESUMO_SECRET='pgr_qualid_9c4130cc2181ffa69cbab78a072b8d92efdbb0da';
-const QUALIDADE_RESUMO_GERAL_SECRET='pgr_qualid_geral_c4875e642be83b62455774eeee176e52c3b28320';
+   Mesmo caminho (crm-proxy) — o app Qualidade vive no mesmo projeto Supabase do
+   CRM (schema "qualidade"), com funções próprias que casam o vendedor pelo e-mail
+   e nunca expõem nome/telefone de cliente, só contagens agregadas de parcela. */
 let _qualidadeResumo=null;
 async function fetchQualidadeResumo(email){
   if(!email){ _qualidadeResumo=null; return; }
   try{
-    const resp=await fetch(CRM_SUPA_URL+'/rest/v1/rpc/qualidade_resumo_vendedor',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','apikey':CRM_ANON_KEY,'Authorization':'Bearer '+CRM_ANON_KEY},
-      body:JSON.stringify({p_email:email,p_secret:QUALIDADE_RESUMO_SECRET})
-    });
-    const data=await resp.json();
+    const data=await _crmProxy('qualidade_vendedor');
     _qualidadeResumo=(data&&!data.error&&!data.sem_dados)?data:null;
   }catch(e){
     console.warn('[fetchQualidadeResumo] erro:',e.message);
@@ -3687,15 +3671,10 @@ async function fetchQualidadeResumo(email){
   }
 }
 async function fetchQualidadeResumoGeral(pMes,pAno){
-  const body={p_secret:QUALIDADE_RESUMO_GERAL_SECRET};
-  if(pMes) body.p_mes=pMes;
-  if(pAno) body.p_ano=pAno;
-  const resp=await fetch(CRM_SUPA_URL+'/rest/v1/rpc/qualidade_resumo_geral',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','apikey':CRM_ANON_KEY,'Authorization':'Bearer '+CRM_ANON_KEY},
-    body:JSON.stringify(body)
-  });
-  const data=await resp.json();
+  const extra={};
+  if(pMes) extra.mes=pMes;
+  if(pAno) extra.ano=pAno;
+  const data=await _crmProxy('qualidade_geral',extra);
   if(!data||data.error) throw new Error(data?.error||'Falha ao buscar dados do app Qualidade');
   return data;
 }
@@ -6116,12 +6095,7 @@ async function _nomeCompletoParaCertificado(){
   const email=CUP?.email||CU?.email;
   if(email){
     try{
-      const resp=await fetch(CRM_SUPA_URL+'/rest/v1/rpc/portal_nome_vendedor',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','apikey':CRM_ANON_KEY,'Authorization':'Bearer '+CRM_ANON_KEY},
-        body:JSON.stringify({p_email:email,p_secret:CRM_NOME_SECRET})
-      });
-      const data=await resp.json();
+      const data=await _crmProxy('nome_vendedor');
       const nomeCrm=(data?.name||'').trim();
       if(nomeCrm.includes(' ')) return nomeCrm;
       if(nomeCrm && !nomePortal) return nomeCrm;
