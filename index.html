@@ -1290,6 +1290,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
   background:radial-gradient(circle at 35% 30%,var(--s3,#1b1b26),var(--s1,#0d0d14));border:2px solid var(--rk-3);
   box-shadow:0 0 0 3px var(--s2),0 3px 10px rgba(0,0,0,.5),0 0 12px var(--rk-glow);display:flex;align-items:center;justify-content:center}
 .pf-av-rkbadge img{width:100%;height:100%;object-fit:contain}
+/* Vendas da Equipe: linha do vendedor com a cor/emblema da classe do mês passado */
+.ve-tr-rank td:first-child{box-shadow:inset 4px 0 0 var(--rk-3)}
+.ve-tr-rank{background:linear-gradient(90deg,color-mix(in srgb,var(--rk-3) 10%,transparent),transparent 45%)}
+.ve-rank{display:inline-flex;align-items:center;gap:10px}
+.ve-rank-ico{width:34px;height:34px;flex-shrink:0;border-radius:50%;padding:3px;box-sizing:border-box;border:1.5px solid var(--rk-3);box-shadow:0 0 10px -2px var(--rk-glow);background:radial-gradient(circle at 35% 30%,var(--s3,#1b1b26),var(--s1,#0d0d14))}
+.ve-rank-ico img{width:100%;height:100%;object-fit:contain}
+.ve-rank-txt{display:flex;flex-direction:column;line-height:1.2}
+.ve-rank-nome{font-weight:700;background:linear-gradient(100deg,var(--rk-3),var(--rk-2),var(--rk-3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.ve-rank-cl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--rk-3);font-weight:700}
 .pf-rank{margin-top:10px;display:flex;flex-direction:column;gap:6px}
 .pf-rank:empty{display:none}
 .pf-rank-pill{display:inline-flex;align-items:center;gap:10px;align-self:flex-start;padding:4px 16px 4px 5px;border-radius:999px;position:relative;
@@ -3739,15 +3748,29 @@ async function renderAdmVendasEquipe(){
       loadEl.textContent='Nenhum vendedor encontrado.';
       return;
     }
-    bodyEl.innerHTML=vendedores.map(v=>`<tr>
-      <td style="font-weight:600">${v.nome||'–'}</td>
+    // Cor/emblema de cada vendedor = classe que ele conquistou no mês passado (mesma
+    // regra da moldura do perfil). Se o resumo do mês passado falhar, a tabela segue sem cores.
+    let classePorNome={};
+    try{
+      const ant=await _rankResumoMes(_mesAnteriorKey());
+      ant.forEach(a=>{ const lv=getLevelForStats(a.cotas_mes||0,parseFloat(a.volume_mes)||0); if(lv.id!=='nao_classificado') classePorNome[a.nome]=lv; });
+    }catch(e){ console.warn('[renderAdmVendasEquipe] sem classe do mês passado:',e.message); }
+    bodyEl.innerHTML=vendedores.map(v=>{
+      const lv=classePorNome[v.nome];
+      const pal=lv?_rankPaleta(lv):null;
+      const trStyle=pal?`--rk-1:${pal[0]};--rk-2:${pal[1]};--rk-3:${pal[2]};--rk-glow:color-mix(in srgb,${pal[2]} 70%,transparent)`:'';
+      const nomeHtml=lv
+        ?`<span class="ve-rank"><span class="ve-rank-ico" title="${_escAttr(lv.name)} em ${_mesAnteriorKey()}">${nivelBadgeSVG(lv.id,lv.color,lv.name)}</span><span class="ve-rank-txt"><span class="ve-rank-nome">${_escHtml(v.nome||'–')}</span><span class="ve-rank-cl">${_escHtml(lv.name)}</span></span></span>`
+        :_escHtml(v.nome||'–');
+      return `<tr class="${lv?'ve-tr-rank':''}" style="${trStyle}">
+      <td style="font-weight:600">${nomeHtml}</td>
       <td style="color:var(--muted2)">${v.equipe||'–'}</td>
       <td style="font-family:var(--font-d);font-weight:700;color:var(--gold2)">${v.cotas_mes||0}</td>
       <td>${fmtBRL(v.volume_mes||0)}</td>
       <td>${v.vendas_mes||0}</td>
       <td style="${todoPeriodo?'display:none':''}">${v.cotas_total||0}</td>
       <td style="${todoPeriodo?'display:none':''}">${fmtBRL(v.volume_total||0)}</td>
-    </tr>`).join('');
+    </tr>`;}).join('');
     loadEl.style.display='none';
     wrapEl.style.display='block';
   }catch(e){
@@ -7253,6 +7276,17 @@ function _rankAcharVendedor(lista,nome){
   const cand=lista.filter(v=>{ const vt=_rankNormNome(v.nome).split(' '); return vt.length>=2 && vt[0]===t[0] && vt[vt.length-1]===t[t.length-1]; });
   return cand.length===1?cand[0]:null; // ambíguo = não arrisca mostrar classe de outra pessoa
 }
+// Paleta metálica por classe [sombra, brilho, base]; nível criado pela Administração
+// (id fora da lista) deriva os tons da cor dele.
+function _rankPaleta(lv){
+  const PAL={
+    bronze:['#7a3f16','#f0b27a','#c8762a'], prata:['#7d808c','#ffffff','#b9bdc9'],
+    ouro:['#9a6f12','#fff0a8','#d9ad3c'], diamante:['#1f8fc4','#f0fcff','#6fd0f7'],
+    elite:['#7d140d','#ff8a6b','#e2483b']
+  };
+  const c=lv.color;
+  return PAL[lv.id]||[`color-mix(in srgb,${c} 55%,#000)`,`color-mix(in srgb,${c} 45%,#fff)`,c];
+}
 async function _perfilAplicarRank(){
   const boxes=[...document.querySelectorAll('.pf-rank[data-rank-uid]')];
   if(!boxes.length) return;
@@ -7269,14 +7303,8 @@ async function _perfilAplicarRank(){
       if(av){ av.classList.remove('pf-av-rank','pf-rk-anim'); av.querySelector('.pf-av-rkbadge')?.remove(); }
       return;
     }
-    // Paleta metálica por classe; nível criado pela Administração (id fora da lista) deriva tons da cor dele.
-    const PAL={
-      bronze:['#7a3f16','#f0b27a','#c8762a'], prata:['#7d808c','#ffffff','#b9bdc9'],
-      ouro:['#9a6f12','#fff0a8','#d9ad3c'], diamante:['#1f8fc4','#f0fcff','#6fd0f7'],
-      elite:['#7d140d','#ff8a6b','#e2483b']
-    };
     const c=lvAnt.color;
-    const pal=PAL[lvAnt.id]||[`color-mix(in srgb,${c} 55%,#000)`,`color-mix(in srgb,${c} 45%,#fff)`,c];
+    const pal=_rankPaleta(lvAnt);
     [box,av].forEach(n=>{ if(!n) return;
       n.style.setProperty('--rk-1',pal[0]); n.style.setProperty('--rk-2',pal[1]); n.style.setProperty('--rk-3',pal[2]);
       n.style.setProperty('--rk-glow',`color-mix(in srgb,${pal[2]} 70%,transparent)`); });
